@@ -12,15 +12,15 @@ phases:
 
   planning:
     prd: "recommended"
-    tech-spec: "required"
+    tech-spec: "docs/tech-spec-worktree-helpers-2026-02-01.md"
 
   solutioning:
     architecture: "optional"
     ux-design: "optional"
 
   implementation:
-    sprint-planning: "required"
+    sprint-planning: "docs/sprint-plan-worktree-helpers-2026-02-01.md"
     stories: "required"
 
-current_phase: "analysis"
+current_phase: "implementation"
 last_updated: "2026-02-01"
