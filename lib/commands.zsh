@@ -47,9 +47,22 @@ _cmd_open() {
   local branch="$1"
   _require_pkg && _repo_root >/dev/null && _config_load || return 1
   mkdir -p "$GWT_WORKTREES_DIR" || return 1
-  [ -z "$branch" ] && branch=$(_current_branch)
-  [ -z "$branch" ] && { _err "No branch"; return 1; }
-  _branch_exists "$branch" || { _err "Branch not found"; return 1; }
+
+  # If no branch provided, show fzf picker
+  if [ -z "$branch" ]; then
+    branch=$(_branch_select "open> ") || return 1
+    [ -z "$branch" ] && { _err "No branch selected"; return 1; }
+  fi
+
+  # Strip origin/ prefix if present
+  branch="${branch#origin/}"
+
+  # Check if branch exists (local or remote)
+  if ! _branch_exists "$branch" && ! git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+    _err "Branch '$branch' not found (checked local and origin)"
+    return 1
+  fi
+
   _wt_open "$branch" "$GWT_WORKTREES_DIR"
 }
 
@@ -131,7 +144,7 @@ Commands:
   -n -d [name]           Create worktree from dev branch
   -s, --switch [branch]  Switch worktree (fzf if no arg)
   -r, --remove [branch]  Remove worktree and branch
-  -o, --open [branch]    Open existing branch as worktree
+  -o, --open [branch]    Open existing branch as worktree (fzf if no arg)
   -l, --list             List worktrees
   -L, --lock [branch]    Lock worktree
   -U, --unlock [branch]  Unlock worktree

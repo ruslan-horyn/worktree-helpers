@@ -10,7 +10,7 @@ sprints:
     end_date: "2026-02-14"
     capacity_points: 17
     committed_points: 14
-    completed_points: 8
+    completed_points: 11
     status: "in_progress"
     goal: "Establish solid foundation with refactored CLI and fix critical bugs"
     stories:
@@ -23,7 +23,8 @@ sprints:
       - story_id: "STORY-002"
         title: "Fix wt-open bugs"
         points: 3
-        status: "not_started"
+        status: "completed"
+        completion_date: "2026-02-01"
         assigned_to: null
         priority: "must_have"
         blocked_by: ["STORY-001"]

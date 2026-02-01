@@ -23,6 +23,16 @@ _wt_select() {
   git worktree list --porcelain | awk '/^worktree /{print $2}' | fzf --prompt="${1:-wt> }"
 }
 
+_branch_select() {
+  command -v fzf >/dev/null 2>&1 || { _err "Install fzf or pass branch"; return 1; }
+  # List branches: remote branches (strip origin/), excluding HEAD
+  git branch -r --format='%(refname:short)' 2>/dev/null | \
+    grep -v 'HEAD' | \
+    sed 's|^origin/||' | \
+    sort -u | \
+    fzf --prompt="${1:-branch> }"
+}
+
 _wt_resolve() {
   local input="$1" prompt="$2"
   if [ -n "$input" ]; then
@@ -79,8 +89,12 @@ _wt_open() {
     return
   fi
 
+  # Fetch from origin to ensure we have the latest refs
+  _info "Fetching from origin..."
+  git fetch origin --prune 2>/dev/null || true
+
   local path="$dir/$branch"
   _info "Opening worktree for '$branch'"
-  git worktree add "$path" "$branch" || { _err "Failed"; return 1; }
+  git worktree add "$path" "$branch" || { _err "Failed to create worktree for '$branch'"; return 1; }
   _run_hook created "$path" "$branch" "$branch" "$(_main_repo_root)"
 }
