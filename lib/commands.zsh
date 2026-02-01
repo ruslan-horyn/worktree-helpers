@@ -81,7 +81,81 @@ _cmd_unlock() {
 }
 
 _cmd_list() {
-  git worktree list
+  local main_root
+  main_root=$(_main_repo_root) || return 1
+
+  # Colors (only if terminal supports them)
+  local c_reset="" c_green="" c_red="" c_yellow="" c_dim=""
+  if [ -t 1 ]; then
+    c_reset=$'\033[0m'
+    c_green=$'\033[32m'
+    c_red=$'\033[31m'
+    c_yellow=$'\033[33m'
+    c_dim=$'\033[90m'
+  fi
+
+  local worktree="" branch="" locked="" is_main=""
+  local count=0
+  local output=""
+  output=$(git worktree list --porcelain)
+
+  # Append empty line to ensure last record is processed
+  output="$output"$'\n'
+
+  # Parse porcelain output line by line
+  while IFS= read -r line; do
+    case "$line" in
+      worktree\ *)
+        worktree="${line#worktree }"
+        branch=""
+        locked=""
+        is_main=""
+        ;;
+      branch\ *)
+        branch="${line#branch refs/heads/}"
+        ;;
+      detached)
+        branch="(detached)"
+        ;;
+      locked*)
+        locked="${line#locked}"
+        [ -z "$locked" ] && locked="yes"
+        ;;
+      "")
+        # End of record, print it
+        if [ -n "$worktree" ]; then
+          count=$((count + 1))
+
+          # Check if this is the main worktree
+          [ "$worktree" = "$main_root" ] && is_main="1"
+
+          # Format lock indicator
+          local lock_indicator=""
+          if [ -n "$locked" ]; then
+            lock_indicator="${c_red}[locked]${c_reset}"
+          else
+            lock_indicator="${c_green}[active]${c_reset}"
+          fi
+
+          # Format branch name
+          local branch_display="$branch"
+          if [ -n "$is_main" ]; then
+            branch_display="${c_yellow}${branch}${c_reset} ${c_dim}(main)${c_reset}"
+          fi
+
+          # Print formatted line
+          printf "%-50s %s %s\n" "$worktree" "$branch_display" "$lock_indicator"
+
+          worktree=""
+        fi
+        ;;
+    esac
+  done <<< "$output"
+
+  # Handle case with no worktrees (only main)
+  if [ "$count" -eq 0 ]; then
+    _info "No worktrees found"
+  fi
 }
 
 _cmd_log() {
