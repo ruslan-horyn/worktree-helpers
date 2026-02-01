@@ -47,4 +47,5 @@ wt -h
 ## Commit Guidelines
 
 - Do NOT add Co-Authored-By lines to commits
-- Use conventional commits format (feat:, fix:, refactor:, docs:, etc.)
+- Use conventional commits format (feat:, fix:, refactor:, docs:, chore:, etc.)
+- Subject must be lowercase (commitlint enforced)
