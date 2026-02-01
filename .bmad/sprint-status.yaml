@@ -10,14 +10,14 @@ sprints:
     end_date: "2026-02-14"
     capacity_points: 17
     committed_points: 14
-    completed_points: 0
-    status: "not_started"
+    completed_points: 8
+    status: "in_progress"
     goal: "Establish solid foundation with refactored CLI and fix critical bugs"
     stories:
       - story_id: "STORY-001"
         title: "Refactor CLI to flag-based interface"
         points: 8
-        status: "not_started"
+        status: "completed"
         assigned_to: null
         priority: "must_have"
       - story_id: "STORY-002"
