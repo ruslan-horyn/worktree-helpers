@@ -80,19 +80,172 @@ _cmd_unlock() {
   git worktree unlock "$path" && _info "Unlocked $path"
 }
 
+_cmd_clear() {
+  local unit="$1" num="$2" force="$3" dev_only="$4" main_only="$5"
+  _require_pkg && _repo_root >/dev/null && _config_load || return 1
+
+  # Validate arguments
+  if [ -z "$unit" ] || [ -z "$num" ]; then
+    _err "Usage: wt -c <day|week|month> <number>"
+    return 1
+  fi
+
+  case "$unit" in
+    day|week|month) ;;
+    *) _err "Invalid unit: $unit (use day, week, or month)"; return 1 ;;
+  esac
+
+  if ! [ "$num" -gt 0 ] 2>/dev/null; then
+    _err "Invalid number: $num (must be positive integer)"
+    return 1
+  fi
+
+  # Check for mutually exclusive flags
+  if [ "$dev_only" -eq 1 ] && [ "$main_only" -eq 1 ]; then
+    _err "--dev-only and --main-only are mutually exclusive"
+    return 1
+  fi
+
+  # Calculate cutoff timestamp
+  local cutoff
+  cutoff=$(_calc_cutoff "$unit" "$num")
+  if [ -z "$cutoff" ]; then
+    _err "Failed to calculate cutoff date"
+    return 1
+  fi
+
+  local main_root
+  main_root=$(_main_repo_root) || return 1
+
+  _init_colors
+
+  # Collect worktrees to delete
+  local output worktree branch locked wt_age
+  local -a to_delete=()
+  local -a locked_skipped=()
+  output=$(git worktree list --porcelain)
+  output="$output"$'\n'
+
+  worktree="" branch="" locked=""
+  while IFS= read -r line; do
+    case "$line" in
+      worktree\ *)
+        worktree="${line#worktree }"
+        branch=""
+        locked=""
+        ;;
+      branch\ *)
+        branch="${line#branch refs/heads/}"
+        ;;
+      detached)
+        branch="(detached)"
+        ;;
+      locked*)
+        locked="1"
+        ;;
+      "")
+        if [ -n "$worktree" ]; then
+          # Skip main repository
+          if [ "$worktree" = "$main_root" ]; then
+            worktree=""
+            continue
+          fi
+
+          # Apply dev/main filter
+          if [ "$dev_only" -eq 1 ]; then
+            case "$branch" in
+              *"$GWT_DEV_SUFFIX") ;;
+              *) worktree=""; continue ;;
+            esac
+          elif [ "$main_only" -eq 1 ]; then
+            case "$branch" in
+              *"$GWT_DEV_SUFFIX") worktree=""; continue ;;
+            esac
+          fi
+
+          # Check age
+          wt_age=$(_wt_age "$worktree")
+          if [ -n "$wt_age" ] && [ "$wt_age" -lt "$cutoff" ]; then
+            if [ -n "$locked" ]; then
+              locked_skipped+=("$worktree|$branch")
+            else
+              to_delete+=("$worktree|$branch|$wt_age")
+            fi
+          fi
+
+          worktree=""
+        fi
+        ;;
+    esac
+  done <<< "$output"
+
+  # Warn about locked worktrees
+  if [ "${#locked_skipped[@]}" -gt 0 ]; then
+    echo "${C_YELLOW}Skipping locked worktrees:${C_RESET}" >&2
+    for item in "${locked_skipped[@]}"; do
+      local path="${item%%|*}"
+      local br="${item#*|}"
+      echo "  ${C_DIM}$path${C_RESET} ($br) ${C_RED}[locked]${C_RESET}" >&2
+    done
+    echo "" >&2
+  fi
+
+  # Check if anything to delete
+  if [ "${#to_delete[@]}" -eq 0 ]; then
+    _info "No worktrees to clear"
+    return 0
+  fi
+
+  # Show list of worktrees to delete
+  echo "Worktrees to remove (older than $num $unit(s)):"
+  for item in "${to_delete[@]}"; do
+    local path="${item%%|*}"
+    local rest="${item#*|}"
+    local br="${rest%%|*}"
+    local ts="${rest#*|}"
+    echo "  $path ($br) - $(_age_display "$ts")"
+  done
+  echo ""
+
+  # Confirmation prompt (unless -f)
+  if [ "$force" -ne 1 ]; then
+    printf "Remove ${#to_delete[@]} worktree(s)? [y/N] " >&2
+    read -r r
+    case "$r" in
+      y|Y) ;;
+      *) _info "Aborted"; return 1 ;;
+    esac
+  fi
+
+  # Delete worktrees
+  local deleted=0
+  for item in "${to_delete[@]}"; do
+    local path="${item%%|*}"
+    local rest="${item#*|}"
+    local br="${rest%%|*}"
+
+    # Change directory if we're in the worktree being removed
+    [ "$PWD" = "$path" ] && cd "$main_root"
+
+    if git worktree remove "$path" 2>/dev/null; then
+      _info "Removed $path"
+      if [ -n "$br" ] && [ "$br" != "(detached)" ] && _branch_exists "$br"; then
+        git branch -D "$br" 2>/dev/null && _info "Deleted branch $br"
+      fi
+      deleted=$((deleted + 1))
+    else
+      _err "Failed to remove $path"
+    fi
+  done
+
+  _info "Cleared $deleted worktree(s)"
+}
+
 _cmd_list() {
   local main_root
   main_root=$(_main_repo_root) || return 1
 
-  # Colors (only if terminal supports them)
-  local c_reset="" c_green="" c_red="" c_yellow="" c_dim=""
-  if [ -t 1 ]; then
-    c_reset=$'\033[0m'
-    c_green=$'\033[32m'
-    c_red=$'\033[31m'
-    c_yellow=$'\033[33m'
-    c_dim=$'\033[90m'
-  fi
+  _init_colors
 
   local worktree="" branch="" locked="" is_main=""
   local count=0
@@ -132,15 +285,15 @@ _cmd_list() {
           # Format lock indicator
           local lock_indicator=""
           if [ -n "$locked" ]; then
-            lock_indicator="${c_red}[locked]${c_reset}"
+            lock_indicator="${C_RED}[locked]${C_RESET}"
           else
-            lock_indicator="${c_green}[active]${c_reset}"
+            lock_indicator="${C_GREEN}[active]${C_RESET}"
           fi
 
           # Format branch name
           local branch_display="$branch"
           if [ -n "$is_main" ]; then
-            branch_display="${c_yellow}${branch}${c_reset} ${c_dim}(main)${c_reset}"
+            branch_display="${C_YELLOW}${branch}${C_RESET} ${C_DIM}(main)${C_RESET}"
           fi
 
           # Print formatted line
@@ -220,6 +373,7 @@ Commands:
   -r, --remove [branch]  Remove worktree and branch
   -o, --open [branch]    Open existing branch as worktree (fzf if no arg)
   -l, --list             List worktrees
+  -c, --clear <unit> <n> Clear worktrees older than n units (day/week/month)
   -L, --lock [branch]    Lock worktree
   -U, --unlock [branch]  Unlock worktree
   --init                 Initialize config
@@ -229,6 +383,8 @@ Commands:
 Flags:
   -f, --force            Force operation
   -d, --dev              Use dev branch as base
+  --dev-only             Filter to dev-based worktrees only (with -c)
+  --main-only            Filter to main-based worktrees only (with -c)
   --reflog               Show reflog (with --log)
 HELP
 }

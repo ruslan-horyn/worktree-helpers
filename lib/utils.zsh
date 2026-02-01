@@ -49,3 +49,46 @@ _normalize_ref() {
 
 _current_branch() { git rev-parse --abbrev-ref HEAD 2>/dev/null; }
 _branch_exists() { git show-ref --verify --quiet "refs/heads/$1"; }
+
+# Calculate cutoff timestamp for age-based filtering
+# Usage: _calc_cutoff <day|week|month> <number>
+_calc_cutoff() {
+  local unit="$1" num="$2"
+  case "$unit" in
+    day)   date -v-${num}d +%s 2>/dev/null || date -d "-$num days" +%s ;;
+    week)  date -v-${num}w +%s 2>/dev/null || date -d "-$num weeks" +%s ;;
+    month) date -v-${num}m +%s 2>/dev/null || date -d "-$num months" +%s ;;
+  esac
+}
+
+# Get worktree age (modification time of .git directory)
+# Usage: _wt_age <worktree_path>
+_wt_age() {
+  local path="$1"
+  stat -f %m "$path/.git" 2>/dev/null || stat -c %Y "$path/.git" 2>/dev/null
+}
+
+# Initialize color variables (only if terminal supports them)
+_init_colors() {
+  C_RESET="" C_GREEN="" C_RED="" C_YELLOW="" C_DIM=""
+  if [ -t 1 ]; then
+    C_RESET=$'\033[0m'
+    C_GREEN=$'\033[32m'
+    C_RED=$'\033[31m'
+    C_YELLOW=$'\033[33m'
+    C_DIM=$'\033[90m'
+  fi
+}
+
+# Display human-readable age from timestamp
+# Usage: _age_display <timestamp>
+_age_display() {
+  local ts="$1" now diff
+  now=$(date +%s)
+  diff=$(( (now - ts) / 86400 ))
+  case "$diff" in
+    0) echo "today" ;;
+    1) echo "1 day ago" ;;
+    *) echo "$diff days ago" ;;
+  esac
+}
