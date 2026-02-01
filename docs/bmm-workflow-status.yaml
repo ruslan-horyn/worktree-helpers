@@ -1,0 +1,26 @@
+# BMAD Workflow Status
+# Status values: optional, recommended, required, skipped, or {file-path} when complete
+
+project: worktree-helpers
+level: 1
+
+phases:
+  analysis:
+    product-brief: "docs/product-brief-worktree-helpers-2026-02-01.md"
+    brainstorm: "optional"
+    research: "optional"
+
+  planning:
+    prd: "recommended"
+    tech-spec: "required"
+
+  solutioning:
+    architecture: "optional"
+    ux-design: "optional"
+
+  implementation:
+    sprint-planning: "required"
+    stories: "required"
+
+current_phase: "analysis"
+last_updated: "2026-02-01"

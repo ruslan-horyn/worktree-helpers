@@ -1,0 +1,13 @@
+project_name: "worktree-helpers"
+project_type: "cli"
+project_level: 1
+output_folder: "docs"
+communication_language: "English"
+
+# Project description
+description: "CLI tools for git worktree management"
+
+# BMAD configuration
+bmad:
+  version: "1.0"
+  initialized: true

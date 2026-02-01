@@ -1,0 +1,91 @@
+version: "6.0.0"
+project_name: "worktree-helpers"
+project_level: 1
+current_sprint: 1
+sprint_plan_path: "docs/sprint-plan-worktree-helpers-2026-02-01.md"
+
+sprints:
+  - sprint_number: 1
+    start_date: "2026-02-01"
+    end_date: "2026-02-14"
+    capacity_points: 17
+    committed_points: 14
+    completed_points: 0
+    status: "not_started"
+    goal: "Establish solid foundation with refactored CLI and fix critical bugs"
+    stories:
+      - story_id: "STORY-001"
+        title: "Refactor CLI to flag-based interface"
+        points: 8
+        status: "not_started"
+        assigned_to: null
+        priority: "must_have"
+      - story_id: "STORY-002"
+        title: "Fix wt-open bugs"
+        points: 3
+        status: "not_started"
+        assigned_to: null
+        priority: "must_have"
+        blocked_by: ["STORY-001"]
+      - story_id: "STORY-003"
+        title: "Add wt-list command"
+        points: 3
+        status: "not_started"
+        assigned_to: null
+        priority: "must_have"
+        blocked_by: ["STORY-001"]
+
+  - sprint_number: 2
+    start_date: "2026-02-15"
+    end_date: "2026-02-28"
+    capacity_points: 17
+    committed_points: 17
+    completed_points: 0
+    status: "not_started"
+    goal: "Complete feature set and prepare for distribution"
+    stories:
+      - story_id: "STORY-004"
+        title: "Add wt-clear command"
+        points: 5
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+        blocked_by: ["STORY-001", "STORY-003"]
+      - story_id: "STORY-005"
+        title: "Implement hook symlinking"
+        points: 3
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+        blocked_by: ["STORY-001"]
+      - story_id: "STORY-006"
+        title: "Add hook protection on init"
+        points: 2
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+        blocked_by: ["STORY-001"]
+      - story_id: "STORY-007"
+        title: "Add worktree count warning"
+        points: 2
+        status: "not_started"
+        assigned_to: null
+        priority: "could_have"
+        blocked_by: ["STORY-001"]
+      - story_id: "STORY-008"
+        title: "Create install script and documentation"
+        points: 5
+        status: "not_started"
+        assigned_to: null
+        priority: "must_have"
+        blocked_by: ["STORY-001", "STORY-002", "STORY-003", "STORY-004", "STORY-005", "STORY-006", "STORY-007"]
+
+velocity:
+  sprint_1: null
+  sprint_2: null
+  rolling_average: null
+
+team:
+  size: 1
+  sprint_length_weeks: 2
+  capacity_per_sprint: 17

@@ -1,0 +1,18 @@
+version: "6.0.0"
+project_name: "worktree-helpers"
+project_level: 1
+current_phase: "implementation"
+
+workflows:
+  product-brief: "docs/product-brief-worktree-helpers-2026-02-01.md"
+  tech-spec: "docs/tech-spec-worktree-helpers-2026-02-01.md"
+  architecture: "not_needed"
+  sprint-planning: "docs/sprint-plan-worktree-helpers-2026-02-01.md"
+
+last_updated: "2026-02-01"
+last_workflow: "sprint-planning"
+
+next_recommended:
+  workflow: "dev-story"
+  reason: "Sprint plan complete. Begin implementing STORY-001."
+  command: "/dev-story STORY-001"
