@@ -1,5 +1,17 @@
 # Worktree operations
 
+# Symlink hooks from main repo to worktree
+_symlink_hooks() {
+  local src="$(_main_repo_root)/.worktrees/hooks"
+  local dst="$1/.worktrees/hooks"
+
+  [ ! -d "$src" ] && return 0
+  [ -L "$dst" ] && return 0
+
+  mkdir -p "${dst%/*}" || return 1
+  ln -s "$src" "$dst" 2>/dev/null || cp -R "$src" "$dst" 2>/dev/null || true
+}
+
 _wt_path() {
   local b="$1"
   git worktree list --porcelain | awk -v br="$b" '
@@ -76,6 +88,7 @@ _wt_create() {
   git worktree add -b "$branch" "$path" "$ref" || { _err "Failed"; return 1; }
   git -C "$path" config "branch.$branch.remote" "origin"
   git -C "$path" config "branch.$branch.merge" "refs/heads/$branch"
+  _symlink_hooks "$path"
   _fetch "$ref"
   _run_hook created "$path" "$branch" "$ref" "$(_main_repo_root)"
 }
@@ -96,5 +109,6 @@ _wt_open() {
   local path="$dir/$branch"
   _info "Opening worktree for '$branch'"
   git worktree add "$path" "$branch" || { _err "Failed to create worktree for '$branch'"; return 1; }
+  _symlink_hooks "$path"
   _run_hook created "$path" "$branch" "$branch" "$(_main_repo_root)"
 }
