@@ -1,12 +1,22 @@
 {
   "name": "worktree-helpers",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "CLI tools for git worktree management",
+  "main": "git-worktrees.zsh",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepare": "husky",
+    "commitlint": "commitlint --edit"
   },
-  "keywords": [],
+  "keywords": [
+    "git",
+    "worktree",
+    "cli"
+  ],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@commitlint/cli": "^19.0.0",
+    "@commitlint/config-conventional": "^19.0.0",
+    "husky": "^9.0.0"
+  }
 }
