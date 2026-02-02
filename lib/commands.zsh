@@ -335,16 +335,31 @@ _cmd_init() {
 
   main_ref=$(_normalize_ref "$main_ref")
 
-  mkdir -p "$root/.worktrees/hooks"
-  cat > "$root/.worktrees/hooks/created.sh" <<'EOF'
-#!/usr/bin/env bash
-cd "$1" || exit 1
-EOF
-  cat > "$root/.worktrees/hooks/switched.sh" <<'EOF'
-#!/usr/bin/env bash
-cd "$1" || exit 1
-EOF
-  chmod +x "$root/.worktrees/hooks"/*.sh
+  local hooks_dir="$root/.worktrees/hooks"
+  mkdir -p "$hooks_dir"
+
+  # Default hook template
+  local hook_content='#!/usr/bin/env bash
+cd "$1" || exit 1'
+
+  # Backup existing hooks and write new ones
+  local -a backed_up=()
+  local hook_path
+  for hook in created.sh switched.sh; do
+    hook_path="$hooks_dir/$hook"
+    _backup_hook "$hook_path" "$hook_content"
+    [ "$HOOK_BACKED_UP" -eq 1 ] && backed_up+=("$hook")
+    printf '%s\n' "$hook_content" > "$hook_path"
+  done
+  chmod +x "$hooks_dir"/*.sh
+
+  # Notify user about backed up hooks
+  if [ "${#backed_up[@]}" -gt 0 ]; then
+    _info "Backed up existing hooks:"
+    for hook in "${backed_up[@]}"; do
+      _info "  ${hook} -> ${hook}_old"
+    done
+  fi
 
   cat > "$cfg" <<JSON
 {

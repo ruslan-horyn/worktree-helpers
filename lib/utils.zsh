@@ -92,3 +92,31 @@ _age_display() {
     *) echo "$diff days ago" ;;
   esac
 }
+
+# Backup existing hook file if content differs from new content
+# Usage: _backup_hook <hook_path> <new_content>
+# Returns: 0 if backup created or not needed, sets HOOK_BACKED_UP=1 if backup was created
+_backup_hook() {
+  local hook_path="$1" new_content="$2"
+  HOOK_BACKED_UP=0
+
+  # No backup needed if file doesn't exist
+  [ ! -f "$hook_path" ] && return 0
+
+  # Compare existing content with new content
+  local existing_content
+  existing_content=$(cat "$hook_path")
+
+  # No backup needed if content is identical
+  [ "$existing_content" = "$new_content" ] && return 0
+
+  # Backup by renaming with _old suffix
+  local backup_path="${hook_path}_old"
+  if mv "$hook_path" "$backup_path"; then
+    HOOK_BACKED_UP=1
+    return 0
+  else
+    _err "Failed to backup $hook_path"
+    return 1
+  fi
+}
