@@ -1,0 +1,9 @@
+{
+  "projectName": "worktree-helpers",
+  "worktreesDir": "/Users/ruslanhoryn/Own_projects/worktree-helpers_worktrees",
+  "mainBranch": "origin/main",
+  "devBranch": "origin/develop",
+  "devSuffix": "_dev",
+  "openCmd": ".worktrees/hooks/created.sh",
+  "switchCmd": ".worktrees/hooks/switched.sh"
+}

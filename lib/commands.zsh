@@ -325,15 +325,41 @@ _cmd_init() {
   local root; root=$(_main_repo_root) || return 1
   local cfg="$root/.worktrees/config.json"
 
-  local name main_ref
-  name=$(_project_name); main_ref=$(_main_branch)
+  # Compute defaults from repo
+  local default_name default_main default_dev default_suffix
+  default_name=$(_project_name)
+  default_main=$(_main_branch)
+  default_dev="origin/develop"
+  default_suffix="_dev"
+
+  # Load existing config, validate values
+  local name main_ref dev_ref dev_suffix
+  if [ -f "$cfg" ]; then
+    name=$(jq -r '.projectName // empty' "$cfg")
+    main_ref=$(jq -r '.mainBranch // empty' "$cfg")
+    dev_ref=$(jq -r '.devBranch // empty' "$cfg")
+    dev_suffix=$(jq -r '.devSuffix // empty' "$cfg")
+  fi
+
+  # Use defaults if values are missing or invalid
+  [ -z "$name" ] || [ "$name" = "null" ] && name="$default_name"
+  [ -z "$main_ref" ] || [ "$main_ref" = "null" ] && main_ref="$default_main"
+  [ -z "$dev_ref" ] || [ "$dev_ref" = "null" ] && dev_ref="$default_dev"
+  [ -z "$dev_suffix" ] || [ "$dev_suffix" = "null" ] && dev_suffix="$default_suffix"
+
+  # Worktrees dir is always computed from project name
   local wt_dir="${root%/*}/${name}_worktrees"
 
   printf "Project [%s]: " "$name" >&2; read -r r; [ -n "$r" ] && name="$r"
-  printf "Worktrees dir [%s]: " "$wt_dir" >&2; read -r r; [ -n "$r" ] && wt_dir="$r"
+  wt_dir="${root%/*}/${name}_worktrees"  # Update based on name
   printf "Main branch [%s]: " "$main_ref" >&2; read -r r; [ -n "$r" ] && main_ref="$r"
+  printf "Dev branch [%s]: " "$dev_ref" >&2; read -r r; [ -n "$r" ] && dev_ref="$r"
+  printf "Dev suffix [%s]: " "$dev_suffix" >&2; read -r r; [ -n "$r" ] && dev_suffix="$r"
 
   main_ref=$(_normalize_ref "$main_ref")
+  dev_ref=$(_normalize_ref "$dev_ref")
+
+  _info "Worktrees dir: $wt_dir"
 
   local hooks_dir="$root/.worktrees/hooks"
   mkdir -p "$hooks_dir"
@@ -343,22 +369,31 @@ _cmd_init() {
 cd "$1" || exit 1'
 
   # Backup existing hooks and write new ones
-  local -a backed_up=()
+  local -a backed_up=() unchanged=()
   local hook_path
   for hook in created.sh switched.sh; do
     hook_path="$hooks_dir/$hook"
-    _backup_hook "$hook_path" "$hook_content"
-    [ "$HOOK_BACKED_UP" -eq 1 ] && backed_up+=("$hook")
+    if [ -f "$hook_path" ]; then
+      _backup_hook "$hook_path" "$hook_content"
+      if [ "$HOOK_BACKED_UP" -eq 1 ]; then
+        backed_up+=("$hook")
+      else
+        unchanged+=("$hook")
+      fi
+    fi
     printf '%s\n' "$hook_content" > "$hook_path"
   done
   chmod +x "$hooks_dir"/*.sh
 
-  # Notify user about backed up hooks
+  # Notify user about hook status
   if [ "${#backed_up[@]}" -gt 0 ]; then
     _info "Backed up existing hooks:"
     for hook in "${backed_up[@]}"; do
       _info "  ${hook} -> ${hook}_old"
     done
+  fi
+  if [ "${#unchanged[@]}" -gt 0 ]; then
+    _info "Hooks unchanged: ${unchanged[*]}"
   fi
 
   cat > "$cfg" <<JSON
@@ -366,8 +401,8 @@ cd "$1" || exit 1'
   "projectName": "$name",
   "worktreesDir": "$wt_dir",
   "mainBranch": "$main_ref",
-  "devBranch": "origin/release-next",
-  "devSuffix": "_RN",
+  "devBranch": "$dev_ref",
+  "devSuffix": "$dev_suffix",
   "openCmd": ".worktrees/hooks/created.sh",
   "switchCmd": ".worktrees/hooks/switched.sh"
 }
