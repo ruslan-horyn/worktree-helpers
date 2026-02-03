@@ -14,6 +14,7 @@ _config_load() {
   GWT_DEV_SUFFIX=$(jq -r '.devSuffix // empty' "$cfg")
   GWT_CREATE_HOOK=$(jq -r '.openCmd // empty' "$cfg")
   GWT_SWITCH_HOOK=$(jq -r '.switchCmd // empty' "$cfg")
+  GWT_WORKTREE_WARN_THRESHOLD=$(jq -r '.worktreeWarningThreshold // empty' "$cfg")
 
   # Defaults
   [ -z "$GWT_PROJECT_NAME" ] && GWT_PROJECT_NAME=$(_project_name)
@@ -22,6 +23,7 @@ _config_load() {
   [ -z "$GWT_DEV_SUFFIX" ] && GWT_DEV_SUFFIX="_RN"
   [ -z "$GWT_CREATE_HOOK" ] && GWT_CREATE_HOOK=".worktrees/hooks/created.sh"
   [ -z "$GWT_SWITCH_HOOK" ] && GWT_SWITCH_HOOK=".worktrees/hooks/switched.sh"
+  [ -z "$GWT_WORKTREE_WARN_THRESHOLD" ] && GWT_WORKTREE_WARN_THRESHOLD=20
 
   # Resolve paths
   case "$GWT_CREATE_HOOK" in /*) ;; *) GWT_CREATE_HOOK="$root/$GWT_CREATE_HOOK" ;; esac

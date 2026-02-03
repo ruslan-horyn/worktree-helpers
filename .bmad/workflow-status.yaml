@@ -9,10 +9,10 @@ workflows:
   architecture: "not_needed"
   sprint-planning: "docs/sprint-plan-worktree-helpers-2026-02-01.md"
 
-last_updated: "2026-02-01"
-last_workflow: "sprint-planning"
+last_updated: "2026-02-03"
+last_workflow: "sprint-status"
 
 next_recommended:
   workflow: "dev-story"
-  reason: "Sprint plan complete. Begin implementing STORY-001."
-  command: "/dev-story STORY-001"
+  reason: "6/8 stories complete. STORY-007 (worktree count warning) or STORY-008 (install/docs) ready."
+  command: "/dev-story STORY-007"

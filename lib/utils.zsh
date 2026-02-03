@@ -92,3 +92,24 @@ _age_display() {
     *) echo "$diff days ago" ;;
   esac
 }
+
+# Count total worktrees
+# Usage: _wt_count
+_wt_count() {
+  git worktree list --porcelain 2>/dev/null | grep -c "^worktree " || echo 0
+}
+
+# Warn if worktree count exceeds threshold
+# Usage: _wt_warn_count (call after worktree creation)
+_wt_warn_count() {
+  local count threshold
+  count=$(_wt_count)
+  threshold="${GWT_WORKTREE_WARN_THRESHOLD:-20}"
+
+  if [ "$count" -gt "$threshold" ]; then
+    _init_colors
+    echo "" >&2
+    echo "${C_YELLOW}Warning: You have $count worktrees (threshold: $threshold)${C_RESET}" >&2
+    echo "${C_DIM}Consider running 'wt -c week 2' to clean up old worktrees${C_RESET}" >&2
+  fi
+}

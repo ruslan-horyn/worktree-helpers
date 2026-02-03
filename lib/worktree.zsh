@@ -91,6 +91,7 @@ _wt_create() {
   _symlink_hooks "$path"
   _fetch "$ref"
   _run_hook created "$path" "$branch" "$ref" "$(_main_repo_root)"
+  _wt_warn_count
 }
 
 _wt_open() {
@@ -111,4 +112,5 @@ _wt_open() {
   git worktree add "$path" "$branch" || { _err "Failed to create worktree for '$branch'"; return 1; }
   _symlink_hooks "$path"
   _run_hook created "$path" "$branch" "$branch" "$(_main_repo_root)"
+  _wt_warn_count
 }

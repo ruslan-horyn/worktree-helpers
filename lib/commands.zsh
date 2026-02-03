@@ -325,13 +325,15 @@ _cmd_init() {
   local root; root=$(_main_repo_root) || return 1
   local cfg="$root/.worktrees/config.json"
 
-  local name main_ref
+  local name main_ref warn_threshold
   name=$(_project_name); main_ref=$(_main_branch)
   local wt_dir="${root%/*}/${name}_worktrees"
+  warn_threshold=20
 
   printf "Project [%s]: " "$name" >&2; read -r r; [ -n "$r" ] && name="$r"
   printf "Worktrees dir [%s]: " "$wt_dir" >&2; read -r r; [ -n "$r" ] && wt_dir="$r"
   printf "Main branch [%s]: " "$main_ref" >&2; read -r r; [ -n "$r" ] && main_ref="$r"
+  printf "Worktree warning threshold [%s]: " "$warn_threshold" >&2; read -r r; [ -n "$r" ] && warn_threshold="$r"
 
   main_ref=$(_normalize_ref "$main_ref")
 
@@ -354,7 +356,8 @@ EOF
   "devBranch": "origin/release-next",
   "devSuffix": "_RN",
   "openCmd": ".worktrees/hooks/created.sh",
-  "switchCmd": ".worktrees/hooks/switched.sh"
+  "switchCmd": ".worktrees/hooks/switched.sh",
+  "worktreeWarningThreshold": $warn_threshold
 }
 JSON
   _info "Created $cfg"
