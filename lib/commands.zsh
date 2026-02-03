@@ -320,6 +320,23 @@ _cmd_log() {
   git log --oneline --graph --cherry --no-merges $args "${GWT_MAIN_REF}..${feature}"
 }
 
+# Backup hook if exists and differs from new content
+# Usage: _backup_hook <hook_path> <new_content>
+# Returns: 0 if backup was made, 1 if no backup needed
+_backup_hook() {
+  local hook_path="$1" new_content="$2"
+  [ ! -f "$hook_path" ] && return 1
+
+  local existing_content
+  existing_content=$(cat "$hook_path")
+  [ "$existing_content" = "$new_content" ] && return 1
+
+  local backup_path="${hook_path}_old"
+  mv "$hook_path" "$backup_path"
+  _info "Backed up existing hook: ${hook_path##*/} -> ${backup_path##*/}"
+  return 0
+}
+
 _cmd_init() {
   _require_pkg && _repo_root >/dev/null && _require jq || return 1
   local root; root=$(_main_repo_root) || return 1
@@ -338,14 +355,20 @@ _cmd_init() {
   main_ref=$(_normalize_ref "$main_ref")
 
   mkdir -p "$root/.worktrees/hooks"
-  cat > "$root/.worktrees/hooks/created.sh" <<'EOF'
-#!/usr/bin/env bash
-cd "$1" || exit 1
-EOF
-  cat > "$root/.worktrees/hooks/switched.sh" <<'EOF'
-#!/usr/bin/env bash
-cd "$1" || exit 1
-EOF
+
+  # Default hook contents
+  local created_hook='#!/usr/bin/env bash
+cd "$1" || exit 1'
+  local switched_hook='#!/usr/bin/env bash
+cd "$1" || exit 1'
+
+  # Backup existing hooks if they differ
+  _backup_hook "$root/.worktrees/hooks/created.sh" "$created_hook"
+  _backup_hook "$root/.worktrees/hooks/switched.sh" "$switched_hook"
+
+  # Write new hooks
+  echo "$created_hook" > "$root/.worktrees/hooks/created.sh"
+  echo "$switched_hook" > "$root/.worktrees/hooks/switched.sh"
   chmod +x "$root/.worktrees/hooks"/*.sh
 
   cat > "$cfg" <<JSON

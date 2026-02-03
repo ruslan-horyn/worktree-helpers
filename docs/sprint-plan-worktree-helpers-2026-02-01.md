@@ -402,4 +402,27 @@ Run `/dev-story STORY-001` to start implementing the CLI refactoring.
 
 ---
 
+## Progress Tracking
+
+Last updated: 2026-02-03
+
+- [x] STORY-001 - Refactor CLI to flag-based interface
+- [x] STORY-002 - Fix wt-open bugs
+- [x] STORY-003 - Add wt-list command
+- [x] STORY-004 - Add wt-clear command
+- [x] STORY-005 - Implement hook symlinking
+- [x] STORY-006 - Add hook protection on init
+- [x] STORY-007 - Add worktree count warning
+- [ ] STORY-008 - Create install script and documentation
+
+### Remaining Work
+
+**STORY-008 - Documentation & Distribution:**
+- [ ] Create `README.md` (installation, usage, configuration)
+- [ ] Create `CHANGELOG.md` (v1.0 release notes)
+- [ ] Create `install.sh` script
+- [x] Help text (`wt -h`) - already done
+
+---
+
 **This plan was created using BMAD Method v6 - Phase 4 (Implementation Planning)**
