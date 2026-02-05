@@ -273,6 +273,38 @@ This tool expects to be run in a Node.js project directory. Ensure you're in the
    rm -rf /path/to/repo/.worktrees
    ```
 
+## Releasing
+
+This project uses [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for automated releases. Version bumps are determined from [Conventional Commits](https://www.conventionalcommits.org/):
+
+| Commit type | Version bump | Example |
+|-------------|-------------|---------|
+| `fix:` | Patch (1.0.0 → 1.0.1) | `fix: resolve branch detection` |
+| `feat:` | Minor (1.0.0 → 1.1.0) | `feat: add wt --status command` |
+| `feat!:` / `BREAKING CHANGE` | Major (1.0.0 → 2.0.0) | `feat!: redesign config format` |
+
+### Creating a release
+
+```bash
+# Preview changes (dry run)
+npm run release:dry
+
+# Create release (bumps version, updates CHANGELOG.md, creates git tag)
+npm run release
+
+# Push — GitHub Action automatically creates a GitHub Release
+git push --follow-tags origin main
+```
+
+### Release scripts
+
+| Script | Description |
+|--------|-------------|
+| `npm run release` | Auto-detect version bump from commits |
+| `npm run release:minor` | Force minor version bump |
+| `npm run release:major` | Force major version bump |
+| `npm run release:dry` | Preview without making changes |
+
 ## License
 
 MIT

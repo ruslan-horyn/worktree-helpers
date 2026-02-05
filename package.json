@@ -5,7 +5,11 @@
   "main": "git-worktrees.zsh",
   "scripts": {
     "prepare": "husky",
-    "commitlint": "commitlint --edit"
+    "commitlint": "commitlint --edit",
+    "release": "commit-and-tag-version",
+    "release:minor": "commit-and-tag-version --release-as minor",
+    "release:major": "commit-and-tag-version --release-as major",
+    "release:dry": "commit-and-tag-version --dry-run"
   },
   "keywords": [
     "git",
@@ -17,6 +21,7 @@
   "devDependencies": {
     "@commitlint/cli": "^19.0.0",
     "@commitlint/config-conventional": "^19.0.0",
+    "commit-and-tag-version": "^12.6.1",
     "husky": "^9.0.0"
   }
 }
