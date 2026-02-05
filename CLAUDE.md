@@ -4,19 +4,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**worktree-helpers** is a zsh/bash CLI tool (`wt`) for managing git worktrees. It wraps native git worktree commands with a single unified interface, project-specific configuration, and customizable hooks.
+**worktree-helpers** is a POSIX-compatible shell CLI tool (`wt`) for managing git worktrees. It wraps native git worktree commands with a single unified interface, project-specific configuration, and customizable hooks. Works with bash, zsh, and other POSIX-compliant shells.
 
 **Dependencies:** git, jq (required), fzf (optional for interactive selection)
 
 ## Architecture
 
 ```
-wt.zsh                    # Entry point - source in .zshrc, contains wt() router
+wt.sh                     # Entry point - source in .zshrc/.bashrc, contains wt() router
 lib/
-  utils.zsh               # Core utilities: _err, _info, _require, _repo_root, _branch_exists
-  config.zsh              # _config_load - parses .worktrees/config.json, sets GWT_* globals
-  worktree.zsh            # Worktree operations: _wt_create, _wt_open, _wt_resolve, _run_hook
-  commands.zsh            # Command handlers: _cmd_new, _cmd_switch, _cmd_remove, etc.
+  utils.sh                # Core utilities: _err, _info, _require, _repo_root, _branch_exists
+  config.sh               # _config_load - parses .worktrees/config.json, sets GWT_* globals
+  worktree.sh             # Worktree operations: _wt_create, _wt_open, _wt_resolve, _run_hook
+  commands.sh             # Command handlers: _cmd_new, _cmd_switch, _cmd_remove, etc.
 git-worktrees.zsh         # Legacy single-file version (deprecated)
 ```
 
@@ -33,7 +33,7 @@ git-worktrees.zsh         # Legacy single-file version (deprecated)
 npm run commitlint
 
 # Test manually by sourcing
-source wt.zsh
+source wt.sh
 wt -h
 ```
 
@@ -42,7 +42,7 @@ wt -h
 - Function names: underscore prefix (`_err`, `_cmd_new`, `_wt_create`)
 - Global config vars: `GWT_*` prefix (e.g., `GWT_MAIN_REF`, `GWT_WORKTREES_DIR`)
 - Keep functions short; validation at start with early returns
-- POSIX-compatible where possible, zsh-specific syntax allowed
+- POSIX-compatible shell syntax required (no bash/zsh-specific features)
 
 ## Commit Guidelines
 

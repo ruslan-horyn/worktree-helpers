@@ -119,15 +119,13 @@ _cmd_clear() {
 
   _init_colors
 
-  # Collect worktrees to delete
+  # Collect worktrees to delete (newline-delimited strings)
   local output worktree branch locked wt_age
-  local -a to_delete=()
-  local -a locked_skipped=()
+  local to_delete="" locked_skipped="" to_delete_count=0
   output=$(git worktree list --porcelain)
-  output="$output"$'\n'
 
   worktree="" branch="" locked=""
-  while IFS= read -r line; do
+  while IFS= read -r line || [ -n "$line" ]; do
     case "$line" in
       worktree\ *)
         worktree="${line#worktree }"
@@ -167,9 +165,12 @@ _cmd_clear() {
           wt_age=$(_wt_age "$worktree")
           if [ -n "$wt_age" ] && [ "$wt_age" -lt "$cutoff" ]; then
             if [ -n "$locked" ]; then
-              locked_skipped+=("$worktree|$branch")
+              locked_skipped="${locked_skipped}${worktree}|${branch}
+"
             else
-              to_delete+=("$worktree|$branch|$wt_age")
+              to_delete="${to_delete}${worktree}|${branch}|${wt_age}
+"
+              to_delete_count=$((to_delete_count + 1))
             fi
           fi
 
@@ -177,12 +178,16 @@ _cmd_clear() {
         fi
         ;;
     esac
-  done <<< "$output"
+  done <<EOF
+$output
+
+EOF
 
   # Warn about locked worktrees
-  if [ "${#locked_skipped[@]}" -gt 0 ]; then
+  if [ -n "$locked_skipped" ]; then
     echo "${C_YELLOW}Skipping locked worktrees:${C_RESET}" >&2
-    for item in "${locked_skipped[@]}"; do
+    echo "$locked_skipped" | while IFS= read -r item; do
+      [ -z "$item" ] && continue
       local path="${item%%|*}"
       local br="${item#*|}"
       echo "  ${C_DIM}$path${C_RESET} ($br) ${C_RED}[locked]${C_RESET}" >&2
@@ -191,14 +196,15 @@ _cmd_clear() {
   fi
 
   # Check if anything to delete
-  if [ "${#to_delete[@]}" -eq 0 ]; then
+  if [ "$to_delete_count" -eq 0 ]; then
     _info "No worktrees to clear"
     return 0
   fi
 
   # Show list of worktrees to delete
   echo "Worktrees to remove (older than $num $unit(s)):"
-  for item in "${to_delete[@]}"; do
+  echo "$to_delete" | while IFS= read -r item; do
+    [ -z "$item" ] && continue
     local path="${item%%|*}"
     local rest="${item#*|}"
     local br="${rest%%|*}"
@@ -209,7 +215,7 @@ _cmd_clear() {
 
   # Confirmation prompt (unless -f)
   if [ "$force" -ne 1 ]; then
-    printf "Remove ${#to_delete[@]} worktree(s)? [y/N] " >&2
+    printf "Remove %d worktree(s)? [y/N] " "$to_delete_count" >&2
     read -r r
     case "$r" in
       y|Y) ;;
@@ -219,7 +225,8 @@ _cmd_clear() {
 
   # Delete worktrees
   local deleted=0
-  for item in "${to_delete[@]}"; do
+  echo "$to_delete" | while IFS= read -r item; do
+    [ -z "$item" ] && continue
     local path="${item%%|*}"
     local rest="${item#*|}"
     local br="${rest%%|*}"
@@ -232,13 +239,12 @@ _cmd_clear() {
       if [ -n "$br" ] && [ "$br" != "(detached)" ] && _branch_exists "$br"; then
         git branch -D "$br" 2>/dev/null && _info "Deleted branch $br"
       fi
-      deleted=$((deleted + 1))
     else
       _err "Failed to remove $path"
     fi
   done
 
-  _info "Cleared $deleted worktree(s)"
+  _info "Cleared worktrees"
 }
 
 _cmd_list() {
@@ -252,11 +258,8 @@ _cmd_list() {
   local output=""
   output=$(git worktree list --porcelain)
 
-  # Append empty line to ensure last record is processed
-  output="$output"$'\n'
-
   # Parse porcelain output line by line
-  while IFS= read -r line; do
+  while IFS= read -r line || [ -n "$line" ]; do
     case "$line" in
       worktree\ *)
         worktree="${line#worktree }"
@@ -303,7 +306,10 @@ _cmd_list() {
         fi
         ;;
     esac
-  done <<< "$output"
+  done <<EOF
+$output
+
+EOF
 
   # Handle case with no worktrees (only main)
   if [ "$count" -eq 0 ]; then

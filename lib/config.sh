@@ -30,7 +30,9 @@ _config_load() {
   case "$GWT_SWITCH_HOOK" in /*) ;; *) GWT_SWITCH_HOOK="$root/$GWT_SWITCH_HOOK" ;; esac
 
   if [ -z "$GWT_WORKTREES_DIR" ]; then
-    local repo_root="${$(_repo_root)%/*}"
+    local repo_root
+    repo_root=$(_repo_root)
+    repo_root="${repo_root%/*}"
     GWT_WORKTREES_DIR="$repo_root/${GWT_PROJECT_NAME}_worktrees"
   fi
 }

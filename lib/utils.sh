@@ -72,11 +72,11 @@ _wt_age() {
 _init_colors() {
   C_RESET="" C_GREEN="" C_RED="" C_YELLOW="" C_DIM=""
   if [ -t 1 ]; then
-    C_RESET=$'\033[0m'
-    C_GREEN=$'\033[32m'
-    C_RED=$'\033[31m'
-    C_YELLOW=$'\033[33m'
-    C_DIM=$'\033[90m'
+    C_RESET=$(printf '\033[0m')
+    C_GREEN=$(printf '\033[32m')
+    C_RED=$(printf '\033[31m')
+    C_YELLOW=$(printf '\033[33m')
+    C_DIM=$(printf '\033[90m')
   fi
 }
 
