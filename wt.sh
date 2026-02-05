@@ -3,13 +3,24 @@
 
 # Portable script directory detection
 _wt_get_script_dir() {
-  _src="${BASH_SOURCE[0]:-$0}"
+  # zsh provides %x, bash provides BASH_SOURCE
+  if [ -n "${ZSH_VERSION:-}" ]; then
+    _src="${(%):-%x}"
+  else
+    _src="${BASH_SOURCE[0]}"
+  fi
+  # Resolve symlinks
   while [ -L "$_src" ]; do
-    _dir="$(cd -P "$(dirname "$_src")" && pwd)"
+    _dir="$(dirname "$_src")"
+    if [ "${_dir#/}" = "$_dir" ]; then
+      _dir="$(cd "$_dir" >/dev/null 2>&1; pwd -P)"
+    fi
     _src="$(readlink "$_src")"
     case "$_src" in /*) ;; *) _src="$_dir/$_src" ;; esac
   done
-  cd -P "$(dirname "$_src")" && pwd
+  # Get absolute directory path (subshell to avoid cd side effects, suppress hook output)
+  _dir="$(dirname "$_src")"
+  (cd "$_dir" >/dev/null 2>&1; pwd -P)
 }
 _WT_DIR="${WT_INSTALL_DIR:-$(_wt_get_script_dir)}"
 
