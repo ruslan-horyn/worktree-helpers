@@ -9,10 +9,10 @@ workflows:
   architecture: "not_needed"
   sprint-planning: "docs/sprint-plan-worktree-helpers-2026-02-01.md"
 
-last_updated: "2026-02-03"
-last_workflow: "sprint-status"
+last_updated: "2026-02-05"
+last_workflow: "dev-story"
 
 next_recommended:
-  workflow: "dev-story"
-  reason: "6/8 stories complete. STORY-007 (worktree count warning) or STORY-008 (install/docs) ready."
-  command: "/dev-story STORY-007"
+  workflow: "release"
+  reason: "All 8 stories complete. Sprint 2 finished. Ready for v1.0.0 release."
+  command: "git tag v1.0.0 && git push origin main --tags"

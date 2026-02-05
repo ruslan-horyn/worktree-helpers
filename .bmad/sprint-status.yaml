@@ -43,8 +43,8 @@ sprints:
     end_date: "2026-02-28"
     capacity_points: 17
     committed_points: 17
-    completed_points: 14
-    status: "in_progress"
+    completed_points: 17
+    status: "completed"
     goal: "Complete feature set and prepare for distribution"
     stories:
       - story_id: "STORY-004"
@@ -82,15 +82,16 @@ sprints:
       - story_id: "STORY-008"
         title: "Create install script and documentation"
         points: 5
-        status: "not_started"
+        status: "completed"
+        completion_date: "2026-02-05"
         assigned_to: null
         priority: "must_have"
         blocked_by: ["STORY-001", "STORY-002", "STORY-003", "STORY-004", "STORY-005", "STORY-006", "STORY-007"]
 
 velocity:
   sprint_1: 14
-  sprint_2: null
-  rolling_average: 14
+  sprint_2: 17
+  rolling_average: 15.5
 
 team:
   size: 1
