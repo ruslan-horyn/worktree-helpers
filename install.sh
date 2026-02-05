@@ -103,7 +103,7 @@ else
     rm -rf "$INSTALL_DIR"
   fi
 
-  if ! git clone --depth 1 "$REPO_URL" "$INSTALL_DIR" 2>/dev/null; then
+  if ! git clone --depth 1 -b main "$REPO_URL" "$INSTALL_DIR" 2>/dev/null; then
     error "Failed to clone repository. Check your internet connection and try again."
   fi
 fi
