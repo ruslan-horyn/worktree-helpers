@@ -51,21 +51,17 @@ _current_branch() { git rev-parse --abbrev-ref HEAD 2>/dev/null; }
 _branch_exists() { git show-ref --verify --quiet "refs/heads/$1"; }
 
 # Calculate cutoff timestamp for age-based filtering
-# Usage: _calc_cutoff <day|week|month> <number>
+# Usage: _calc_cutoff <days>
 _calc_cutoff() {
-  local unit="$1" num="$2"
-  case "$unit" in
-    day)   date -v-${num}d +%s 2>/dev/null || date -d "-$num days" +%s ;;
-    week)  date -v-${num}w +%s 2>/dev/null || date -d "-$num weeks" +%s ;;
-    month) date -v-${num}m +%s 2>/dev/null || date -d "-$num months" +%s ;;
-  esac
+  local days="$1"
+  date -v-${days}d +%s 2>/dev/null || date -d "-$days days" +%s
 }
 
 # Get worktree age (modification time of .git directory)
 # Usage: _wt_age <worktree_path>
 _wt_age() {
-  local path="$1"
-  stat -f %m "$path/.git" 2>/dev/null || stat -c %Y "$path/.git" 2>/dev/null
+  local wt_path="$1"
+  stat -f %m "$wt_path/.git" 2>/dev/null || stat -c %Y "$wt_path/.git" 2>/dev/null
 }
 
 # Initialize color variables (only if terminal supports them)
@@ -110,6 +106,6 @@ _wt_warn_count() {
     _init_colors
     echo "" >&2
     echo "${C_YELLOW}Warning: You have $count worktrees (threshold: $threshold)${C_RESET}" >&2
-    echo "${C_DIM}Consider running 'wt -c week 2' to clean up old worktrees${C_RESET}" >&2
+    echo "${C_DIM}Consider running 'wt -c 14' to clean up old worktrees${C_RESET}" >&2
   fi
 }
