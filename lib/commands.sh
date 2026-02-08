@@ -23,23 +23,27 @@ _cmd_dev() {
 _cmd_switch() {
   local input="$1"
   _require_pkg && _repo_root >/dev/null && _config_load || return 1
-  local path; path=$(_wt_resolve "$input" "switch> ") || return 1
-  _run_hook switched "$path" "$(_wt_branch "$path")" "" "$(_main_repo_root)"
+  local wt_path; wt_path=$(_wt_resolve "$input" "switch> ") || return 1
+  _run_hook switched "$wt_path" "$(_wt_branch "$wt_path")" "" "$(_main_repo_root)"
 }
 
 _cmd_remove() {
   local input="$1" force="$2"
   _require_pkg && _repo_root >/dev/null || return 1
-  local path; path=$(_wt_resolve "$input" "remove> ") || return 1
-  [ "$PWD" = "$path" ] && cd "$(_repo_root)"
+  local wt_path; wt_path=$(_wt_resolve "$input" "remove> ") || return 1
+  [ "$PWD" = "$wt_path" ] && cd "$(_repo_root)"
 
   if [ "$force" -ne 1 ]; then
-    printf "Remove '%s'? [y/N] " "$path" >&2; read -r r
+    printf "Remove '%s'? [y/N] " "$wt_path" >&2; read -r r
     case "$r" in y|Y) ;; *) return 1 ;; esac
   fi
 
-  local branch; branch=$(_wt_branch "$path")
-  git worktree remove ${force:+--force} "$path"
+  local branch; branch=$(_wt_branch "$wt_path")
+  if [ "$force" -eq 1 ]; then
+    git worktree remove --force "$wt_path"
+  else
+    git worktree remove "$wt_path"
+  fi
   [ -n "$branch" ] && _branch_exists "$branch" && git branch -D "$branch" 2>/dev/null && _info "Deleted $branch"
 }
 
@@ -69,34 +73,29 @@ _cmd_open() {
 _cmd_lock() {
   local input="$1"
   _require_pkg && _repo_root >/dev/null || return 1
-  local path; path=$(_wt_resolve "$input" "lock> ") || return 1
-  git worktree lock "$path" && _info "Locked $path"
+  local wt_path; wt_path=$(_wt_resolve "$input" "lock> ") || return 1
+  git worktree lock "$wt_path" && _info "Locked $wt_path"
 }
 
 _cmd_unlock() {
   local input="$1"
   _require_pkg && _repo_root >/dev/null || return 1
-  local path; path=$(_wt_resolve "$input" "unlock> ") || return 1
-  git worktree unlock "$path" && _info "Unlocked $path"
+  local wt_path; wt_path=$(_wt_resolve "$input" "unlock> ") || return 1
+  git worktree unlock "$wt_path" && _info "Unlocked $wt_path"
 }
 
 _cmd_clear() {
-  local unit="$1" num="$2" force="$3" dev_only="$4" main_only="$5"
+  local days="$1" force="$2" dev_only="$3" main_only="$4"
   _require_pkg && _repo_root >/dev/null && _config_load || return 1
 
   # Validate arguments
-  if [ -z "$unit" ] || [ -z "$num" ]; then
-    _err "Usage: wt -c <day|week|month> <number>"
+  if [ -z "$days" ]; then
+    _err "Usage: wt -c <days>"
     return 1
   fi
 
-  case "$unit" in
-    day|week|month) ;;
-    *) _err "Invalid unit: $unit (use day, week, or month)"; return 1 ;;
-  esac
-
-  if ! [ "$num" -gt 0 ] 2>/dev/null; then
-    _err "Invalid number: $num (must be positive integer)"
+  if ! [ "$days" -gt 0 ] 2>/dev/null; then
+    _err "Invalid number: $days (must be positive integer)"
     return 1
   fi
 
@@ -108,7 +107,7 @@ _cmd_clear() {
 
   # Calculate cutoff timestamp
   local cutoff
-  cutoff=$(_calc_cutoff "$unit" "$num")
+  cutoff=$(_calc_cutoff "$days")
   if [ -z "$cutoff" ]; then
     _err "Failed to calculate cutoff date"
     return 1
@@ -186,12 +185,14 @@ EOF
   # Warn about locked worktrees
   if [ -n "$locked_skipped" ]; then
     echo "${C_YELLOW}Skipping locked worktrees:${C_RESET}" >&2
-    echo "$locked_skipped" | while IFS= read -r item; do
+    while IFS= read -r item; do
       [ -z "$item" ] && continue
-      local path="${item%%|*}"
+      local wt_path="${item%%|*}"
       local br="${item#*|}"
-      echo "  ${C_DIM}$path${C_RESET} ($br) ${C_RED}[locked]${C_RESET}" >&2
-    done
+      echo "  ${C_DIM}$wt_path${C_RESET} ($br) ${C_RED}[locked]${C_RESET}" >&2
+    done <<EOF
+$locked_skipped
+EOF
     echo "" >&2
   fi
 
@@ -202,15 +203,17 @@ EOF
   fi
 
   # Show list of worktrees to delete
-  echo "Worktrees to remove (older than $num $unit(s)):"
-  echo "$to_delete" | while IFS= read -r item; do
+  echo "Worktrees to remove (older than $days day(s)):"
+  while IFS= read -r item; do
     [ -z "$item" ] && continue
-    local path="${item%%|*}"
+    local wt_path="${item%%|*}"
     local rest="${item#*|}"
     local br="${rest%%|*}"
     local ts="${rest#*|}"
-    echo "  $path ($br) - $(_age_display "$ts")"
-  done
+    echo "  $wt_path ($br) - $(_age_display "$ts")"
+  done <<EOF
+$to_delete
+EOF
   echo ""
 
   # Confirmation prompt (unless -f)
@@ -224,25 +227,26 @@ EOF
   fi
 
   # Delete worktrees
-  local deleted=0
-  echo "$to_delete" | while IFS= read -r item; do
+  while IFS= read -r item; do
     [ -z "$item" ] && continue
-    local path="${item%%|*}"
+    local wt_path="${item%%|*}"
     local rest="${item#*|}"
     local br="${rest%%|*}"
 
     # Change directory if we're in the worktree being removed
-    [ "$PWD" = "$path" ] && cd "$main_root"
+    [ "$PWD" = "$wt_path" ] && cd "$main_root"
 
-    if git worktree remove "$path" 2>/dev/null; then
-      _info "Removed $path"
+    if git worktree remove "$wt_path" 2>/dev/null; then
+      _info "Removed $wt_path"
       if [ -n "$br" ] && [ "$br" != "(detached)" ] && _branch_exists "$br"; then
         git branch -D "$br" 2>/dev/null && _info "Deleted branch $br"
       fi
     else
-      _err "Failed to remove $path"
+      _err "Failed to remove $wt_path"
     fi
-  done
+  done <<EOF
+$to_delete
+EOF
 
   _info "Cleared worktrees"
 }
@@ -322,8 +326,10 @@ _cmd_log() {
   _require_pkg && _repo_root >/dev/null && _config_load || return 1
   [ -z "$feature" ] && feature=$(_current_branch)
   [ "$reflog" -eq 1 ] && { git reflog --date=relative | head -50; return; }
-  local args=""; [ -n "$since" ] && args="--since=$since"; [ -n "$author" ] && args="$args --author=$author"
-  git log --oneline --graph --cherry --no-merges $args "${GWT_MAIN_REF}..${feature}"
+  local since_arg="" author_arg=""
+  [ -n "$since" ] && since_arg="--since=$since"
+  [ -n "$author" ] && author_arg="--author=$author"
+  git log --oneline --graph --cherry --no-merges ${since_arg:+"$since_arg"} ${author_arg:+"$author_arg"} "${GWT_MAIN_REF}..${feature}"
 }
 
 # Backup hook if exists and differs from new content
@@ -405,7 +411,7 @@ Commands:
   -r, --remove [branch]  Remove worktree and branch
   -o, --open [branch]    Open existing branch as worktree (fzf if no arg)
   -l, --list             List worktrees
-  -c, --clear <unit> <n> Clear worktrees older than n units (day/week/month)
+  -c, --clear <days>     Clear worktrees older than n days
   -L, --lock [branch]    Lock worktree
   -U, --unlock [branch]  Unlock worktree
   --init                 Initialize config

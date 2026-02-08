@@ -31,7 +31,7 @@ source "$_WT_DIR/lib/commands.sh"
 
 wt() {
   local action="" arg="" force=0 dev=0 reflog=0 since="" author=""
-  local dev_only=0 main_only=0 clear_unit="" clear_num=""
+  local dev_only=0 main_only=0 clear_days=""
 
   while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -49,8 +49,7 @@ wt() {
                    case "${1:-}" in -*|"") ;; *) arg="$1"; shift ;; esac ;;
       -l|--list)   action="list"; shift ;;
       -c|--clear)  action="clear"; shift
-                   case "${1:-}" in -*|"") ;; *) clear_unit="$1"; shift ;; esac
-                   case "${1:-}" in -*|"") ;; *) clear_num="$1"; shift ;; esac ;;
+                   case "${1:-}" in -*|"") ;; *) clear_days="$1"; shift ;; esac ;;
       --init)      action="init"; shift ;;
       --log)       action="log"; shift
                    case "${1:-}" in -*|"") ;; *) arg="$1"; shift ;; esac ;;
@@ -68,14 +67,14 @@ wt() {
   done
 
   case "${action:-help}" in
-    new)    [ "$dev" -eq 1 ] && _cmd_dev "$arg" || _cmd_new "$arg" ;;
+    new)    if [ "$dev" -eq 1 ]; then _cmd_dev "$arg"; else _cmd_new "$arg"; fi ;;
     switch) _cmd_switch "$arg" ;;
     remove) _cmd_remove "$arg" "$force" ;;
     open)   _cmd_open "$arg" ;;
     lock)   _cmd_lock "$arg" ;;
     unlock) _cmd_unlock "$arg" ;;
     list)   _cmd_list ;;
-    clear)  _cmd_clear "$clear_unit" "$clear_num" "$force" "$dev_only" "$main_only" ;;
+    clear)  _cmd_clear "$clear_days" "$force" "$dev_only" "$main_only" ;;
     init)   _cmd_init ;;
     log)    _cmd_log "$arg" "$reflog" "$since" "$author" ;;
     help)   _cmd_help ;;
