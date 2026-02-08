@@ -12,6 +12,9 @@
     { "type": "ci", "hidden": true },
     { "type": "chore", "hidden": true }
   ],
+  "scripts": {
+    "posttag": "git push origin main && git push origin --tags"
+  },
   "tagPrefix": "v",
   "skip": { "branch": true }
 }
