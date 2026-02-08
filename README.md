@@ -31,11 +31,13 @@ curl -fsSL https://raw.githubusercontent.com/ruslan-horyn/worktree-helpers/main/
 ### Manual installation
 
 1. Clone the repository:
+
    ```bash
    git clone https://github.com/ruslan-horyn/worktree-helpers.git ~/.worktree-helpers
    ```
 
 2. Add to your shell config (`~/.zshrc` or `~/.bashrc`):
+
    ```bash
    source "$HOME/.worktree-helpers/wt.sh"
    ```
@@ -45,16 +47,19 @@ curl -fsSL https://raw.githubusercontent.com/ruslan-horyn/worktree-helpers/main/
 ## Quick Start
 
 1. Navigate to a git repository:
+
    ```bash
    cd ~/projects/my-repo
    ```
 
 2. Initialize worktree-helpers for this project:
+
    ```bash
    wt --init
    ```
 
 3. Create your first worktree:
+
    ```bash
    wt -n feature-branch
    ```
@@ -69,7 +74,7 @@ curl -fsSL https://raw.githubusercontent.com/ruslan-horyn/worktree-helpers/main/
 | `wt -r [branch]` | Remove worktree and delete branch |
 | `wt -o [branch]` | Open existing branch as worktree |
 | `wt -l` | List all worktrees |
-| `wt -c <unit> <n>` | Clear worktrees older than n units |
+| `wt -c <days>` | Clear worktrees older than n days |
 | `wt -L [branch]` | Lock worktree |
 | `wt -U [branch]` | Unlock worktree |
 | `wt --init` | Initialize project configuration |
@@ -103,14 +108,14 @@ wt -r my-feature
 # Remove with force (no confirmation)
 wt -r -f my-feature
 
-# Clear worktrees older than 2 weeks
-wt -c week 2
+# Clear worktrees older than 14 days
+wt -c 14
 
 # Clear old worktrees (force, no confirmation)
-wt -c week 2 -f
+wt -c 14 -f
 
-# Clear only dev-based worktrees older than 1 month
-wt -c month 1 --dev-only
+# Clear only dev-based worktrees older than 30 days
+wt -c 30 --dev-only
 
 # Lock important worktree
 wt -L production-fix
@@ -156,47 +161,39 @@ Configuration is stored in `.worktrees/config.json` in your repository root. Run
 
 ## Hooks
 
-Hooks are bash scripts that run after worktree operations. They receive these arguments:
+Hooks are bash scripts that run automatically after worktree operations:
+
+| Hook | Trigger | Config key |
+|------|---------|------------|
+| `created` | After `wt -n`, `wt -o` (new worktree) | `openCmd` |
+| `switched` | After `wt -s`, `wt -o` (existing worktree) | `switchCmd` |
+
+Both hooks receive these arguments:
 
 | Argument | Description |
 |----------|-------------|
 | `$1` | Worktree path |
 | `$2` | Branch name |
-| `$3` | Base branch (for created hook) |
+| `$3` | Base ref (empty for `switched`) |
 | `$4` | Main repository root |
 
-### Hook Locations
-
-```
-.worktrees/
-  config.json
-  hooks/
-    created.sh    # Runs after creating worktree
-    switched.sh   # Runs after switching worktree
-```
-
-### Example Hook (created.sh)
+### Example (created.sh)
 
 ```bash
 #!/usr/bin/env bash
 cd "$1" || exit 1
-
-# Install dependencies
 npm install
-
-# Open in editor
 code .
 ```
 
-### Hook Symlinking
-
-When you create a new worktree, hooks are automatically symlinked from the main repository. This ensures all worktrees use the same hook scripts without duplication.
+For advanced usage, custom examples, and troubleshooting see [docs/hooks.md](docs/hooks.md).
 
 ## Troubleshooting
 
 ### "Run 'wt --init' first"
 
 You need to initialize worktree-helpers for this repository:
+
 ```bash
 wt --init
 ```
@@ -204,6 +201,7 @@ wt --init
 ### "jq is required"
 
 Install jq:
+
 ```bash
 # macOS
 brew install jq
@@ -218,6 +216,7 @@ sudo dnf install jq
 ### "Install fzf or pass branch"
 
 Either install fzf for interactive selection or provide the branch name directly:
+
 ```bash
 # Install fzf
 brew install fzf  # macOS
@@ -230,11 +229,13 @@ wt -s my-feature
 ### Worktree creation fails
 
 1. Ensure the branch name doesn't already exist:
+
    ```bash
    git branch -a | grep my-branch
    ```
 
 2. Check if worktree directory already exists:
+
    ```bash
    ls -la /path/to/worktrees/
    ```
@@ -244,6 +245,7 @@ wt -s my-feature
 ### Hook not running
 
 1. Ensure the hook is executable:
+
    ```bash
    chmod +x .worktrees/hooks/created.sh
    ```
@@ -257,6 +259,7 @@ This tool expects to be run in a Node.js project directory. Ensure you're in the
 ## Uninstalling
 
 1. Remove the source line from your shell config (`~/.zshrc` or `~/.bashrc`):
+
    ```bash
    # Remove these lines:
    # worktree-helpers
@@ -264,11 +267,13 @@ This tool expects to be run in a Node.js project directory. Ensure you're in the
    ```
 
 2. Remove the installation directory:
+
    ```bash
    rm -rf ~/.worktree-helpers
    ```
 
 3. Optionally, remove project configurations:
+
    ```bash
    rm -rf /path/to/repo/.worktrees
    ```
