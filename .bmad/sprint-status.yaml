@@ -1,8 +1,8 @@
 version: "6.0.0"
 project_name: "worktree-helpers"
 project_level: 1
-current_sprint: 2
-sprint_plan_path: "docs/sprint-plan-worktree-helpers-2026-02-01.md"
+current_sprint: 3
+sprint_plan_path: "docs/sprint-plan-worktree-helpers-2026-02-08.md"
 
 sprints:
   - sprint_number: 1
@@ -88,9 +88,110 @@ sprints:
         priority: "must_have"
         blocked_by: ["STORY-001", "STORY-002", "STORY-003", "STORY-004", "STORY-005", "STORY-006", "STORY-007"]
 
+  - sprint_number: 3
+    start_date: "2026-02-08"
+    end_date: "2026-02-21"
+    capacity_points: 17
+    committed_points: 15
+    completed_points: 0
+    status: "not_started"
+    goal: "Establish quality infrastructure with tests, CI, and essential CLI improvements"
+    stories:
+      - story_id: "STORY-009"
+        title: "Add test suite with BATS"
+        points: 8
+        status: "not_started"
+        assigned_to: null
+        priority: "must_have"
+      - story_id: "STORY-010"
+        title: "Add CI/CD pipeline (shellcheck + tests)"
+        points: 3
+        status: "not_started"
+        assigned_to: null
+        priority: "must_have"
+        blocked_by: ["STORY-009"]
+      - story_id: "STORY-012"
+        title: "Add --version flag"
+        points: 1
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+      - story_id: "STORY-019"
+        title: "Add wt --rename command"
+        points: 3
+        status: "not_started"
+        assigned_to: null
+        priority: "could_have"
+
+  - sprint_number: 4
+    start_date: "2026-02-22"
+    end_date: "2026-03-07"
+    capacity_points: 17
+    committed_points: 13
+    completed_points: 0
+    status: "not_started"
+    goal: "Enhance developer experience with update mechanism, completions, and clear improvements"
+    stories:
+      - story_id: "STORY-013"
+        title: "Add self-update mechanism (wt --update)"
+        points: 5
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+        blocked_by: ["STORY-012"]
+      - story_id: "STORY-014"
+        title: "Add shell completions (bash + zsh)"
+        points: 5
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+      - story_id: "STORY-015"
+        title: "Add more granular clear options"
+        points: 3
+        status: "not_started"
+        assigned_to: null
+        priority: "could_have"
+
+  - sprint_number: 5
+    start_date: "2026-03-08"
+    end_date: "2026-03-21"
+    capacity_points: 17
+    committed_points: 13
+    completed_points: 0
+    status: "not_started"
+    goal: "Polish UX and expand distribution channels"
+    stories:
+      - story_id: "STORY-011"
+        title: "Show dirty/clean status in wt -l"
+        points: 3
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+      - story_id: "STORY-016"
+        title: "Add worktree metadata tracking"
+        points: 5
+        status: "not_started"
+        assigned_to: null
+        priority: "could_have"
+      - story_id: "STORY-017"
+        title: "Create Homebrew formula"
+        points: 3
+        status: "not_started"
+        assigned_to: null
+        priority: "could_have"
+      - story_id: "STORY-018"
+        title: "Create oh-my-zsh / zinit plugin"
+        points: 2
+        status: "not_started"
+        assigned_to: null
+        priority: "could_have"
+
 velocity:
   sprint_1: 14
   sprint_2: 17
+  sprint_3: null
+  sprint_4: null
+  sprint_5: null
   rolling_average: 15.5
 
 team:

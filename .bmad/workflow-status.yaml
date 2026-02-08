@@ -7,12 +7,12 @@ workflows:
   product-brief: "docs/product-brief-worktree-helpers-2026-02-01.md"
   tech-spec: "docs/tech-spec-worktree-helpers-2026-02-01.md"
   architecture: "not_needed"
-  sprint-planning: "docs/sprint-plan-worktree-helpers-2026-02-01.md"
+  sprint-planning: "docs/sprint-plan-worktree-helpers-2026-02-08.md"
 
-last_updated: "2026-02-05"
-last_workflow: "dev-story"
+last_updated: "2026-02-08"
+last_workflow: "sprint-planning"
 
 next_recommended:
-  workflow: "release"
-  reason: "All 8 stories complete. Sprint 2 finished. Ready for v1.0.0 release."
-  command: "git tag v1.0.0 && git push origin main --tags"
+  workflow: "dev-story"
+  reason: "Sprint 3 planned with 4 stories (15 points). Start with STORY-012 (quick win) or STORY-009 (foundational tests)."
+  command: "/dev-story STORY-012"
