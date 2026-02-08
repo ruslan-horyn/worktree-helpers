@@ -100,28 +100,32 @@ sprints:
       - story_id: "STORY-009"
         title: "Add test suite with BATS"
         points: 8
-        status: "not_started"
+        status: "defined"
         assigned_to: null
         priority: "must_have"
+        story_doc: "docs/stories/STORY-009.md"
       - story_id: "STORY-010"
         title: "Add CI/CD pipeline (shellcheck + tests)"
         points: 3
-        status: "not_started"
+        status: "defined"
         assigned_to: null
         priority: "must_have"
         blocked_by: ["STORY-009"]
+        story_doc: "docs/stories/STORY-010.md"
       - story_id: "STORY-012"
         title: "Add --version flag"
         points: 1
-        status: "not_started"
+        status: "defined"
         assigned_to: null
         priority: "should_have"
+        story_doc: "docs/stories/STORY-012.md"
       - story_id: "STORY-019"
         title: "Add wt --rename command"
         points: 3
-        status: "not_started"
+        status: "defined"
         assigned_to: null
         priority: "could_have"
+        story_doc: "docs/stories/STORY-019.md"
 
   - sprint_number: 4
     start_date: "2026-02-22"
