@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1](https://github.com/ruslan-horyn/worktree-helpers/compare/v1.0.0...v1.0.1) (2026-02-08)
+
+
+### Fixed
+
+* resolve shell parsing and scoping bugs ([74a8793](https://github.com/ruslan-horyn/worktree-helpers/commit/74a879333bbcb914fd28c4b17e5e6c02469cc559))
+
+
+### Changed
+
+* simplify wt -c to accept days instead of unit and number ([cb1f575](https://github.com/ruslan-horyn/worktree-helpers/commit/cb1f575193630e351e9d96e0c9835b9f8feddb3e))
+
 ## [1.0.0] - 2026-02-05
 
 ### Added
