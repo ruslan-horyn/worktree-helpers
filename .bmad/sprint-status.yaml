@@ -1,7 +1,7 @@
 version: "6.0.0"
 project_name: "worktree-helpers"
 project_level: 1
-current_sprint: 3
+current_sprint: 4
 sprint_plan_path: "docs/sprint-plan-worktree-helpers-2026-02-08.md"
 
 sprints:
@@ -149,12 +149,12 @@ sprints:
         story_doc: "docs/stories/STORY-020.md"
 
   - sprint_number: 4
-    start_date: "2026-02-22"
-    end_date: "2026-03-07"
+    start_date: "2026-02-09"
+    end_date: "2026-02-22"
     capacity_points: 17
     committed_points: 13
     completed_points: 0
-    status: "not_started"
+    status: "active"
     goal: "Enhance developer experience with update mechanism, completions, and clear improvements"
     stories:
       - story_id: "STORY-013"
@@ -167,15 +167,17 @@ sprints:
       - story_id: "STORY-014"
         title: "Add shell completions (bash + zsh)"
         points: 5
-        status: "not_started"
+        status: "defined"
         assigned_to: null
         priority: "should_have"
+        story_doc: "docs/stories/STORY-014.md"
       - story_id: "STORY-015"
         title: "Add more granular clear options"
         points: 3
-        status: "not_started"
+        status: "defined"
         assigned_to: null
         priority: "could_have"
+        story_doc: "docs/stories/STORY-015.md"
 
   - sprint_number: 5
     start_date: "2026-03-08"

@@ -10,9 +10,9 @@ workflows:
   sprint-planning: "docs/sprint-plan-worktree-helpers-2026-02-08.md"
 
 last_updated: "2026-02-09"
-last_workflow: "dev-story"
+last_workflow: "sprint-planning"
 
 next_recommended:
   workflow: "dev-story"
-  reason: "Sprint 3 complete (17/17 pts). Sprint 4 ready with 3 stories (13 points). Start with STORY-013 (--update) or STORY-014 (completions)."
+  reason: "Sprint 4 active (0/13 pts). 3 stories: STORY-013 (--update, 5pts), STORY-014 (completions, 5pts), STORY-015 (granular clear, 3pts). All unblocked."
   command: "/dev-story STORY-013"
