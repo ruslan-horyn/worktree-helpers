@@ -106,6 +106,7 @@ curl -fsSL https://raw.githubusercontent.com/ruslan-horyn/worktree-helpers/main/
 | `wt --init` | Initialize project configuration |
 | `wt --log [branch]` | Show commits vs main branch |
 | `wt --rename <new-branch>` | Rename current worktree's branch |
+| `wt --uninstall` | Uninstall worktree-helpers |
 | `wt -v` / `wt --version` | Show version |
 | `wt -h` | Show help |
 
@@ -286,6 +287,22 @@ This tool expects to be run in a Node.js project directory. Ensure you're in the
 
 ## Uninstalling
 
+### Automatic (recommended)
+
+```bash
+wt --uninstall
+```
+
+This removes the installation directory and source lines from your shell config. Add `-f` to skip the confirmation prompt.
+
+You can also run the script directly:
+
+```bash
+~/.worktree-helpers/uninstall.sh
+```
+
+### Manual
+
 1. Remove the source line from your shell config (`~/.zshrc` or `~/.bashrc`):
 
    ```bash
@@ -300,11 +317,7 @@ This tool expects to be run in a Node.js project directory. Ensure you're in the
    rm -rf ~/.worktree-helpers
    ```
 
-3. Optionally, remove project configurations:
-
-   ```bash
-   rm -rf /path/to/repo/.worktrees
-   ```
+Project-specific configs (`.worktrees/` in your repos) are not removed automatically. Delete them manually if needed.
 
 ## Releasing
 

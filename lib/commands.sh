@@ -465,6 +465,20 @@ _cmd_rename() {
   _info "Worktree: $new_path"
 }
 
+_cmd_uninstall() {
+  local force="$1"
+  local script="$_WT_DIR/uninstall.sh"
+  if [ ! -f "$script" ]; then
+    _err "uninstall.sh not found in $_WT_DIR"
+    return 1
+  fi
+  if [ "$force" -eq 1 ]; then
+    bash "$script" --force
+  else
+    bash "$script"
+  fi
+}
+
 _cmd_version() {
   local ver=""
   if [ -f "$_WT_DIR/VERSION" ]; then
@@ -492,6 +506,7 @@ Commands:
   --init                 Initialize config
   --log [branch]         Show commits vs main
   --rename <new-branch>  Rename current worktree's branch
+  --uninstall            Uninstall worktree-helpers
   -v, --version          Show version
   -h, --help             This help
 

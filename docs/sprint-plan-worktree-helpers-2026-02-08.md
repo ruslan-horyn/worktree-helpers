@@ -653,7 +653,7 @@ Last updated: 2026-02-09
 - [x] STORY-010 — Add CI/CD pipeline
 - [x] STORY-012 — Add `--version` flag
 - [x] STORY-019 — Add `wt --rename` command
-- [ ] STORY-020 — Add uninstall script
+- [x] STORY-020 — Add uninstall script
 
 **Sprint 4:**
 

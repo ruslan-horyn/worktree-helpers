@@ -9,10 +9,10 @@ workflows:
   architecture: "not_needed"
   sprint-planning: "docs/sprint-plan-worktree-helpers-2026-02-08.md"
 
-last_updated: "2026-02-08"
-last_workflow: "sprint-planning"
+last_updated: "2026-02-09"
+last_workflow: "dev-story"
 
 next_recommended:
   workflow: "dev-story"
-  reason: "Sprint 3 planned with 4 stories (15 points). Start with STORY-012 (quick win) or STORY-009 (foundational tests)."
-  command: "/dev-story STORY-012"
+  reason: "Sprint 3 complete (17/17 pts). Sprint 4 ready with 3 stories (13 points). Start with STORY-013 (--update) or STORY-014 (completions)."
+  command: "/dev-story STORY-013"

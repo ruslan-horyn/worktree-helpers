@@ -86,15 +86,24 @@ sprints:
         completion_date: "2026-02-05"
         assigned_to: null
         priority: "must_have"
-        blocked_by: ["STORY-001", "STORY-002", "STORY-003", "STORY-004", "STORY-005", "STORY-006", "STORY-007"]
+        blocked_by:
+          [
+            "STORY-001",
+            "STORY-002",
+            "STORY-003",
+            "STORY-004",
+            "STORY-005",
+            "STORY-006",
+            "STORY-007",
+          ]
 
   - sprint_number: 3
     start_date: "2026-02-08"
     end_date: "2026-02-21"
     capacity_points: 17
     committed_points: 17
-    completed_points: 12
-    status: "in_progress"
+    completed_points: 17
+    status: "completed"
     goal: "Establish quality infrastructure with tests, CI, and essential CLI improvements"
     stories:
       - story_id: "STORY-009"
@@ -125,14 +134,16 @@ sprints:
       - story_id: "STORY-019"
         title: "Add wt --rename command"
         points: 3
-        status: "defined"
+        status: "completed"
+        completion_date: "2026-02-09"
         assigned_to: null
         priority: "could_have"
         story_doc: "docs/stories/STORY-019.md"
       - story_id: "STORY-020"
         title: "Add uninstall script"
         points: 2
-        status: "defined"
+        status: "completed"
+        completion_date: "2026-02-09"
         assigned_to: null
         priority: "should_have"
         story_doc: "docs/stories/STORY-020.md"
@@ -203,10 +214,10 @@ sprints:
 velocity:
   sprint_1: 14
   sprint_2: 17
-  sprint_3: null
+  sprint_3: 17
   sprint_4: null
   sprint_5: null
-  rolling_average: 15.5
+  rolling_average: 16.0
 
 team:
   size: 1
