@@ -1,5 +1,7 @@
 # worktree-helpers
 
+[![CI](https://github.com/ruslan-horyn/worktree-helpers/actions/workflows/ci.yml/badge.svg)](https://github.com/ruslan-horyn/worktree-helpers/actions/workflows/ci.yml)
+
 A POSIX-compatible shell CLI tool (`wt`) for managing git worktrees with a unified interface, project-specific configuration, and customizable hooks. Works with bash, zsh, and other POSIX-compliant shells.
 
 ## Features

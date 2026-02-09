@@ -3,7 +3,7 @@
 **Epic:** Quality Infrastructure
 **Priority:** Must Have
 **Story Points:** 3
-**Status:** Not Started
+**Status:** Completed
 **Assigned To:** Unassigned
 **Created:** 2026-02-08
 **Sprint:** 3
@@ -183,8 +183,17 @@ Add to the top of `README.md`:
 
 **Status History:**
 - 2026-02-08: Created
+- 2026-02-09: Completed
 
-**Actual Effort:** TBD (will be filled during/after implementation)
+**Actual Effort:** 3 points (matched estimate)
+
+**Implementation Notes:**
+- Created `.shellcheckrc` with project-wide directives (SC2148, SC2034)
+- Fixed 4 SC2164 (cd without exit), 1 SC2155 (declare/assign), 1 SC2086 (quoting), 2 SC2016 (intentional single quotes), 1 SC2129 (grouped redirects)
+- Added inline directives for SC2296 (zsh syntax) and SC1083 (literal braces in @{u})
+- CI workflow with two parallel jobs: shellcheck + BATS tests
+- BATS libraries loaded via git submodules (checkout with `submodules: true`)
+- All 108 tests pass, shellcheck clean at all severity levels
 
 ---
 

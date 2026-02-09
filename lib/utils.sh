@@ -36,6 +36,7 @@ _project_name() {
 _main_branch() {
   git show-ref --verify --quiet refs/remotes/origin/main && { echo "origin/main"; return; }
   git show-ref --verify --quiet refs/remotes/origin/master && { echo "origin/master"; return; }
+  # shellcheck disable=SC1083
   git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || true
 }
 
@@ -54,7 +55,7 @@ _branch_exists() { git show-ref --verify --quiet "refs/heads/$1"; }
 # Usage: _calc_cutoff <days>
 _calc_cutoff() {
   local days="$1"
-  date -v-${days}d +%s 2>/dev/null || date -d "-$days days" +%s
+  date -v-"${days}"d +%s 2>/dev/null || date -d "-$days days" +%s
 }
 
 # Get worktree age (modification time of .git directory)

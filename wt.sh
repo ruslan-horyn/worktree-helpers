@@ -5,6 +5,7 @@
 _wt_get_script_dir() {
   # zsh provides %x, bash provides BASH_SOURCE
   if [ -n "${ZSH_VERSION:-}" ]; then
+    # shellcheck disable=SC2296
     _src="${(%):-%x}"
   else
     _src="${BASH_SOURCE[0]}"
@@ -13,14 +14,14 @@ _wt_get_script_dir() {
   while [ -L "$_src" ]; do
     _dir="$(dirname "$_src")"
     if [ "${_dir#/}" = "$_dir" ]; then
-      _dir="$(cd "$_dir" >/dev/null 2>&1; pwd -P)"
+      _dir="$(cd "$_dir" >/dev/null 2>&1 || exit; pwd -P)"
     fi
     _src="$(readlink "$_src")"
     case "$_src" in /*) ;; *) _src="$_dir/$_src" ;; esac
   done
   # Get absolute directory path (subshell to avoid cd side effects, suppress hook output)
   _dir="$(dirname "$_src")"
-  (cd "$_dir" >/dev/null 2>&1; pwd -P)
+  (cd "$_dir" >/dev/null 2>&1 || exit; pwd -P)
 }
 _WT_DIR="${WT_INSTALL_DIR:-$(_wt_get_script_dir)}"
 

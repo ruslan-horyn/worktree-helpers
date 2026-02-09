@@ -2,7 +2,8 @@
 
 # Symlink hooks from main repo to worktree
 _symlink_hooks() {
-  local src="$(_main_repo_root)/.worktrees/hooks"
+  local src
+  src="$(_main_repo_root)/.worktrees/hooks"
   local dst="$1/.worktrees/hooks"
 
   [ ! -d "$src" ] && return 0

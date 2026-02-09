@@ -1,0 +1,10 @@
+# shellcheck configuration for worktree-helpers
+shell=bash
+
+# Sourced library files don't need shebangs
+# (wt.sh sources lib/*.sh at runtime)
+disable=SC2148
+
+# Color variables defined in utils.sh are used by commands.sh
+# (cross-file usage via source)
+disable=SC2034

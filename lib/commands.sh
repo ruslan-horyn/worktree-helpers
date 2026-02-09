@@ -31,7 +31,7 @@ _cmd_remove() {
   local input="$1" force="$2"
   _require_pkg && _repo_root >/dev/null || return 1
   local wt_path; wt_path=$(_wt_resolve "$input" "remove> ") || return 1
-  [ "$PWD" = "$wt_path" ] && cd "$(_repo_root)"
+  [ "$PWD" = "$wt_path" ] && cd "$(_repo_root)" || true
 
   if [ "$force" -ne 1 ]; then
     printf "Remove '%s'? [y/N] " "$wt_path" >&2; read -r r
@@ -234,7 +234,7 @@ EOF
     local br="${rest%%|*}"
 
     # Change directory if we're in the worktree being removed
-    [ "$PWD" = "$wt_path" ] && cd "$main_root"
+    [ "$PWD" = "$wt_path" ] && cd "$main_root" || true
 
     if git worktree remove "$wt_path" 2>/dev/null; then
       _info "Removed $wt_path"
@@ -369,8 +369,10 @@ _cmd_init() {
   mkdir -p "$root/.worktrees/hooks"
 
   # Default hook contents
+  # shellcheck disable=SC2016
   local created_hook='#!/usr/bin/env bash
 cd "$1" || exit 1'
+  # shellcheck disable=SC2016
   local switched_hook='#!/usr/bin/env bash
 cd "$1" || exit 1'
 

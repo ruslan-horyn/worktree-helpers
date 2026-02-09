@@ -153,9 +153,11 @@ else
   touch "$RC_FILE"
 
   # Add source line with marker
-  echo "" >> "$RC_FILE"
-  echo "$MARKER" >> "$RC_FILE"
-  echo "$SOURCE_LINE" >> "$RC_FILE"
+  {
+    echo ""
+    echo "$MARKER"
+    echo "$SOURCE_LINE"
+  } >> "$RC_FILE"
 
   info "Added to $RC_FILE"
 fi
@@ -163,7 +165,7 @@ fi
 # Step 5: Success message
 echo ""
 echo "╭─────────────────────────────────────────╮"
-echo "│     Installation complete!              │"
+echo "│         Installation complete!          │"
 echo "╰─────────────────────────────────────────╯"
 echo ""
 echo "Next steps:"

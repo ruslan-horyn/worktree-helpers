@@ -600,7 +600,7 @@ Last updated: 2026-02-09
 
 **Sprint 3:**
 - [x] STORY-009 — Add test suite with BATS
-- [ ] STORY-010 — Add CI/CD pipeline
+- [x] STORY-010 — Add CI/CD pipeline
 - [x] STORY-012 — Add `--version` flag
 - [ ] STORY-019 — Add `wt --rename` command
 
