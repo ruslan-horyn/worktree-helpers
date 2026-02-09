@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0](https://github.com/ruslan-horyn/worktree-helpers/compare/v1.0.1...v1.1.0) (2026-02-09)
+
+
+### Added
+
+* add --rename command to rename current worktree's branch ([53a5459](https://github.com/ruslan-horyn/worktree-helpers/commit/53a5459d1fca92f1a8841803b0e57c62bb1bb01d))
+* add --version flag ([92d5505](https://github.com/ruslan-horyn/worktree-helpers/commit/92d5505d85823709e8df5b1e1ee24b91bc13f2dc))
+* add uninstall command and script ([514f147](https://github.com/ruslan-horyn/worktree-helpers/commit/514f147503357e910e05180ca30e04559fb420ba))
+
+
+### Fixed
+
+* resolve ci failures on linux ([29875f4](https://github.com/ruslan-horyn/worktree-helpers/commit/29875f4dcdccacd1cb23f2fb477bffa46a6f6794))
+
 ## [1.0.1](https://github.com/ruslan-horyn/worktree-helpers/compare/v1.0.0...v1.0.1) (2026-02-08)
 
 

@@ -1,6 +1,6 @@
 {
   "name": "worktree-helpers",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "CLI tools for git worktree management",
   "main": "git-worktrees.zsh",
   "scripts": {
