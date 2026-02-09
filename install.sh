@@ -92,7 +92,7 @@ if [ "$LOCAL_INSTALL" -eq 1 ]; then
 
   # Copy files to install directory
   mkdir -p "$INSTALL_DIR"
-  cp -R "$SCRIPT_DIR/wt.sh" "$SCRIPT_DIR/lib" "$INSTALL_DIR/"
+  cp -R "$SCRIPT_DIR/wt.sh" "$SCRIPT_DIR/lib" "$SCRIPT_DIR/VERSION" "$INSTALL_DIR/"
 
 else
   # Remote install: clone from GitHub

@@ -398,6 +398,14 @@ JSON
   _info "Created $cfg"
 }
 
+_cmd_version() {
+  local ver=""
+  if [ -f "$_WT_DIR/VERSION" ]; then
+    read -r ver < "$_WT_DIR/VERSION"
+  fi
+  echo "wt version ${ver:-unknown}"
+}
+
 _cmd_help() {
   cat <<'HELP'
 wt - Git Worktree Helpers
@@ -416,6 +424,7 @@ Commands:
   -U, --unlock [branch]  Unlock worktree
   --init                 Initialize config
   --log [branch]         Show commits vs main
+  -v, --version          Show version
   -h, --help             This help
 
 Flags:

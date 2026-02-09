@@ -596,12 +596,12 @@ Run `/dev-story STORY-012` to start with the quick win (`--version` flag), or `/
 
 ## Progress Tracking
 
-Last updated: 2026-02-08
+Last updated: 2026-02-09
 
 **Sprint 3:**
-- [ ] STORY-009 — Add test suite with BATS
+- [x] STORY-009 — Add test suite with BATS
 - [ ] STORY-010 — Add CI/CD pipeline
-- [ ] STORY-012 — Add `--version` flag
+- [x] STORY-012 — Add `--version` flag
 - [ ] STORY-019 — Add `wt --rename` command
 
 **Sprint 4:**

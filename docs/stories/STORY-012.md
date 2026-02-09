@@ -3,7 +3,7 @@
 **Epic:** Developer Experience
 **Priority:** Should Have
 **Story Points:** 1
-**Status:** Not Started
+**Status:** Completed
 **Assigned To:** Unassigned
 **Created:** 2026-02-08
 **Sprint:** 3
@@ -167,8 +167,15 @@ Currently there is no way to check the installed version of `wt`. Users encounte
 
 **Status History:**
 - 2026-02-08: Created
+- 2026-02-09: Completed
 
-**Actual Effort:** TBD
+**Actual Effort:** 1 point (matched estimate)
+
+**Implementation Notes:**
+- `VERSION` file at repo root as single source of truth
+- `_cmd_version` reads from `$_WT_DIR/VERSION`, falls back to "unknown"
+- `.versionrc.json` bumpFiles keeps VERSION in sync with package.json on release
+- 7 new BATS tests (106 total, 0 regressions)
 
 ---
 
