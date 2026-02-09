@@ -3,7 +3,7 @@
 **Epic:** Quality Infrastructure
 **Priority:** Must Have
 **Story Points:** 8
-**Status:** Not Started
+**Status:** Completed
 **Assigned To:** Unassigned
 **Created:** 2026-02-08
 **Sprint:** 3
@@ -339,8 +339,18 @@ git submodule add https://github.com/bats-core/bats-assert.git test/libs/bats-as
 
 **Status History:**
 - 2026-02-08: Created
+- 2026-02-08: Completed
 
-**Actual Effort:** TBD (will be filled during/after implementation)
+**Actual Effort:** 8 points (matched estimate)
+
+**Implementation Notes:**
+- BATS framework: bats-core, bats-support, bats-assert as git submodules under test/libs/
+- Test helper (test/test_helper.bash): temp dir isolation with symlink resolution for macOS, mock git repo creation with bare origin, config generation, marker hook helpers
+- 99 tests across 14 test files covering all 4 library modules
+- Test files: utils.bats, config.bats, worktree.bats, hooks.bats, cmd_new.bats, cmd_switch.bats, cmd_remove.bats, cmd_open.bats, cmd_lock.bats, cmd_list.bats, cmd_clear.bats, cmd_init.bats, cmd_log.bats, cmd_help.bats, edge_cases.bats
+- All tests use isolated temp directories with real git repos (clone from bare origin)
+- `npm test` runs full suite via test/libs/bats-core/bin/bats
+- Cross-platform: resolves macOS /var -> /private/var symlink for path matching
 
 ---
 

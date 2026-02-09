@@ -93,14 +93,15 @@ sprints:
     end_date: "2026-02-21"
     capacity_points: 17
     committed_points: 15
-    completed_points: 0
-    status: "not_started"
+    completed_points: 8
+    status: "in_progress"
     goal: "Establish quality infrastructure with tests, CI, and essential CLI improvements"
     stories:
       - story_id: "STORY-009"
         title: "Add test suite with BATS"
         points: 8
-        status: "defined"
+        status: "completed"
+        completion_date: "2026-02-08"
         assigned_to: null
         priority: "must_have"
         story_doc: "docs/stories/STORY-009.md"

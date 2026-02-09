@@ -4,6 +4,7 @@
   "description": "CLI tools for git worktree management",
   "main": "git-worktrees.zsh",
   "scripts": {
+    "test": "test/libs/bats-core/bin/bats test/",
     "prepare": "husky",
     "commitlint": "commitlint --edit",
     "release": "commit-and-tag-version",
