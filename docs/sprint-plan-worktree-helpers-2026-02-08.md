@@ -3,8 +3,8 @@
 **Date:** 2026-02-08
 **Scrum Master:** Ruslan Horyn
 **Project Level:** 1
-**Total Stories:** 11
-**Total Points:** 41
+**Total Stories:** 12
+**Total Points:** 43
 **Planned Sprints:** 3
 **Status:** Ready for Implementation
 
@@ -15,8 +15,8 @@
 This sprint plan covers the v1.1 development cycle for worktree-helpers. Building on the solid v1.0 foundation (8 stories, 31 points delivered across 2 sprints), v1.1 focuses on three themes: **quality infrastructure** (tests, CI, linting), **developer experience** (shell completions, self-update, granular clear), and **polish** (dirty/clean status, metadata, packaging). The work is organized into 3 balanced sprints.
 
 **Key Metrics:**
-- Total Stories: 11
-- Total Points: 41
+- Total Stories: 12
+- Total Points: 43
 - Sprints: 3
 - Team Capacity: 17 points per sprint
 - Historical Velocity: 15.5 points/sprint (rolling average)
@@ -391,6 +391,7 @@ STORY-016 (metadata - 5pts)         ── independent
 STORY-017 (Homebrew - 3pts)         ── independent
 STORY-018 (zsh plugin - 2pts)       ── independent (benefits from 014)
 STORY-019 (--rename - 3pts)         ── independent
+STORY-020 (uninstall - 2pts)        ── independent
 ```
 
 **Parallel work opportunities:**
@@ -414,14 +415,16 @@ STORY-019 (--rename - 3pts)         ── independent
 | STORY-010 | Add CI/CD pipeline (shellcheck + tests) | 3 | Must Have | STORY-009 |
 | STORY-012 | Add `--version` flag | 1 | Should Have | — |
 | STORY-019 | Add `wt --rename` command | 3 | Could Have | — |
+| STORY-020 | Add uninstall script | 2 | Should Have | — |
 
-**Total:** 15 points / 17 capacity (88% utilization)
+**Total:** 17 points / 17 capacity (100% utilization)
 
 **Sprint 3 Deliverables:**
 - Full test suite with BATS
 - GitHub Actions CI (shellcheck + tests)
 - `wt -v` / `wt --version`
 - `wt --rename <new-branch>` from current worktree
+- `wt --uninstall` / `uninstall.sh` script
 
 **Implementation Order:**
 1. STORY-012 (1pt, quick win — Day 1)
@@ -433,7 +436,7 @@ STORY-019 (--rename - 3pts)         ── independent
 - Test suite may take longer than estimated if edge cases are complex
 - Shellcheck may reveal issues requiring fixes
 
-**Buffer:** 2 points for shellcheck fixes and test edge cases
+**Buffer:** 0 points (at full capacity)
 
 ---
 
@@ -517,6 +520,7 @@ STORY-019 (--rename - 3pts)         ── independent
 | Distribution: Homebrew | STORY-017 | 5 |
 | Distribution: zsh plugin | STORY-018 | 5 |
 | UX: Branch rename | STORY-019 | 3 |
+| DX: Clean uninstall | STORY-020 | 3 |
 
 ---
 
@@ -551,6 +555,7 @@ Sprint 3:
   STORY-019 (--rename) ─── no deps
   STORY-009 (tests) ─── no deps
   STORY-010 (CI/CD) ─── blocked by STORY-009
+  STORY-020 (uninstall) ── no deps
 
 Sprint 4:
   STORY-013 (--update) ─── blocked by STORY-012
@@ -603,6 +608,7 @@ Last updated: 2026-02-09
 - [x] STORY-010 — Add CI/CD pipeline
 - [x] STORY-012 — Add `--version` flag
 - [ ] STORY-019 — Add `wt --rename` command
+- [ ] STORY-020 — Add uninstall script
 
 **Sprint 4:**
 - [ ] STORY-013 — Add self-update mechanism

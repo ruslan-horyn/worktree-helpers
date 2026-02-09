@@ -54,6 +54,8 @@ wt() {
       --init)      action="init"; shift ;;
       --log)       action="log"; shift
                    case "${1:-}" in -*|"") ;; *) arg="$1"; shift ;; esac ;;
+      --rename)    action="rename"; shift
+                   case "${1:-}" in -*|"") ;; *) arg="$1"; shift ;; esac ;;
       -v|--version) action="version"; shift ;;
       -h|--help)   action="help"; shift ;;
       -f|--force)  force=1; shift ;;
@@ -79,6 +81,7 @@ wt() {
     clear)  _cmd_clear "$clear_days" "$force" "$dev_only" "$main_only" ;;
     init)   _cmd_init ;;
     log)    _cmd_log "$arg" "$reflog" "$since" "$author" ;;
+    rename) _cmd_rename "$arg" "$force" ;;
     version) _cmd_version ;;
     help)   _cmd_help ;;
   esac

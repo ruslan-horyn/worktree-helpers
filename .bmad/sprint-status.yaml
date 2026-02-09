@@ -92,8 +92,8 @@ sprints:
     start_date: "2026-02-08"
     end_date: "2026-02-21"
     capacity_points: 17
-    committed_points: 15
-    completed_points: 8
+    committed_points: 17
+    completed_points: 12
     status: "in_progress"
     goal: "Establish quality infrastructure with tests, CI, and essential CLI improvements"
     stories:
@@ -108,7 +108,8 @@ sprints:
       - story_id: "STORY-010"
         title: "Add CI/CD pipeline (shellcheck + tests)"
         points: 3
-        status: "defined"
+        status: "completed"
+        completion_date: "2026-02-09"
         assigned_to: null
         priority: "must_have"
         blocked_by: ["STORY-009"]
@@ -116,7 +117,8 @@ sprints:
       - story_id: "STORY-012"
         title: "Add --version flag"
         points: 1
-        status: "defined"
+        status: "completed"
+        completion_date: "2026-02-09"
         assigned_to: null
         priority: "should_have"
         story_doc: "docs/stories/STORY-012.md"
@@ -127,6 +129,13 @@ sprints:
         assigned_to: null
         priority: "could_have"
         story_doc: "docs/stories/STORY-019.md"
+      - story_id: "STORY-020"
+        title: "Add uninstall script"
+        points: 2
+        status: "defined"
+        assigned_to: null
+        priority: "should_have"
+        story_doc: "docs/stories/STORY-020.md"
 
   - sprint_number: 4
     start_date: "2026-02-22"

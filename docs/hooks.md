@@ -9,6 +9,12 @@ Hooks are user-defined bash scripts that `wt` runs automatically after worktree 
 | **created** | After `wt -n` (new worktree) and `wt -o` (open branch as new worktree) | `openCmd` |
 | **switched** | After `wt -s` (switch worktree) and `wt -o` (when worktree already exists) | `switchCmd` |
 
+### Commands that do **not** trigger hooks
+
+`wt --rename <new-branch>` renames the current worktree's branch and moves the worktree directory to match, but it does **not** fire any hooks. The rename is an in-place operation — the worktree contents, uncommitted changes, and stash all remain untouched; only the branch name and directory path change. Because no new worktree is created and no context switch occurs, neither the `created` nor the `switched` hook applies.
+
+Other commands that skip hooks: `wt -l` (list), `wt -c` (clear), `wt -r` (remove), `wt -L`/`-U` (lock/unlock), `wt --log`, `wt --init`.
+
 ## Arguments
 
 Both hooks receive the same positional arguments:
@@ -164,6 +170,7 @@ code .
 ### Hook not running
 
 1. **Not executable** — ensure the hook file has execute permission:
+
    ```bash
    chmod +x .worktrees/hooks/created.sh
    chmod +x .worktrees/hooks/switched.sh

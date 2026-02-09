@@ -400,6 +400,71 @@ JSON
   _info "Created $cfg"
 }
 
+_cmd_rename() {
+  local new_branch="$1" force="$2"
+  _require_pkg && _repo_root >/dev/null && _config_load || return 1
+
+  # Validate: new branch name required
+  [ -z "$new_branch" ] && { _err "Usage: wt --rename <new-branch>"; return 1; }
+
+  # Detect current branch
+  local old_branch
+  old_branch=$(_current_branch) || { _err "Cannot detect current branch"; return 1; }
+  [ "$old_branch" = "HEAD" ] && { _err "Cannot rename a detached HEAD"; return 1; }
+
+  # Validate: must be in a worktree (not main repo)
+  local main_root
+  main_root=$(_main_repo_root)
+  [ "$PWD" = "$main_root" ] && { _err "Cannot rename from main repo — switch to a worktree first"; return 1; }
+
+  # Validate: not renaming a protected branch
+  local main_local="${GWT_MAIN_REF#*/}"
+  [ "$old_branch" = "$main_local" ] && { _err "Cannot rename the main branch"; return 1; }
+
+  # Same name check
+  [ "$old_branch" = "$new_branch" ] && { _err "New name is the same as current name"; return 1; }
+
+  # Validate: new branch doesn't already exist
+  _branch_exists "$new_branch" && { _err "Branch '$new_branch' already exists"; return 1; }
+
+  # Confirmation prompt (unless -f)
+  if [ "$force" -ne 1 ]; then
+    printf "Rename '%s' → '%s'? [y/N] " "$old_branch" "$new_branch" >&2
+    read -r r
+    case "$r" in y|Y) ;; *) _info "Aborted"; return 1 ;; esac
+  fi
+
+  # 1. Rename the branch
+  git branch -m "$old_branch" "$new_branch" || { _err "Failed to rename branch"; return 1; }
+
+  # 2. Move the worktree directory
+  local old_path="$PWD"
+  local parent_dir="${old_path%/*}"
+  local new_path="$parent_dir/$new_branch"
+
+  if [ "$old_path" != "$new_path" ]; then
+    if ! git worktree move "$old_path" "$new_path"; then
+      # Rollback branch rename on failure
+      git branch -m "$new_branch" "$old_branch"
+      _err "Failed to move worktree"
+      return 1
+    fi
+    cd "$new_path" || return 1
+  fi
+
+  # 3. Update remote tracking (if remote branch exists)
+  if git show-ref --verify --quiet "refs/remotes/origin/$old_branch"; then
+    git branch -u "origin/$old_branch" "$new_branch" 2>/dev/null
+  fi
+
+  # 4. Update branch remote/merge config
+  git config "branch.$new_branch.remote" "origin" 2>/dev/null
+  git config "branch.$new_branch.merge" "refs/heads/$new_branch" 2>/dev/null
+
+  _info "Renamed '$old_branch' → '$new_branch'"
+  _info "Worktree: $new_path"
+}
+
 _cmd_version() {
   local ver=""
   if [ -f "$_WT_DIR/VERSION" ]; then
@@ -426,6 +491,7 @@ Commands:
   -U, --unlock [branch]  Unlock worktree
   --init                 Initialize config
   --log [branch]         Show commits vs main
+  --rename <new-branch>  Rename current worktree's branch
   -v, --version          Show version
   -h, --help             This help
 
