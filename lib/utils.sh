@@ -62,7 +62,7 @@ _calc_cutoff() {
 # Usage: _wt_age <worktree_path>
 _wt_age() {
   local wt_path="$1"
-  stat -f %m "$wt_path/.git" 2>/dev/null || stat -c %Y "$wt_path/.git" 2>/dev/null
+  stat -c %Y "$wt_path/.git" 2>/dev/null || stat -f %m "$wt_path/.git" 2>/dev/null
 }
 
 # Initialize color variables (only if terminal supports them)

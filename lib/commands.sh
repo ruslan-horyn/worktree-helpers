@@ -31,7 +31,7 @@ _cmd_remove() {
   local input="$1" force="$2"
   _require_pkg && _repo_root >/dev/null || return 1
   local wt_path; wt_path=$(_wt_resolve "$input" "remove> ") || return 1
-  [ "$PWD" = "$wt_path" ] && cd "$(_repo_root)" || true
+  if [ "$PWD" = "$wt_path" ]; then cd "$(_repo_root)" || true; fi
 
   if [ "$force" -ne 1 ]; then
     printf "Remove '%s'? [y/N] " "$wt_path" >&2; read -r r
@@ -234,7 +234,7 @@ EOF
     local br="${rest%%|*}"
 
     # Change directory if we're in the worktree being removed
-    [ "$PWD" = "$wt_path" ] && cd "$main_root" || true
+    if [ "$PWD" = "$wt_path" ]; then cd "$main_root" || true; fi
 
     if git worktree remove "$wt_path" 2>/dev/null; then
       _info "Removed $wt_path"
