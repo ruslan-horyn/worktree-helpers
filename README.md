@@ -2,25 +2,49 @@
 
 [![CI](https://github.com/ruslan-horyn/worktree-helpers/actions/workflows/ci.yml/badge.svg)](https://github.com/ruslan-horyn/worktree-helpers/actions/workflows/ci.yml)
 
-A POSIX-compatible shell CLI tool (`wt`) for managing git worktrees with a unified interface, project-specific configuration, and customizable hooks. Works with bash, zsh, and other POSIX-compliant shells.
+A POSIX-compatible shell CLI tool (`wt`) for managing git worktrees. One command, simple flags, zero friction.
+
+> **Documentation:** [Hooks reference](docs/hooks.md)
+
+## Why?
+
+Every time you switch branches the traditional way (`git stash` + `git checkout`), you risk
+stash conflicts, forgotten stashes, and lost work. Git worktrees solve this by giving each
+branch its own directory — but native `git worktree` commands are verbose and offer no
+automation.
+
+**The real pain:** even with worktrees, every new branch means manually running `npm install`,
+copying `.env` files, opening your editor, starting services. Every. Single. Time.
+
+**worktree-helpers** wraps git worktrees into a single `wt` command with:
+
+- **Automated hooks** — define your setup once in `created.sh`, and it runs automatically on
+  every `wt -n` / `wt -o`. Dependencies installed, editor opened, services started — hands-free.
+- **One-command switching** — `wt -s` fires your `switched.sh` hook to restore context
+  (reinstall if lockfile changed, reopen editor, etc.)
+- **Zero-friction cleanup** — `wt -c 14` removes all worktrees older than 14 days along with
+  their branches.
+
+The time saved compounds across every branch switch. No more manual setup, no more forgotten
+stashes, no more broken context.
 
 ## Features
 
 - Single `wt` command with intuitive flags
 - Create worktrees from main or dev branches
+- Automated hooks on create and switch (install deps, open editor, copy env files)
+- Hook symlinking — all worktrees share the same hook scripts
 - Interactive selection with fzf integration
-- Project-specific configuration per repository
-- Customizable hooks (on create/switch)
-- Hook symlinking from main repo to worktrees
-- Age-based worktree cleanup
+- Age-based worktree cleanup with filters (`--dev-only`, `--main-only`)
 - Lock/unlock worktree protection
-- Colored output with status indicators
+- Branch rename without recreating worktree (`--rename`)
+- Project-specific configuration per repository
 
 ## Requirements
 
 - **git** (required)
-- **jq** (required) - for JSON config parsing
-- **fzf** (optional) - for interactive worktree/branch selection
+- **jq** (required) — JSON config parsing
+- **fzf** (optional) — interactive worktree/branch selection
 
 ## Installation
 
@@ -81,6 +105,8 @@ curl -fsSL https://raw.githubusercontent.com/ruslan-horyn/worktree-helpers/main/
 | `wt -U [branch]` | Unlock worktree |
 | `wt --init` | Initialize project configuration |
 | `wt --log [branch]` | Show commits vs main branch |
+| `wt --rename <new-branch>` | Rename current worktree's branch |
+| `wt -v` / `wt --version` | Show version |
 | `wt -h` | Show help |
 
 ### Examples
@@ -311,6 +337,20 @@ git push --follow-tags origin main
 | `npm run release:minor` | Force minor version bump |
 | `npm run release:major` | Force major version bump |
 | `npm run release:dry` | Preview without making changes |
+
+## Roadmap
+
+This project is actively developed. Upcoming features:
+
+- [ ] **Shell completions** — tab completion for bash and zsh (flags, branch names, worktree paths)
+- [ ] **Self-update** — `wt --update` with non-blocking version check
+- [ ] **Granular clear** — `wt -c --merged`, `--pattern <glob>`, `--dry-run`
+- [ ] **Dirty/clean status** — `wt -l` shows uncommitted changes per worktree
+- [ ] **Worktree metadata** — annotate worktrees with notes and see creation dates
+- [ ] **Homebrew formula** — `brew install worktree-helpers`
+- [ ] **oh-my-zsh / zinit plugin** — one-liner plugin installation
+
+See [sprint plan](docs/sprint-plan-worktree-helpers-2026-02-08.md) for details and timeline.
 
 ## License
 

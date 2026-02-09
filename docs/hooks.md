@@ -1,12 +1,43 @@
 # Hooks
 
-Hooks are user-defined bash scripts that `wt` runs automatically after worktree operations. They let you automate setup tasks like installing dependencies, opening your editor, copying environment files, or running migrations.
+Every time you create a worktree or switch to one, there's repetitive setup: `npm install`,
+copy `.env`, open your editor, start services. Hooks eliminate this entirely.
+
+Hooks are bash scripts that `wt` runs automatically after worktree operations. Define your
+setup once — it runs on every `wt -n`, `wt -o`, and `wt -s`. One-time config, zero repetition.
+
+## Quick start
+
+1. **Initialize** (creates hook templates):
+
+   ```bash
+   wt --init
+   ```
+
+2. **Edit the created hook** — add your setup commands:
+
+   ```bash
+   # .worktrees/hooks/created.sh
+   #!/usr/bin/env bash
+   cd "$1" || exit 1
+   npm install
+   code .
+   ```
+
+3. **Create a worktree** — the hook runs automatically:
+
+   ```bash
+   wt -n my-feature
+   # -> creates worktree, then runs created.sh (npm install + code .)
+   ```
+
+That's it. Read on for the full reference.
 
 ## Hook types
 
 | Hook | Trigger | Config key |
 |------|---------|------------|
-| **created** | After `wt -n` (new worktree) and `wt -o` (open branch as new worktree) | `openCmd` |
+| **created** | After `wt -n` / `wt -n -d` (new worktree) and `wt -o` (open branch as new worktree) | `openCmd` |
 | **switched** | After `wt -s` (switch worktree) and `wt -o` (when worktree already exists) | `switchCmd` |
 
 ### Commands that do **not** trigger hooks
@@ -14,6 +45,51 @@ Hooks are user-defined bash scripts that `wt` runs automatically after worktree 
 `wt --rename <new-branch>` renames the current worktree's branch and moves the worktree directory to match, but it does **not** fire any hooks. The rename is an in-place operation — the worktree contents, uncommitted changes, and stash all remain untouched; only the branch name and directory path change. Because no new worktree is created and no context switch occurs, neither the `created` nor the `switched` hook applies.
 
 Other commands that skip hooks: `wt -l` (list), `wt -c` (clear), `wt -r` (remove), `wt -L`/`-U` (lock/unlock), `wt --log`, `wt --init`.
+
+## Hook lifecycle
+
+The diagrams below show where each hook fires. All steps before the bold line have already
+completed by the time your script runs.
+
+### `wt -n <branch>` / `wt -n -d [name]`
+
+```
+validate args & config
+  -> mkdir worktrees dir
+  -> git worktree add -b <branch> <path> <ref>
+  -> configure branch tracking (remote + merge)
+  -> symlink .worktrees/hooks/ into worktree
+  -> git fetch <ref>
+  -> **run created hook** ($1=path, $2=branch, $3=ref, $4=root)
+  -> warn if worktree count exceeds threshold
+```
+
+### `wt -o <branch>` — branch has no worktree yet
+
+```
+validate args & config
+  -> git fetch origin
+  -> git worktree add <path> <branch>
+  -> symlink .worktrees/hooks/ into worktree
+  -> **run created hook** ($1=path, $2=branch, $3=branch, $4=root)
+  -> warn if worktree count exceeds threshold
+```
+
+### `wt -o <branch>` — worktree already exists
+
+```
+validate args & config
+  -> detect existing worktree path
+  -> **run switched hook** ($1=path, $2=branch, $3="", $4=root)
+```
+
+### `wt -s [branch]`
+
+```
+validate args & config
+  -> resolve worktree path (from arg or fzf)
+  -> **run switched hook** ($1=path, $2=branch, $3="", $4=root)
+```
 
 ## Arguments
 
@@ -27,6 +103,16 @@ Both hooks receive the same positional arguments:
 | `$4` | Main repository root | `/home/user/projects/my-app` |
 
 For `switched` hooks, `$3` is always an empty string.
+
+### `$3` (base ref) by command
+
+| Command | Hook | `$3` value | Example |
+|---------|------|-----------|---------|
+| `wt -n <branch>` | created | `GWT_MAIN_REF` from config | `origin/main` |
+| `wt -n -d [name]` | created | `GWT_DEV_REF` from config | `origin/release-next` |
+| `wt -o <branch>` (new) | created | branch name itself | `feature-login` |
+| `wt -o <branch>` (existing) | switched | empty string | |
+| `wt -s [branch]` | switched | empty string | |
 
 ## Execution environment
 
