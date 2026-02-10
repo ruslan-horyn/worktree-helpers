@@ -213,6 +213,20 @@ sprints:
         assigned_to: null
         priority: "could_have"
 
+backlog:
+  - story_id: "STORY-021"
+    title: "Improve wt --init UX: colorized output, hook suggestions, auto .gitignore"
+    points: 3
+    status: "backlog"
+    assigned_to: null
+    priority: "should_have"
+  - story_id: "STORY-022"
+    title: "Improve wt --init worktrees path prompt: tab completion, rename to Worktrees path, default suffix"
+    points: 2
+    status: "backlog"
+    assigned_to: null
+    priority: "should_have"
+
 velocity:
   sprint_1: 14
   sprint_2: 17
