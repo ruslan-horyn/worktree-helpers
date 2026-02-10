@@ -152,10 +152,10 @@ sprints:
     start_date: "2026-02-09"
     end_date: "2026-02-22"
     capacity_points: 17
-    committed_points: 13
+    committed_points: 20
     completed_points: 0
     status: "active"
-    goal: "Enhance developer experience with update mechanism, completions, and clear improvements"
+    goal: "Enhance developer experience with update mechanism, completions, clear improvements, and init UX"
     stories:
       - story_id: "STORY-013"
         title: "Add self-update mechanism (wt --update)"
@@ -164,20 +164,41 @@ sprints:
         assigned_to: null
         priority: "should_have"
         blocked_by: ["STORY-012"]
+        story_doc: "docs/stories/STORY-013.md"
       - story_id: "STORY-014"
         title: "Add shell completions (bash + zsh)"
         points: 5
-        status: "defined"
+        status: "not_started"
         assigned_to: null
         priority: "should_have"
         story_doc: "docs/stories/STORY-014.md"
       - story_id: "STORY-015"
         title: "Add more granular clear options"
         points: 3
-        status: "defined"
+        status: "not_started"
         assigned_to: null
         priority: "could_have"
         story_doc: "docs/stories/STORY-015.md"
+      - story_id: "STORY-021"
+        title: "Improve wt --init UX: colorized output, hook suggestions, auto .gitignore"
+        points: 3
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+      - story_id: "STORY-022"
+        title: "Improve wt --init worktrees path prompt: tab completion, rename to Worktrees path, default suffix"
+        points: 2
+        status: "defined"
+        assigned_to: null
+        priority: "should_have"
+        story_doc: "docs/stories/STORY-022.md"
+      - story_id: "STORY-023"
+        title: "Add --from/-b flag to wt -n for custom base branch"
+        points: 2
+        status: "defined"
+        assigned_to: null
+        priority: "should_have"
+        story_doc: "docs/stories/STORY-023.md"
 
   - sprint_number: 5
     start_date: "2026-03-08"
@@ -213,25 +234,7 @@ sprints:
         assigned_to: null
         priority: "could_have"
 
-backlog:
-  - story_id: "STORY-021"
-    title: "Improve wt --init UX: colorized output, hook suggestions, auto .gitignore"
-    points: 3
-    status: "backlog"
-    assigned_to: null
-    priority: "should_have"
-  - story_id: "STORY-022"
-    title: "Improve wt --init worktrees path prompt: tab completion, rename to Worktrees path, default suffix"
-    points: 2
-    status: "backlog"
-    assigned_to: null
-    priority: "should_have"
-  - story_id: "STORY-023"
-    title: "Add --from/-b flag to wt -n for custom base branch"
-    points: 2
-    status: "backlog"
-    assigned_to: null
-    priority: "should_have"
+backlog: []
 
 velocity:
   sprint_1: 14
