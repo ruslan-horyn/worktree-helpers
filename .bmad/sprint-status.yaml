@@ -226,6 +226,12 @@ backlog:
     status: "backlog"
     assigned_to: null
     priority: "should_have"
+  - story_id: "STORY-023"
+    title: "Add --from/-b flag to wt -n for custom base branch"
+    points: 2
+    status: "backlog"
+    assigned_to: null
+    priority: "should_have"
 
 velocity:
   sprint_1: 14
