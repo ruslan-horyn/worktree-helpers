@@ -153,7 +153,7 @@ sprints:
     end_date: "2026-02-22"
     capacity_points: 17
     committed_points: 20
-    completed_points: 0
+    completed_points: 2
     status: "active"
     goal: "Enhance developer experience with update mechanism, completions, clear improvements, and init UX"
     stories:
@@ -195,7 +195,8 @@ sprints:
       - story_id: "STORY-023"
         title: "Add --from/-b flag to wt -n for custom base branch"
         points: 2
-        status: "defined"
+        status: "completed"
+        completion_date: "2026-02-11"
         assigned_to: null
         priority: "should_have"
         story_doc: "docs/stories/STORY-023.md"

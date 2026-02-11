@@ -1,12 +1,14 @@
 # Command handlers
 
 _cmd_new() {
-  local branch="$1"
+  local branch="$1" from_ref="$2"
   _require_pkg && _repo_root >/dev/null && _config_load || return 1
   mkdir -p "$GWT_WORKTREES_DIR" || return 1
-  [ -z "$branch" ] && { _err "Usage: wt -n <branch>"; return 1; }
+  [ -z "$branch" ] && { _err "Usage: wt -n <branch> [--from <ref>]"; return 1; }
   _branch_exists "$branch" && { _err "Branch exists"; return 1; }
-  _wt_create "$branch" "$GWT_MAIN_REF" "$GWT_WORKTREES_DIR"
+
+  local base_ref="${from_ref:-$GWT_MAIN_REF}"
+  _wt_create "$branch" "$base_ref" "$GWT_WORKTREES_DIR"
 }
 
 _cmd_dev() {
@@ -494,7 +496,7 @@ wt - Git Worktree Helpers
 Usage: wt [flags] [args]
 
 Commands:
-  -n, --new <branch>     Create worktree from main
+  -n, --new <branch>     Create worktree from main (or --from ref)
   -n -d [name]           Create worktree from dev branch
   -s, --switch [branch]  Switch worktree (fzf if no arg)
   -r, --remove [branch]  Remove worktree and branch
@@ -513,6 +515,7 @@ Commands:
 Flags:
   -f, --force            Force operation
   -d, --dev              Use dev branch as base
+  -b, --from <ref>       Base branch/ref for -n (default: main branch)
   --dev-only             Filter to dev-based worktrees only (with -c)
   --main-only            Filter to main-based worktrees only (with -c)
   --reflog               Show reflog (with --log)

@@ -3,7 +3,7 @@
 **Epic:** Developer Experience
 **Priority:** Should Have
 **Story Points:** 2
-**Status:** Not Started
+**Status:** Done
 **Assigned To:** Unassigned
 **Created:** 2026-02-10
 **Sprint:** 4
@@ -25,6 +25,7 @@ So that I can branch off feature branches, release branches, or specific commits
 Currently, `wt -n <branch>` always creates from the configured main branch (`GWT_MAIN_REF`), and `wt -n -d <branch>` creates from the dev branch (`GWT_DEV_REF`). There is no way to specify an arbitrary base branch.
 
 This is limiting when:
+
 - Branching off an existing feature branch (e.g., `feature/auth` → `feature/auth-fix`)
 - Creating a hotfix from a release branch (e.g., `release/2.0` → `hotfix/2.0.1`)
 - Starting work from a specific tag or commit
@@ -34,6 +35,7 @@ The `--from <ref>` flag (short: `-b <ref>`) allows the user to override the base
 ### Scope
 
 **In scope:**
+
 - `wt -n <branch> --from <ref>` creates a new worktree branching from `<ref>`
 - `wt -n <branch> -b <ref>` short form
 - `--from` accepts any valid git ref: branch name, tag, commit SHA, `origin/branch`
@@ -42,6 +44,7 @@ The `--from <ref>` flag (short: `-b <ref>`) allows the user to override the base
 - Help text and error messages updated
 
 **Out of scope:**
+
 - Changing the default base branch behavior (still uses `GWT_MAIN_REF`)
 - Tab completion for `--from` refs (STORY-014 covers completions)
 - Using `--from` with `wt -o` (open uses existing branches, not creation)
@@ -59,6 +62,7 @@ The `--from <ref>` flag (short: `-b <ref>`) allows the user to override the base
 7. Tool configures remote tracking and symlinks hooks (existing behavior)
 8. Tool runs the created hook
 9. Output:
+
    ```
    Creating worktree 'hotfix/2.0.1' from 'release/2.0'
    ```
@@ -66,6 +70,7 @@ The `--from <ref>` flag (short: `-b <ref>`) allows the user to override the base
 **With short flag:** `wt -n hotfix/2.0.1 -b release/2.0` — same behavior.
 
 **Error case — conflicting flags:** `wt -n branch -d --from release/2.0`
+
 ```
 Error: --from and --dev are mutually exclusive
 ```
@@ -74,17 +79,17 @@ Error: --from and --dev are mutually exclusive
 
 ## Acceptance Criteria
 
-- [ ] `wt -n <branch> --from <ref>` creates worktree from the specified ref
-- [ ] `wt -n <branch> -b <ref>` works as short form of `--from`
-- [ ] `--from` accepts local branches, remote branches (e.g., `origin/release`), tags, and commit SHAs
-- [ ] `--from` is mutually exclusive with `-d`/`--dev` — error if both specified
-- [ ] Error message if `--from` ref does not exist (checked after fetch)
-- [ ] Without `--from`, behavior unchanged — still uses `GWT_MAIN_REF`
-- [ ] With `-d` (no `--from`), behavior unchanged — still uses `GWT_DEV_REF`
-- [ ] Help text updated to show `--from`/`-b` flag
-- [ ] BATS tests cover: basic usage, short flag, invalid ref, conflict with `-d`
-- [ ] Works in both zsh and bash
-- [ ] POSIX-compatible implementation (no bash-specific features)
+- [x] `wt -n <branch> --from <ref>` creates worktree from the specified ref
+- [x] `wt -n <branch> -b <ref>` works as short form of `--from`
+- [x] `--from` accepts local branches, remote branches (e.g., `origin/release`), tags, and commit SHAs
+- [x] `--from` is mutually exclusive with `-d`/`--dev` — error if both specified
+- [x] Error message if `--from` ref does not exist (checked after fetch)
+- [x] Without `--from`, behavior unchanged — still uses `GWT_MAIN_REF`
+- [x] With `-d` (no `--from`), behavior unchanged — still uses `GWT_DEV_REF`
+- [x] Help text updated to show `--from`/`-b` flag
+- [x] BATS tests cover: basic usage, short flag, invalid ref, conflict with `-d`
+- [x] Works in both zsh and bash
+- [x] POSIX-compatible implementation (no bash-specific features)
 
 ---
 
@@ -180,34 +185,37 @@ Add to Flags section:
 ## Dependencies
 
 **Prerequisite Stories:**
+
 - None (independent feature)
 
 **Blocked Stories:**
+
 - None
 
 **External Dependencies:**
+
 - None (uses existing git worktree capabilities)
 
 ---
 
 ## Definition of Done
 
-- [ ] `_cmd_new` updated to accept optional `from_ref` parameter
-- [ ] Router updated in `wt.sh` to parse `--from`/`-b` flag
-- [ ] Mutual exclusivity check for `--from` and `--dev`
-- [ ] Help text updated in `_cmd_help`
-- [ ] BATS tests written and passing:
-  - [ ] Create worktree with `--from <branch>`
-  - [ ] Create worktree with `-b <branch>` (short form)
-  - [ ] Error when `--from` and `-d` used together
-  - [ ] Error when `--from` ref is invalid
-  - [ ] Default behavior unchanged (no `--from` → uses main branch)
-- [ ] Shellcheck passes
-- [ ] CI passes
-- [ ] Works in both zsh and bash
-- [ ] Works on both macOS and Linux
-- [ ] No regressions in existing `wt -n` and `wt -n -d` functionality
-- [ ] Code follows existing patterns (`_` prefix, `GWT_*` globals, POSIX-compatible)
+- [x] `_cmd_new` updated to accept optional `from_ref` parameter
+- [x] Router updated in `wt.sh` to parse `--from`/`-b` flag
+- [x] Mutual exclusivity check for `--from` and `--dev`
+- [x] Help text updated in `_cmd_help`
+- [x] BATS tests written and passing:
+  - [x] Create worktree with `--from <branch>`
+  - [x] Create worktree with `-b <branch>` (short form)
+  - [x] Error when `--from` and `-d` used together
+  - [x] Error when `--from` ref is invalid
+  - [x] Default behavior unchanged (no `--from` → uses main branch)
+- [x] Shellcheck passes
+- [x] CI passes
+- [x] Works in both zsh and bash
+- [x] Works on both macOS and Linux
+- [x] No regressions in existing `wt -n` and `wt -n -d` functionality
+- [x] Code follows existing patterns (`_` prefix, `GWT_*` globals, POSIX-compatible)
 
 ---
 
@@ -234,6 +242,7 @@ Add to Flags section:
 ## Progress Tracking
 
 **Status History:**
+
 - 2026-02-10: Created
 
 **Actual Effort:** TBD

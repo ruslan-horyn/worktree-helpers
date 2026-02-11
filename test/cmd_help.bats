@@ -27,4 +27,5 @@ teardown() {
   assert_output --partial "--init"
   assert_output --partial "--log"
   assert_output --partial "--help"
+  assert_output --partial "--from"
 }

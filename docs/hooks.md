@@ -109,6 +109,7 @@ For `switched` hooks, `$3` is always an empty string.
 | Command | Hook | `$3` value | Example |
 |---------|------|-----------|---------|
 | `wt -n <branch>` | created | `GWT_MAIN_REF` from config | `origin/main` |
+| `wt -n <branch> --from <ref>` | created | user-specified `<ref>` | `release/2.0` |
 | `wt -n -d [name]` | created | `GWT_DEV_REF` from config | `origin/release-next` |
 | `wt -o <branch>` (new) | created | branch name itself | `feature-login` |
 | `wt -o <branch>` (existing) | switched | empty string | |

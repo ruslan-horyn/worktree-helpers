@@ -32,7 +32,7 @@ source "$_WT_DIR/lib/commands.sh"
 
 wt() {
   local action="" arg="" force=0 dev=0 reflog=0 since="" author=""
-  local dev_only=0 main_only=0 clear_days=""
+  local dev_only=0 main_only=0 clear_days="" from_ref=""
 
   while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -66,13 +66,19 @@ wt() {
       --reflog)    reflog=1; shift ;;
       --since)     shift; since="$1"; shift ;;
       --author)    shift; author="$1"; shift ;;
+      -b|--from)   shift; from_ref="$1"; shift ;;
       -*)          _err "Unknown: $1"; return 1 ;;
       *)           [ -z "$arg" ] && arg="$1"; shift ;;
     esac
   done
 
   case "${action:-help}" in
-    new)    if [ "$dev" -eq 1 ]; then _cmd_dev "$arg"; else _cmd_new "$arg"; fi ;;
+    new)    if [ "$dev" -eq 1 ] && [ -n "$from_ref" ]; then
+              _err "--from and --dev are mutually exclusive"; return 1
+            fi
+            if [ "$dev" -eq 1 ]; then _cmd_dev "$arg"
+            else _cmd_new "$arg" "$from_ref"; fi
+            ;;
     switch) _cmd_switch "$arg" ;;
     remove) _cmd_remove "$arg" "$force" ;;
     open)   _cmd_open "$arg" ;;

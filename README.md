@@ -95,6 +95,7 @@ curl -fsSL https://raw.githubusercontent.com/ruslan-horyn/worktree-helpers/main/
 | Command | Description |
 |---------|-------------|
 | `wt -n <branch>` | Create worktree from main branch |
+| `wt -n <branch> --from <ref>` | Create worktree from custom ref |
 | `wt -n -d [name]` | Create worktree from dev branch |
 | `wt -s [branch]` | Switch to worktree (fzf picker if no arg) |
 | `wt -r [branch]` | Remove worktree and delete branch |
@@ -115,6 +116,10 @@ curl -fsSL https://raw.githubusercontent.com/ruslan-horyn/worktree-helpers/main/
 ```bash
 # Create a new feature worktree from main
 wt -n my-feature
+
+# Create a worktree from a specific branch/ref
+wt -n hotfix/2.0.1 --from release/2.0
+wt -n my-fix -b origin/staging
 
 # Create a worktree from dev branch (with suffix)
 wt -n -d my-feature    # creates my-feature_RN
