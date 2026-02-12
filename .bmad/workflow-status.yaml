@@ -9,10 +9,10 @@ workflows:
   architecture: "not_needed"
   sprint-planning: "docs/sprint-plan-worktree-helpers-2026-02-08.md"
 
-last_updated: "2026-02-10"
-last_workflow: "sprint-planning"
+last_updated: "2026-02-12"
+last_workflow: "create-story"
 
 next_recommended:
   workflow: "dev-story"
-  reason: "Sprint 4 active (0/20 pts). 6 stories: STORY-013 (--update, 5pts), STORY-014 (completions, 5pts), STORY-015 (granular clear, 3pts), STORY-021 (init UX, 3pts), STORY-022 (init path, 2pts), STORY-023 (--from flag, 2pts). All unblocked."
-  command: "/dev-story STORY-013"
+  reason: "Sprint 4 active (2/20 pts done). STORY-023 done. Next: STORY-024 (race condition, 3pts), STORY-025 (open existing UX, 5pts), STORY-026 (remove worktreesDir, 3pts), STORY-022 (init path, 2pts), STORY-015 (granular clear, 3pts). All unblocked."
+  command: "/dev-story STORY-024"

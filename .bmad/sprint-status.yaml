@@ -152,10 +152,64 @@ sprints:
     start_date: "2026-02-09"
     end_date: "2026-02-22"
     capacity_points: 17
-    committed_points: 23
+    committed_points: 20
     completed_points: 2
     status: "active"
-    goal: "Enhance developer experience with update mechanism, completions, clear improvements, and init UX"
+    goal: "Fix core reliability issues, improve existing branch UX, and polish init/clear workflows"
+    stories:
+      - story_id: "STORY-023"
+        title: "Add --from/-b flag to wt -n for custom base branch"
+        points: 2
+        status: "completed"
+        completion_date: "2026-02-11"
+        assigned_to: null
+        priority: "should_have"
+        story_doc: "docs/stories/STORY-023.md"
+      - story_id: "STORY-024"
+        title: "Fix race condition in concurrent worktree creation"
+        points: 3
+        status: "defined"
+        assigned_to: null
+        priority: "must_have"
+        story_doc: "docs/stories/STORY-024.md"
+      - story_id: "STORY-025"
+        title: "Improve UX when opening worktree from existing branch"
+        points: 5
+        status: "defined"
+        assigned_to: null
+        priority: "must_have"
+        story_doc: "docs/stories/STORY-025.md"
+      - story_id: "STORY-026"
+        title: "Remove worktreesDir from config, always auto-derive path"
+        points: 3
+        status: "defined"
+        assigned_to: null
+        priority: "must_have"
+        story_doc: "docs/stories/STORY-026.md"
+      - story_id: "STORY-022"
+        title: "Improve wt --init worktrees path prompt"
+        points: 2
+        status: "defined"
+        assigned_to: null
+        priority: "should_have"
+        blocked_by: ["STORY-026"]
+        story_doc: "docs/stories/STORY-022.md"
+      - story_id: "STORY-015"
+        title: "Add more granular clear options"
+        points: 3
+        status: "not_started"
+        assigned_to: null
+        priority: "could_have"
+        story_doc: "docs/stories/STORY-015.md"
+
+  - sprint_number: 5
+    start_date: "2026-02-23"
+    end_date: "2026-03-08"
+    capacity_points: 17
+    committed_points: 15
+    completed_points: 0
+    status: "not_started"
+    goal: "Enhance developer experience with update mechanism and completions"
     stories:
       - story_id: "STORY-013"
         title: "Add self-update mechanism (wt --update)"
@@ -172,57 +226,28 @@ sprints:
         assigned_to: null
         priority: "should_have"
         story_doc: "docs/stories/STORY-014.md"
-      - story_id: "STORY-015"
-        title: "Add more granular clear options"
-        points: 3
-        status: "not_started"
-        assigned_to: null
-        priority: "could_have"
-        story_doc: "docs/stories/STORY-015.md"
-      - story_id: "STORY-021"
-        title: "Improve wt --init UX: colorized output, hook suggestions, auto .gitignore"
-        points: 3
-        status: "not_started"
-        assigned_to: null
-        priority: "should_have"
-      - story_id: "STORY-022"
-        title: "Improve wt --init worktrees path prompt: tab completion, rename to Worktrees path, default suffix"
-        points: 2
-        status: "defined"
-        assigned_to: null
-        priority: "should_have"
-        story_doc: "docs/stories/STORY-022.md"
-      - story_id: "STORY-023"
-        title: "Add --from/-b flag to wt -n for custom base branch"
-        points: 2
-        status: "completed"
-        completion_date: "2026-02-11"
-        assigned_to: null
-        priority: "should_have"
-        story_doc: "docs/stories/STORY-023.md"
-      - story_id: "STORY-024"
-        title: "Fix race condition in concurrent worktree creation"
-        points: 3
-        status: "defined"
-        assigned_to: null
-        priority: "must_have"
-        story_doc: "docs/stories/STORY-024.md"
-
-  - sprint_number: 5
-    start_date: "2026-03-08"
-    end_date: "2026-03-21"
-    capacity_points: 17
-    committed_points: 13
-    completed_points: 0
-    status: "not_started"
-    goal: "Polish UX and expand distribution channels"
-    stories:
       - story_id: "STORY-011"
         title: "Show dirty/clean status in wt -l"
         points: 3
         status: "not_started"
         assigned_to: null
         priority: "should_have"
+      - story_id: "STORY-018"
+        title: "Create oh-my-zsh / zinit plugin"
+        points: 2
+        status: "not_started"
+        assigned_to: null
+        priority: "could_have"
+
+  - sprint_number: 6
+    start_date: "2026-03-09"
+    end_date: "2026-03-22"
+    capacity_points: 17
+    committed_points: 8
+    completed_points: 0
+    status: "not_started"
+    goal: "Polish UX and expand distribution channels"
+    stories:
       - story_id: "STORY-016"
         title: "Add worktree metadata tracking"
         points: 5
@@ -235,14 +260,14 @@ sprints:
         status: "not_started"
         assigned_to: null
         priority: "could_have"
-      - story_id: "STORY-018"
-        title: "Create oh-my-zsh / zinit plugin"
-        points: 2
-        status: "not_started"
-        assigned_to: null
-        priority: "could_have"
 
-backlog: []
+backlog:
+  - story_id: "STORY-021"
+    title: "Improve wt --init UX: colorized output, hook suggestions, auto .gitignore"
+    points: 3
+    status: "not_started"
+    assigned_to: null
+    priority: "should_have"
 
 velocity:
   sprint_1: 14

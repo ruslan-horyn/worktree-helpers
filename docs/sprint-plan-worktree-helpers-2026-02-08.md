@@ -16,12 +16,12 @@ This sprint plan covers the v1.1 development cycle for worktree-helpers. Buildin
 
 **Key Metrics:**
 
-- Total Stories: 12
-- Total Points: 43
-- Sprints: 3
+- Total Stories: 17
+- Total Points: 58
+- Sprints: 4
 - Team Capacity: 17 points per sprint
 - Historical Velocity: 15.5 points/sprint (rolling average)
-- Target Completion: 6 weeks (3 sprints × 2 weeks)
+- Target Completion: 8 weeks (4 sprints × 2 weeks)
 
 ---
 
@@ -400,6 +400,74 @@ So that I can fix typos or update branch names without recreating the worktree
 
 ---
 
+### STORY-022: Improve wt --init worktrees path prompt
+
+**Phase:** Developer Experience
+**Priority:** Should Have
+**Points:** 2
+
+**User Story:**
+As a developer
+I want `wt --init` to suggest a clearer default worktrees directory path
+So that the initial setup is more intuitive
+
+**Dependencies:** None
+
+---
+
+### STORY-023: Add `--from`/`-b` flag to `wt -n` for custom base branch
+
+**Phase:** Developer Experience
+**Priority:** Should Have
+**Points:** 2
+**Status:** Done
+
+**User Story:**
+As a developer
+I want to specify a custom base branch when creating a new worktree
+So that I can branch off any ref, not just main or dev
+
+**Dependencies:** None
+
+---
+
+### STORY-024: Fix race condition in concurrent worktree creation
+
+**Phase:** Core Reliability
+**Priority:** Must Have
+**Points:** 3
+
+**User Story:**
+As a developer
+I want concurrent `wt -n` calls to not fail with config lock errors
+So that I can safely open multiple worktrees in parallel
+
+**Dependencies:** None
+
+---
+
+### STORY-025: Improve UX when opening worktree from existing branch
+
+**Phase:** Developer Experience
+**Priority:** Must Have
+**Points:** 5
+
+**User Story:**
+As a developer using `wt`
+I want clear guidance and correct behavior when working with existing branches
+So that I don't waste time debugging cryptic errors and can quickly open worktrees from branches that already exist
+
+**Acceptance Criteria:**
+
+- [ ] `wt -n <existing-branch>` suggests `wt -o <branch>` instead of bare "Branch exists"
+- [ ] `_wt_open` passes `origin/<branch>` as base ref to hook (not bare branch name)
+- [ ] After worktree creation, `_wt_open` fast-forwards to `origin/<branch>` if available
+- [ ] Fast-forward is non-fatal (warning only)
+
+**Dependencies:** None
+
+---
+
 ## Dependency Graph
 
 ```
@@ -417,14 +485,12 @@ STORY-017 (Homebrew - 3pts)         ── independent
 STORY-018 (zsh plugin - 2pts)       ── independent (benefits from 014)
 STORY-019 (--rename - 3pts)         ── independent
 STORY-020 (uninstall - 2pts)        ── independent
+STORY-022 (--init path - 2pts)      ── independent
+STORY-023 (--from flag - 2pts)      ── independent (DONE)
+STORY-024 (race condition - 3pts)   ── independent
+STORY-025 (open existing - 5pts)    ── independent
+STORY-026 (remove worktreesDir - 3pts) ── independent
 ```
-
-**Parallel work opportunities:**
-
-- STORY-009, 012, 014, 015, 019 can all start on Day 1
-- STORY-010 starts after STORY-009 completes
-- STORY-013 starts after STORY-012 completes
-- Sprint 5 stories are all independent — can be done in any order
 
 ---
 
@@ -470,9 +536,52 @@ STORY-020 (uninstall - 2pts)        ── independent
 
 ---
 
-### Sprint 4 (Weeks 7-8) — 13/17 points
+### Sprint 4 (Weeks 7-8) — 17/17 points
 
-**Goal:** Enhance developer experience with update mechanism, completions, and clear improvements
+**Goal:** Fix core reliability issues, improve existing branch UX, and polish init/clear workflows
+
+**Stories:**
+
+| Story ID | Title | Points | Priority | Status |
+|----------|-------|--------|----------|--------|
+| STORY-023 | Add `--from`/`-b` flag to `wt -n` | 2 | Should Have | Done |
+| STORY-024 | Fix race condition in concurrent worktree creation | 3 | Must Have | Not Started |
+| STORY-025 | Improve UX when opening worktree from existing branch | 5 | Must Have | Not Started |
+| STORY-026 | Remove worktreesDir from config, always auto-derive | 3 | Must Have | Not Started |
+| STORY-022 | Improve `wt --init` worktrees path prompt | 2 | Should Have | Not Started |
+| STORY-015 | Add more granular clear options | 3 | Could Have | Not Started |
+
+**Total:** 18 points remaining + 2 done = 20 points committed
+
+**Sprint 4 Deliverables:**
+
+- `wt -n --from <ref>` custom base branch (done)
+- Race condition fix for concurrent worktree creation
+- Better error messages when branch exists + hook fetch fix + FF after open
+- Remove `worktreesDir` from config, always auto-derive path
+- Improved `--init` path prompt
+- `--merged`, `--pattern`, `--dry-run` flags for `wt -c`
+
+**Implementation Order:**
+
+1. STORY-024 (3pts — Days 1-2, Must Have bug fix)
+2. STORY-025 (5pts — Days 2-5, Must Have UX fix)
+3. STORY-026 (3pts — Days 5-7, Must Have simplification + bug fix)
+4. STORY-022 (2pts — Days 7-8)
+5. STORY-015 (3pts — Days 8-10)
+
+**Risks:**
+
+- STORY-025 FF logic has edge cases (diverged branches, no remote)
+- STORY-024 config lock retry needs cross-platform testing
+
+**Buffer:** 2 points (STORY-023 already done)
+
+---
+
+### Sprint 5 (Weeks 9-10) — 15/17 points
+
+**Goal:** Enhance developer experience with update mechanism and completions
 
 **Stories:**
 
@@ -480,32 +589,35 @@ STORY-020 (uninstall - 2pts)        ── independent
 |----------|-------|--------|----------|------------|
 | STORY-013 | Add self-update mechanism (`wt --update`) | 5 | Should Have | STORY-012 |
 | STORY-014 | Add shell completions (bash + zsh) | 5 | Should Have | — |
-| STORY-015 | Add more granular clear options | 3 | Could Have | — |
+| STORY-011 | Show dirty/clean status in `wt -l` | 3 | Should Have | — |
+| STORY-018 | Create oh-my-zsh / zinit plugin | 2 | Could Have | — |
 
-**Total:** 13 points / 17 capacity (76% utilization)
+**Total:** 15 points / 17 capacity (88% utilization)
 
-**Sprint 4 Deliverables:**
+**Sprint 5 Deliverables:**
 
 - Non-blocking update check + `wt --update`
 - Tab completion for bash and zsh
-- `--merged`, `--pattern`, `--dry-run` flags for `wt -c`
+- Dirty/clean indicators in `wt -l`
+- oh-my-zsh / zinit plugin
 
 **Implementation Order:**
 
 1. STORY-013 (5pts — Days 1-4)
 2. STORY-014 (5pts — Days 1-5, parallel with 013)
-3. STORY-015 (3pts — Days 5-7)
+3. STORY-011 (3pts — Days 5-7)
+4. STORY-018 (2pts — Days 7-8, benefits from 014)
 
 **Risks:**
 
 - Update mechanism has network/API complexity
 - Completion systems differ significantly between bash and zsh
 
-**Buffer:** 4 points for unexpected complexity
+**Buffer:** 2 points for unexpected complexity
 
 ---
 
-### Sprint 5 (Weeks 9-10) — 13/17 points
+### Sprint 6 (Weeks 11-12) — 8/17 points
 
 **Goal:** Polish UX and expand distribution channels
 
@@ -513,33 +625,27 @@ STORY-020 (uninstall - 2pts)        ── independent
 
 | Story ID | Title | Points | Priority | Blocked By |
 |----------|-------|--------|----------|------------|
-| STORY-011 | Show dirty/clean status in `wt -l` | 3 | Should Have | — |
 | STORY-016 | Add worktree metadata tracking | 5 | Could Have | — |
 | STORY-017 | Create Homebrew formula | 3 | Could Have | — |
-| STORY-018 | Create oh-my-zsh / zinit plugin | 2 | Could Have | — |
 
-**Total:** 13 points / 17 capacity (76% utilization)
+**Total:** 8 points / 17 capacity (47% utilization)
 
-**Sprint 5 Deliverables:**
+**Sprint 6 Deliverables:**
 
-- Dirty/clean indicators in `wt -l`
 - Worktree notes and creation dates
 - `brew install` support
-- oh-my-zsh / zinit plugin
 
 **Implementation Order:**
 
-1. STORY-011 (3pts — Days 1-2)
-2. STORY-016 (5pts — Days 2-5)
-3. STORY-017 (3pts — Days 5-7)
-4. STORY-018 (2pts — Days 7-8)
+1. STORY-016 (5pts — Days 1-4)
+2. STORY-017 (3pts — Days 4-6)
 
 **Risks:**
 
 - Homebrew tap requires separate repo setup
 - Metadata storage may need design iteration
 
-**Buffer:** 4 points for packaging edge cases
+**Buffer:** 9 points — room for new stories or spillover
 
 ---
 
@@ -547,18 +653,23 @@ STORY-020 (uninstall - 2pts)        ── independent
 
 | Requirement Source | Story | Sprint |
 |--------------------|-------|--------|
-| v1.1 scope: Worktree status (dirty/clean) | STORY-011 | 5 |
-| v1.1 scope: Update mechanism | STORY-013 | 4 |
-| v1.1 scope: Granular clear options | STORY-015 | 4 |
 | Repo gap: No test suite | STORY-009 | 3 |
 | Repo gap: No CI/CD | STORY-010 | 3 |
 | Codebase: Missing --version | STORY-012 | 3 |
-| UX: Shell completions | STORY-014 | 4 |
-| UX: Worktree metadata | STORY-016 | 5 |
-| Distribution: Homebrew | STORY-017 | 5 |
-| Distribution: zsh plugin | STORY-018 | 5 |
 | UX: Branch rename | STORY-019 | 3 |
 | DX: Clean uninstall | STORY-020 | 3 |
+| DX: Custom base branch for -n | STORY-023 | 4 (Done) |
+| Core: Race condition fix | STORY-024 | 4 |
+| UX: Existing branch worktree flow | STORY-025 | 4 |
+| Core: Remove worktreesDir, auto-derive | STORY-026 | 4 |
+| DX: Init path prompt | STORY-022 | 4 |
+| v1.1 scope: Granular clear options | STORY-015 | 4 |
+| v1.1 scope: Update mechanism | STORY-013 | 5 |
+| UX: Shell completions | STORY-014 | 5 |
+| v1.1 scope: Worktree status (dirty/clean) | STORY-011 | 5 |
+| Distribution: zsh plugin | STORY-018 | 5 |
+| UX: Worktree metadata | STORY-016 | 6 |
+| Distribution: Homebrew | STORY-017 | 6 |
 
 ---
 
@@ -592,23 +703,30 @@ STORY-020 (uninstall - 2pts)        ── independent
 **Internal Story Dependencies:**
 
 ```
-Sprint 3:
-  STORY-012 (--version) ─── no deps
-  STORY-019 (--rename) ─── no deps
-  STORY-009 (tests) ─── no deps
-  STORY-010 (CI/CD) ─── blocked by STORY-009
-  STORY-020 (uninstall) ── no deps
+Sprint 3 (COMPLETE):
+  STORY-012 (--version) ─── no deps ✓
+  STORY-019 (--rename) ─── no deps ✓
+  STORY-009 (tests) ─── no deps ✓
+  STORY-010 (CI/CD) ─── blocked by STORY-009 ✓
+  STORY-020 (uninstall) ── no deps ✓
 
-Sprint 4:
-  STORY-013 (--update) ─── blocked by STORY-012
-  STORY-014 (completions) ─── no deps
+Sprint 4 (CURRENT):
+  STORY-023 (--from flag) ─── no deps ✓ DONE
+  STORY-024 (race condition) ─── no deps
+  STORY-025 (open existing branch UX) ─── no deps
+  STORY-026 (remove worktreesDir) ─── no deps
+  STORY-022 (--init path) ─── no deps
   STORY-015 (granular clear) ─── no deps
 
 Sprint 5:
+  STORY-013 (--update) ─── blocked by STORY-012
+  STORY-014 (completions) ─── no deps
   STORY-011 (dirty status) ─── no deps
+  STORY-018 (zsh plugin) ─── no deps (benefits from STORY-014)
+
+Sprint 6:
   STORY-016 (metadata) ─── no deps
   STORY-017 (Homebrew) ─── no deps
-  STORY-018 (zsh plugin) ─── no deps (benefits from STORY-014)
 ```
 
 ---
@@ -630,9 +748,9 @@ For a story to be considered complete:
 
 ## Next Steps
 
-**Immediate:** Begin Sprint 3
+**Immediate:** Continue Sprint 4
 
-Run `/dev-story STORY-012` to start with the quick win (`--version` flag), or `/create-story STORY-009` for detailed test suite planning.
+Run `/bmad:dev-story STORY-024` to fix the race condition, or `/bmad:dev-story STORY-025` to improve the existing branch UX.
 
 **Sprint cadence:**
 
@@ -645,28 +763,36 @@ Run `/dev-story STORY-012` to start with the quick win (`--version` flag), or `/
 
 ## Progress Tracking
 
-Last updated: 2026-02-09
+Last updated: 2026-02-12
 
-**Sprint 3:**
+**Sprint 3 (COMPLETE — 17/17 pts):**
 
-- [x] STORY-009 — Add test suite with BATS
-- [x] STORY-010 — Add CI/CD pipeline
-- [x] STORY-012 — Add `--version` flag
-- [x] STORY-019 — Add `wt --rename` command
-- [x] STORY-020 — Add uninstall script
+- [x] STORY-009 — Add test suite with BATS (8pts)
+- [x] STORY-010 — Add CI/CD pipeline (3pts)
+- [x] STORY-012 — Add `--version` flag (1pt)
+- [x] STORY-019 — Add `wt --rename` command (3pts)
+- [x] STORY-020 — Add uninstall script (2pts)
 
-**Sprint 4:**
+**Sprint 4 (CURRENT — 2/17 pts done):**
 
-- [ ] STORY-013 — Add self-update mechanism
-- [ ] STORY-014 — Add shell completions
-- [ ] STORY-015 — Add more granular clear options
+- [x] STORY-023 — Add `--from`/`-b` flag to `wt -n` (2pts)
+- [ ] STORY-024 — Fix race condition in concurrent worktree creation (3pts)
+- [ ] STORY-025 — Improve UX when opening worktree from existing branch (5pts)
+- [ ] STORY-026 — Remove worktreesDir from config, always auto-derive (3pts)
+- [ ] STORY-022 — Improve `wt --init` worktrees path prompt (2pts)
+- [ ] STORY-015 — Add more granular clear options (3pts)
 
 **Sprint 5:**
 
-- [ ] STORY-011 — Show dirty/clean status in `wt -l`
-- [ ] STORY-016 — Add worktree metadata tracking
-- [ ] STORY-017 — Create Homebrew formula
-- [ ] STORY-018 — Create oh-my-zsh / zinit plugin
+- [ ] STORY-013 — Add self-update mechanism (5pts)
+- [ ] STORY-014 — Add shell completions (5pts)
+- [ ] STORY-011 — Show dirty/clean status in `wt -l` (3pts)
+- [ ] STORY-018 — Create oh-my-zsh / zinit plugin (2pts)
+
+**Sprint 6:**
+
+- [ ] STORY-016 — Add worktree metadata tracking (5pts)
+- [ ] STORY-017 — Create Homebrew formula (3pts)
 
 ---
 
