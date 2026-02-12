@@ -152,7 +152,7 @@ sprints:
     start_date: "2026-02-09"
     end_date: "2026-02-22"
     capacity_points: 17
-    committed_points: 20
+    committed_points: 23
     completed_points: 2
     status: "active"
     goal: "Enhance developer experience with update mechanism, completions, clear improvements, and init UX"
@@ -200,6 +200,13 @@ sprints:
         assigned_to: null
         priority: "should_have"
         story_doc: "docs/stories/STORY-023.md"
+      - story_id: "STORY-024"
+        title: "Fix race condition in concurrent worktree creation"
+        points: 3
+        status: "defined"
+        assigned_to: null
+        priority: "must_have"
+        story_doc: "docs/stories/STORY-024.md"
 
   - sprint_number: 5
     start_date: "2026-03-08"
