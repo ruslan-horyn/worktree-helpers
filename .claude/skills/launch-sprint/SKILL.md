@@ -6,13 +6,13 @@ description: >
   or wants to create worktrees and start Claude Code orchestrator sessions
   for multiple sprint stories simultaneously. Accepts story numbers as arguments
   (e.g., "23 22 15").
-version: 0.1.0
+version: 0.2.0
 ---
 
 # Launch Sprint Stories
 
-Orchestrate parallel sprint story development by creating git worktrees and launching
-autonomous Claude Code sessions — one per story — in separate Warp terminal tabs.
+Orchestrate parallel sprint story development by creating git worktrees and opening
+Warp terminal tabs — one per story — each running the `sprint-orchestrator` skill.
 
 ## Usage
 
@@ -20,8 +20,8 @@ autonomous Claude Code sessions — one per story — in separate Warp terminal 
 /launch-sprint 23 22 15
 ```
 
-Creates worktrees for STORY-023, STORY-022, STORY-015 and opens Warp tabs
-with the orchestrator prompt for each.
+Creates worktrees for STORY-023, STORY-022, STORY-015 and opens Warp tabs with
+`/sprint-orchestrator` for each.
 
 ## Argument Parsing
 
@@ -39,7 +39,7 @@ Normalize all to `STORY-XXX` format (zero-padded to 3 digits).
 ### Step 1 — Parse & Validate
 
 1. Parse story numbers from arguments into a list of `STORY-XXX` IDs
-2. Read `references/orchestrator-prompt.md` (bundled in this skill) and locate the `### Branch Mapping` table
+2. Read `references/sprint-plan.md` (bundled in this skill) and locate the `### Branch Mapping` table
 3. For each requested story, extract the branch name from the table
 4. If a story is not in the map, report error and skip it
 5. Read `.worktrees/config.json` to get `worktreesDir` path
@@ -86,29 +86,34 @@ For each story (in order):
    which sets up symlinks.
 4. Determine worktree path: `<worktreesDir>/<branch>`
 
-### Step 4 — Launch Sessions
+### Step 4 — Launch Warp Tabs
 
 Run the launcher script passing `STORY-ID:worktree_path` pairs:
 
 ```bash
-bash .claude/skills/launch-sprint/scripts/launch-warp-sessions.sh \
+bash .claude/skills/launch-sprint/scripts/launch-sessions.sh \
   STORY-023:/path/to/wt1 STORY-022:/path/to/wt2 ...
 ```
 
-The script opens a Warp tab per story and executes `claude -p` with the orchestrator
-prompt (`references/orchestrator-prompt.md`) where `$ARGUMENTS` is replaced with
-the story ID.
+The script opens a **Warp terminal tab** per story via AppleScript. In each tab it runs:
+```
+claude -p "/sprint-orchestrator STORY-XXX"
+```
+
+The `sprint-orchestrator` skill detects it is in a linked worktree and enters
+**worktree mode** — it skips branch creation (Step 1) and defers merge to main (Step 6).
 
 ### Step 5 — Report
 
 After launch, report to the user:
 
 ```
-Launched X stories:
-  STORY-023 → /path/to/wt/story-023/from-flag
-  STORY-022 → /path/to/wt/story-022/init-path-prompt
+Launched X stories in Warp tabs:
+  STORY-023 → /path/to/wt
+  STORY-022 → /path/to/wt
   ...
 
+Each tab runs /sprint-orchestrator in worktree mode (merge deferred).
 Monitor progress:
   ls .ai/reports/STORY-*-qa.md
 ```
@@ -116,7 +121,6 @@ Monitor progress:
 ## Key Details
 
 - **Worktrees directory**: read from `.worktrees/config.json` field `worktreesDir`
-- **Orchestrator prompt**: `references/orchestrator-prompt.md` — uses `$ARGUMENTS` as story ID placeholder
 - **Sprint plan**: `references/sprint-plan.md` — sprint allocations, story details, dependency graph
 - **Reports**: `.ai/reports/` is shared across all worktrees via symlink; no conflicts
   because files are `STORY-XXX-` prefixed
@@ -132,19 +136,23 @@ Monitor progress:
 
 ## Caveats
 
-- **Accessibility permissions**: macOS may prompt to grant Accessibility access for
-  AppleScript-driven Warp tab automation on first run
-- **Warp required**: the launcher script uses AppleScript specific to Warp terminal.
-  To use a different terminal, modify `scripts/launch-warp-sessions.sh`
+- **Accessibility permissions**: macOS must grant Accessibility access to Warp (or the
+  terminal running this script) for AppleScript `System Events` keystroke simulation.
+  Check: System Settings → Privacy & Security → Accessibility
+- **Worktree mode**: sprint-orchestrator commits changes but does NOT merge to main.
+  After all parallel stories complete, the user handles merges manually or sequentially.
+- **Warp-specific**: the launcher script uses AppleScript targeting Warp. It will not
+  work with other terminal emulators without modification.
 
 ## Verification
 
 After launching, verify sessions are running:
 
-1. **Symlinks**: check a worktree has `.ai/` symlink and `.claude/settings.local.json`:
+1. **Warp tabs open**: each story should have its own Warp tab with `claude` running
+2. **Worktree mode detected**: sprint-orchestrator should log that it detected a linked
+   worktree and is skipping branch creation
+3. **Symlinks**: check a worktree has `.ai/` symlink and `.claude/settings.local.json`:
    `ls -la <worktree>/.ai <worktree>/.claude/settings.local.json`
-2. **Checkpoints appearing**: `ls .ai/reports/STORY-*-dev-checkpoint-*.md`
+4. **Checkpoints appearing**: `ls .ai/reports/STORY-*-dev-checkpoint-*.md`
    (indicates Dev agents are working)
-3. **Completion**: `ls .ai/reports/STORY-*-qa.md` — QA report means story is done
-4. **Quick test**: create a test worktree with `wt -n test/hook-check`, verify symlinks,
-   then remove with `wt -r test/hook-check`
+5. **Completion**: `ls .ai/reports/STORY-*-qa.md` — QA report means story is done
