@@ -314,3 +314,140 @@ SH
   assert [ "$merge_a" = "refs/heads/concurrent-a" ]
   assert [ "$merge_b" = "refs/heads/concurrent-b" ]
 }
+
+# --- STORY-025: _wt_open hook receives origin/<branch> as base ref ---
+
+@test "_wt_open passes origin/<branch> as base ref to created hook" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  # Create a branch and push to origin
+  git checkout -b hook-ref-test >/dev/null 2>&1
+  echo "data" > hookref.txt
+  git add hookref.txt
+  git commit -m "hook ref commit" >/dev/null 2>&1
+  git push origin hook-ref-test >/dev/null 2>&1
+  git checkout main >/dev/null 2>&1
+  git branch -D hook-ref-test >/dev/null 2>&1
+
+  # Set up marker hook to capture args
+  local marker="$TEST_TEMP_DIR/hook_marker"
+  create_marker_hook "$GWT_CREATE_HOOK" "$marker"
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+  run _wt_open "hook-ref-test" "$GWT_WORKTREES_DIR"
+  assert_success
+
+  # Hook marker should contain origin/hook-ref-test as $3
+  assert [ -f "$marker" ]
+  run cat "$marker"
+  assert_output --partial ":origin/hook-ref-test:"
+}
+
+# --- STORY-025: _wt_open fast-forward behavior ---
+
+@test "_wt_open fast-forwards local branch to origin when behind" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  # Create a branch, push to origin
+  git checkout -b ff-test >/dev/null 2>&1
+  echo "v1" > ff.txt
+  git add ff.txt
+  git commit -m "ff v1" >/dev/null 2>&1
+  git push origin ff-test >/dev/null 2>&1
+
+  # Add another commit on origin (simulate remote progress)
+  echo "v2" > ff.txt
+  git add ff.txt
+  git commit -m "ff v2" >/dev/null 2>&1
+  git push origin ff-test >/dev/null 2>&1
+
+  # Go back to main and delete local branch (keep remote)
+  git checkout main >/dev/null 2>&1
+  git branch -D ff-test >/dev/null 2>&1
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+  run _wt_open "ff-test" "$GWT_WORKTREES_DIR"
+  assert_success
+
+  # Worktree should have the latest content
+  local content
+  content=$(cat "$GWT_WORKTREES_DIR/ff-test/ff.txt")
+  assert [ "$content" = "v2" ]
+}
+
+@test "_wt_open skips fast-forward when no remote tracking branch exists" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  # Create a local-only branch (not pushed to origin)
+  git branch local-only >/dev/null 2>&1
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+  run _wt_open "local-only" "$GWT_WORKTREES_DIR"
+  assert_success
+
+  # Should succeed without any FF warning
+  refute_output --partial "could not fast-forward"
+}
+
+@test "_wt_open warns but succeeds when fast-forward fails (diverged)" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  # Create a branch with a commit and push to origin
+  git checkout -b diverge-test >/dev/null 2>&1
+  echo "shared-base" > diverge.txt
+  git add diverge.txt
+  git commit -m "diverge base" >/dev/null 2>&1
+  git push origin diverge-test >/dev/null 2>&1
+
+  # Save the base commit
+  local base_commit
+  base_commit=$(git rev-parse HEAD)
+
+  # Add a LOCAL-only commit (do NOT push)
+  echo "local-only" > local.txt
+  git add local.txt
+  git commit -m "local diverge" >/dev/null 2>&1
+  local local_tip
+  local_tip=$(git rev-parse HEAD)
+
+  # Go back to base and create a different commit on origin
+  git checkout main >/dev/null 2>&1
+  git checkout -b diverge-tmp "$base_commit" >/dev/null 2>&1
+  echo "origin-only" > remote.txt
+  git add remote.txt
+  git commit -m "remote diverge" >/dev/null 2>&1
+  git push --force origin diverge-tmp:diverge-test >/dev/null 2>&1
+  git checkout main >/dev/null 2>&1
+  git branch -D diverge-tmp >/dev/null 2>&1
+
+  # Delete the local diverge-test branch and re-create it at local_tip
+  # This creates a state where local diverge-test and origin/diverge-test have diverged
+  git branch -D diverge-test >/dev/null 2>&1
+  git branch diverge-test "$local_tip" >/dev/null 2>&1
+
+  # Fetch so we have the updated origin/diverge-test
+  git fetch origin --prune >/dev/null 2>&1
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+  run _wt_open "diverge-test" "$GWT_WORKTREES_DIR"
+  assert_success
+
+  # Should print warning about failed FF
+  assert_output --partial "could not fast-forward"
+}

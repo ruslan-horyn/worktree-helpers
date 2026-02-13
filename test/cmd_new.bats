@@ -30,7 +30,7 @@ teardown() {
   assert_success
 }
 
-@test "_cmd_new rejects duplicate branch names" {
+@test "_cmd_new rejects duplicate branch names with suggestion" {
   local repo_dir
   repo_dir=$(create_test_repo)
   cd "$repo_dir"
@@ -41,7 +41,8 @@ teardown() {
 
   run _cmd_new "feat-dup"
   assert_failure
-  assert_output --partial "Branch exists"
+  assert_output --partial "Branch 'feat-dup' already exists"
+  assert_output --partial "wt -o feat-dup"
 }
 
 @test "_cmd_new errors without branch argument" {
@@ -89,7 +90,7 @@ teardown() {
   assert_success
 }
 
-@test "_cmd_dev rejects existing branch" {
+@test "_cmd_dev rejects existing branch with suggestion" {
   local repo_dir
   repo_dir=$(create_test_repo)
   cd "$repo_dir"
@@ -99,7 +100,8 @@ teardown() {
 
   run _cmd_dev "exists"
   assert_failure
-  assert_output --partial "Branch exists"
+  assert_output --partial "Branch 'exists_RN' already exists"
+  assert_output --partial "wt -o exists_RN"
 }
 
 # --- _cmd_new --from ---
@@ -223,4 +225,46 @@ teardown() {
   run wt -n feat-no-from
   assert_success
   assert_output --partial "Creating worktree 'feat-no-from' from 'origin/main'"
+}
+
+# --- STORY-025: Error message includes branch name and suggestion ---
+
+@test "_cmd_new error message includes branch name when branch exists" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+
+  git branch my-feature >/dev/null 2>&1
+
+  run _cmd_new "my-feature"
+  assert_failure
+  assert_output --partial "Branch 'my-feature' already exists"
+}
+
+@test "_cmd_new error message suggests wt -o when branch exists" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+
+  git branch suggest-open >/dev/null 2>&1
+
+  run _cmd_new "suggest-open"
+  assert_failure
+  assert_output --partial "Use 'wt -o suggest-open' to open it as a worktree."
+}
+
+@test "_cmd_dev error message includes derived branch name when branch exists" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+
+  git branch "story-99_RN" >/dev/null 2>&1
+
+  run _cmd_dev "story-99"
+  assert_failure
+  assert_output --partial "Branch 'story-99_RN' already exists"
+  assert_output --partial "Use 'wt -o story-99_RN' to open it as a worktree."
 }

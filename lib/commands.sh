@@ -5,7 +5,7 @@ _cmd_new() {
   _require_pkg && _repo_root >/dev/null && _config_load || return 1
   mkdir -p "$GWT_WORKTREES_DIR" || return 1
   [ -z "$branch" ] && { _err "Usage: wt -n <branch> [--from <ref>]"; return 1; }
-  _branch_exists "$branch" && { _err "Branch exists"; return 1; }
+  _branch_exists "$branch" && { _err "Branch '$branch' already exists. Use 'wt -o $branch' to open it as a worktree."; return 1; }
 
   local base_ref="${from_ref:-$GWT_MAIN_REF}"
   _wt_create "$branch" "$base_ref" "$GWT_WORKTREES_DIR"
@@ -18,7 +18,7 @@ _cmd_dev() {
   [ -z "$base" ] && base=$(_current_branch)
   [ -z "$base" ] && { _err "No branch"; return 1; }
   local branch="${base}${GWT_DEV_SUFFIX}"
-  _branch_exists "$branch" && { _err "Branch exists"; return 1; }
+  _branch_exists "$branch" && { _err "Branch '$branch' already exists. Use 'wt -o $branch' to open it as a worktree."; return 1; }
   _wt_create "$branch" "$GWT_DEV_REF" "$GWT_WORKTREES_DIR"
 }
 
