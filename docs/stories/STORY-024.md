@@ -3,8 +3,8 @@
 **Epic:** Core Reliability
 **Priority:** Must Have
 **Story Points:** 3
-**Status:** Not Started
-**Assigned To:** Unassigned
+**Status:** Completed
+**Assigned To:** Developer
 **Created:** 2026-02-12
 **Sprint:** 4
 
@@ -231,8 +231,17 @@ Note: The exact test setup will depend on the existing BATS test helpers. The te
 
 **Status History:**
 - 2026-02-12: Created
+- 2026-02-13: Implemented and tested
 
-**Actual Effort:** TBD
+**Actual Effort:** 3 points (matched estimate)
+
+**Implementation Notes:**
+- `--track` flag investigated but doesn't work: sets merge to base branch (main), not the new branch name
+- `git worktree add -b` with config.lock creates the branch but not the directory; recovery uses `git worktree add` (without `-b`) for existing branches
+- Retry with exponential backoff: 0.1s, 0.2s, 0.4s, 0.8s, 1.6s (max ~3.1s total wait)
+- Both `git worktree add` and `git config` calls are protected against lock contention
+- 4 new tests: 3 unit tests for `_git_config_retry` + 1 integration test for concurrent creation
+- All 146 existing tests pass, shellcheck clean
 
 ---
 

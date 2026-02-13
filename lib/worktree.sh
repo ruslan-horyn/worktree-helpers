@@ -80,15 +80,54 @@ _fetch() {
   git fetch origin --prune 2>/dev/null || true
 }
 
+# Retry a git command on lock contention (config.lock)
+# Usage: _git_config_retry git -C "$path" config key value
+_git_config_retry() {
+  local max_attempts=5 attempt=0 delay=0
+  while [ "$attempt" -lt "$max_attempts" ]; do
+    if "$@" 2>/dev/null; then
+      return 0
+    fi
+    attempt=$((attempt + 1))
+    # Exponential backoff: 0.1, 0.2, 0.4, 0.8, 1.6 seconds
+    delay=$(awk "BEGIN{printf \"%.1f\", 0.1 * (2 ^ ($attempt - 1))}")
+    sleep "$delay"
+  done
+  # Final attempt — let error propagate to user
+  "$@"
+}
+
 _wt_create() {
   local branch="$1" ref="$2" dir="$3"
   local wt_path="$dir/$branch"
   [ -e "$wt_path" ] && { _err "Path exists: $wt_path"; return 1; }
 
   _info "Creating worktree '$branch' from '$ref'"
-  git worktree add -b "$branch" "$wt_path" "$ref" || { _err "Failed"; return 1; }
-  git -C "$wt_path" config "branch.$branch.remote" "origin"
-  git -C "$wt_path" config "branch.$branch.merge" "refs/heads/$branch"
+  # git worktree add writes to .git/config and can fail under concurrent usage
+  # due to config.lock contention. Retry with backoff if needed.
+  local max_attempts=5 attempt=0 delay=0
+  while [ "$attempt" -lt "$max_attempts" ]; do
+    if _branch_exists "$branch"; then
+      git worktree add "$wt_path" "$branch" 2>/dev/null && break
+    else
+      git worktree add -b "$branch" "$wt_path" "$ref" 2>/dev/null && break
+    fi
+    # If dir was created despite non-zero exit (config-only failure), continue
+    [ -d "$wt_path" ] && break
+    attempt=$((attempt + 1))
+    delay=$(awk "BEGIN{printf \"%.1f\", 0.1 * (2 ^ ($attempt - 1))}")
+    sleep "$delay"
+  done
+  if [ ! -d "$wt_path" ]; then
+    # Final attempt — let error propagate to user
+    if _branch_exists "$branch"; then
+      git worktree add "$wt_path" "$branch" || { _err "Failed"; return 1; }
+    else
+      git worktree add -b "$branch" "$wt_path" "$ref" || { _err "Failed"; return 1; }
+    fi
+  fi
+  _git_config_retry git -C "$wt_path" config "branch.$branch.remote" "origin"
+  _git_config_retry git -C "$wt_path" config "branch.$branch.merge" "refs/heads/$branch"
   _symlink_hooks "$wt_path"
   _fetch "$ref"
   _run_hook created "$wt_path" "$branch" "$ref" "$(_main_repo_root)"
