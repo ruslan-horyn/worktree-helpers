@@ -151,6 +151,13 @@ _wt_open() {
   _info "Opening worktree for '$branch'"
   git worktree add "$wt_path" "$branch" || { _err "Failed to create worktree for '$branch'"; return 1; }
   _symlink_hooks "$wt_path"
-  _run_hook created "$wt_path" "$branch" "$branch" "$(_main_repo_root)"
+
+  # Fast-forward local branch to origin if remote tracking branch exists
+  if git show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+    git -C "$wt_path" merge --ff-only "origin/$branch" 2>/dev/null \
+      || _info "Note: could not fast-forward '$branch' to origin (diverged or conflict)"
+  fi
+
+  _run_hook created "$wt_path" "$branch" "origin/$branch" "$(_main_repo_root)"
   _wt_warn_count
 }
