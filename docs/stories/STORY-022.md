@@ -22,61 +22,47 @@ So that I can configure the worktrees directory faster and with fewer typos
 
 ### Background
 
-The current `wt --init` command prompts for the worktrees directory with:
+> **Note:** STORY-026 removed the worktrees path prompt entirely from `wt --init`. The worktrees directory is now always auto-derived as `<parent>/<projectName>_worktrees`. The original worktrees path UX issues described below are no longer relevant. This story's remaining scope is limited to tab completion and UX improvements for the other `--init` prompts (Project name, Main branch, etc.).
 
-```
-Worktrees dir [/Users/dev/projects/myapp_worktrees]:
-```
+The current `wt --init` command previously prompted for the worktrees directory. That prompt has been eliminated by STORY-026. The remaining UX improvements for other prompts include:
 
-This has three UX issues:
-
-1. **No tab completion** — The `read -r` command doesn't support filesystem tab completion, forcing users to type full paths manually (error-prone for long paths).
-2. **Unclear label** — "Worktrees dir" is abbreviated and slightly ambiguous. "Worktrees path" is clearer and more conventional.
-3. **No suffix customization** — The default `_worktrees` suffix is hardcoded in the path computation. Users who want a different naming convention (e.g., `-worktrees`, `.worktrees`, `_wt`) must retype the entire path.
+1. **No tab completion** — The `read -r` commands for other prompts don't support tab completion.
+2. **Suffix customization** — No longer applicable (worktrees path is auto-derived).
 
 ### Scope
 
 **In scope:**
-- Enable filesystem tab completion on the worktrees path prompt (shell-aware: bash `read -e`, zsh `vared`, POSIX fallback)
-- Rename prompt label from "Worktrees dir" to "Worktrees path"
-- Show default suffix separately and allow editing just the suffix (e.g., `Worktrees suffix [_worktrees]:` then compute full path, or show full path but highlight the editable suffix)
-- Keep the full path override working (user can still type an absolute path)
+- Enable tab completion on remaining `--init` prompts where useful (shell-aware: bash `read -e`, zsh `vared`, POSIX fallback)
+- General UX improvements to `--init` prompts (Project name, Main branch, Warning threshold)
 
 **Out of scope:**
-- Tab completion for other init prompts (Project, Main branch, etc.) — that could be a follow-up
-- Changing the default suffix value itself (remains `_worktrees`)
+- Worktrees path prompt (eliminated by STORY-026 — path is now auto-derived)
+- Worktrees suffix customization (no longer applicable)
 - Changes to STORY-021 init UX improvements (colorized output, hook suggestions, auto .gitignore are separate)
 
 ### User Flow
 
+> **Note:** The worktrees path prompt was removed by STORY-026. The flow below reflects the remaining prompts.
+
 **Current flow:**
 1. User runs `wt --init`
-2. Prompt: `Worktrees dir [/path/to/project_worktrees]:`
-3. User must type full path or press Enter for default
-4. No tab completion available
+2. Prompts for: Project name, Main branch, Warning threshold
+3. No tab completion available on any prompt
 
 **New flow:**
 1. User runs `wt --init`
-2. Prompt: `Worktrees path [/path/to/project_worktrees]:`
-3. Tab completion works for filesystem paths (in bash and zsh)
-4. If user wants to change just the suffix, a secondary approach:
-   - Show the computed base (`/path/to/parent/projectname`) and ask for suffix
-   - `Worktrees suffix [_worktrees]:` → user types `_wt` → full path becomes `/path/to/parent/projectname_wt`
-   - Or: user types an absolute path to override entirely
+2. Prompts for: Project name, Main branch, Warning threshold
+3. Tab completion works where applicable (in bash and zsh)
 
 ---
 
 ## Acceptance Criteria
 
-- [ ] Prompt label changed from "Worktrees dir" to "Worktrees path"
-- [ ] Tab completion works for filesystem paths in **bash** (via `read -e`)
-- [ ] Tab completion works for filesystem paths in **zsh** (via `vared` or zsh-compatible readline)
+> **Updated after STORY-026:** Worktrees path prompt was eliminated. Criteria related to worktrees path/suffix are no longer applicable.
+
+- [ ] Tab completion works for remaining prompts in **bash** (via `read -e`) where applicable
+- [ ] Tab completion works for remaining prompts in **zsh** (via `vared` or zsh-compatible readline) where applicable
 - [ ] Falls back gracefully to plain `read -r` in POSIX shells without readline
-- [ ] Default suffix `_worktrees` is shown and editable separately:
-  - Prompt shows: `Worktrees suffix [_worktrees]:` (user can change just the suffix)
-  - Then shows computed full path for confirmation: `Worktrees path: /parent/project_wt ✓`
-- [ ] User can still override with a full absolute path (if input starts with `/`, use it as-is)
-- [ ] Existing config.json output format unchanged (`worktreesDir` key)
 - [ ] Works correctly when project name contains special characters (spaces, hyphens)
 - [ ] Unit test coverage for the new prompt logic (helper function testable in isolation)
 

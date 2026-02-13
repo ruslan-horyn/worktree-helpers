@@ -79,7 +79,6 @@ create_test_config() {
   cat > "$repo_dir/.worktrees/config.json" <<JSON
 {
   "projectName": "test-project",
-  "worktreesDir": "$TEST_TEMP_DIR/test-project_worktrees",
   "mainBranch": "origin/main",
   "devBranch": "origin/main",
   "devSuffix": "_RN",

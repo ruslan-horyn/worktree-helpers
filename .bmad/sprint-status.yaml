@@ -153,7 +153,7 @@ sprints:
     end_date: "2026-02-22"
     capacity_points: 17
     committed_points: 20
-    completed_points: 5
+    completed_points: 8
     status: "active"
     goal: "Fix core reliability issues, improve existing branch UX, and polish init/clear workflows"
     stories:
@@ -183,7 +183,8 @@ sprints:
       - story_id: "STORY-026"
         title: "Remove worktreesDir from config, always auto-derive path"
         points: 3
-        status: "defined"
+        status: "completed"
+        completion_date: "2026-02-13"
         assigned_to: null
         priority: "must_have"
         story_doc: "docs/stories/STORY-026.md"

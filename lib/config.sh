@@ -8,7 +8,6 @@ _config_load() {
   _require jq || return 1
 
   GWT_PROJECT_NAME=$(jq -r '.projectName // empty' "$cfg")
-  GWT_WORKTREES_DIR=$(jq -r '.worktreesDir // empty' "$cfg")
   GWT_MAIN_REF=$(jq -r '.mainBranch // empty' "$cfg")
   GWT_DEV_REF=$(jq -r '.devBranch // empty' "$cfg")
   GWT_DEV_SUFFIX=$(jq -r '.devSuffix // empty' "$cfg")
@@ -25,14 +24,10 @@ _config_load() {
   [ -z "$GWT_SWITCH_HOOK" ] && GWT_SWITCH_HOOK=".worktrees/hooks/switched.sh"
   [ -z "$GWT_WORKTREE_WARN_THRESHOLD" ] && GWT_WORKTREE_WARN_THRESHOLD=20
 
+  # Always derive worktrees directory from main repo root and project name
+  GWT_WORKTREES_DIR="${root%/*}/${GWT_PROJECT_NAME}_worktrees"
+
   # Resolve paths
   case "$GWT_CREATE_HOOK" in /*) ;; *) GWT_CREATE_HOOK="$root/$GWT_CREATE_HOOK" ;; esac
   case "$GWT_SWITCH_HOOK" in /*) ;; *) GWT_SWITCH_HOOK="$root/$GWT_SWITCH_HOOK" ;; esac
-
-  if [ -z "$GWT_WORKTREES_DIR" ]; then
-    local repo_root
-    repo_root=$(_repo_root)
-    repo_root="${repo_root%/*}"
-    GWT_WORKTREES_DIR="$repo_root/${GWT_PROJECT_NAME}_worktrees"
-  fi
 }

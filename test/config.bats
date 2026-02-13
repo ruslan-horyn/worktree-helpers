@@ -22,7 +22,6 @@ teardown() {
   _config_load
 
   assert [ "$GWT_PROJECT_NAME" = "test-project" ]
-  assert [ "$GWT_WORKTREES_DIR" = "$TEST_TEMP_DIR/test-project_worktrees" ]
   assert [ "$GWT_MAIN_REF" = "origin/main" ]
   assert [ "$GWT_DEV_REF" = "origin/main" ]
   assert [ "$GWT_DEV_SUFFIX" = "_RN" ]
@@ -110,7 +109,6 @@ JSON
   cat > "$repo_dir/.worktrees/config.json" <<JSON
 {
   "projectName": "test-project",
-  "worktreesDir": "$TEST_TEMP_DIR/test-project_worktrees",
   "mainBranch": "origin/main",
   "openCmd": "/absolute/path/to/hook.sh",
   "switchCmd": "/absolute/path/to/switch.sh"
@@ -123,7 +121,28 @@ JSON
   assert [ "$GWT_SWITCH_HOOK" = "/absolute/path/to/switch.sh" ]
 }
 
-@test "_config_load derives worktreesDir when not set" {
+@test "_config_load ignores worktreesDir field in config and derives path" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+
+  mkdir -p "$repo_dir/.worktrees/hooks"
+  cat > "$repo_dir/.worktrees/config.json" <<JSON
+{
+  "projectName": "test-project",
+  "worktreesDir": "/some/old/custom/path",
+  "mainBranch": "origin/main"
+}
+JSON
+
+  _config_load
+
+  # Should derive from repo root, NOT use the value from config
+  local expected="${repo_dir%/*}/test-project_worktrees"
+  assert [ "$GWT_WORKTREES_DIR" = "$expected" ]
+}
+
+@test "_config_load always derives worktreesDir from main repo root" {
   local repo_dir
   repo_dir=$(create_test_repo)
   cd "$repo_dir"
