@@ -3,7 +3,7 @@
 **Epic:** Developer Experience
 **Priority:** Must Have
 **Story Points:** 5
-**Status:** Not Started
+**Status:** Completed
 **Assigned To:** Unassigned
 **Created:** 2026-02-12
 **Sprint:** Backlog
@@ -178,5 +178,6 @@ The root cause of the hook fetch error is that `_wt_open` treats the branch name
 
 **Status History:**
 - 2026-02-12: Created
+- 2026-02-13: Completed
 
-**Actual Effort:** TBD
+**Actual Effort:** 5 points (matched estimate)
