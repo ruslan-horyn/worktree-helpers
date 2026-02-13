@@ -545,7 +545,7 @@ STORY-026 (remove worktreesDir - 3pts) ── independent
 | Story ID | Title | Points | Priority | Status |
 |----------|-------|--------|----------|--------|
 | STORY-023 | Add `--from`/`-b` flag to `wt -n` | 2 | Should Have | Done |
-| STORY-024 | Fix race condition in concurrent worktree creation | 3 | Must Have | Not Started |
+| STORY-024 | Fix race condition in concurrent worktree creation | 3 | Must Have | Done |
 | STORY-025 | Improve UX when opening worktree from existing branch | 5 | Must Have | Not Started |
 | STORY-026 | Remove worktreesDir from config, always auto-derive | 3 | Must Have | Not Started |
 | STORY-022 | Improve `wt --init` worktrees path prompt | 2 | Should Have | Not Started |
@@ -763,7 +763,7 @@ Run `/bmad:dev-story STORY-024` to fix the race condition, or `/bmad:dev-story S
 
 ## Progress Tracking
 
-Last updated: 2026-02-12
+Last updated: 2026-02-13
 
 **Sprint 3 (COMPLETE — 17/17 pts):**
 
@@ -773,10 +773,10 @@ Last updated: 2026-02-12
 - [x] STORY-019 — Add `wt --rename` command (3pts)
 - [x] STORY-020 — Add uninstall script (2pts)
 
-**Sprint 4 (CURRENT — 2/17 pts done):**
+**Sprint 4 (CURRENT — 5/17 pts done):**
 
 - [x] STORY-023 — Add `--from`/`-b` flag to `wt -n` (2pts)
-- [ ] STORY-024 — Fix race condition in concurrent worktree creation (3pts)
+- [x] STORY-024 — Fix race condition in concurrent worktree creation (3pts)
 - [ ] STORY-025 — Improve UX when opening worktree from existing branch (5pts)
 - [ ] STORY-026 — Remove worktreesDir from config, always auto-derive (3pts)
 - [ ] STORY-022 — Improve `wt --init` worktrees path prompt (2pts)
