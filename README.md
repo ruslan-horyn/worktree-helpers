@@ -170,7 +170,6 @@ Configuration is stored in `.worktrees/config.json` in your repository root. Run
 | Field | Type | Description |
 |-------|------|-------------|
 | `projectName` | string | Project identifier (used for worktree directory naming) |
-| `worktreesDir` | string | Directory where worktrees are created |
 | `mainBranch` | string | Main branch reference (e.g., `origin/main`) |
 | `devBranch` | string | Dev branch reference for `-d` flag |
 | `devSuffix` | string | Suffix added to dev worktree branches |
@@ -178,12 +177,13 @@ Configuration is stored in `.worktrees/config.json` in your repository root. Run
 | `switchCmd` | string | Hook script run after switching worktree |
 | `worktreeWarningThreshold` | number | Warn when worktree count exceeds this |
 
+Worktrees are created in `<parent>/<projectName>_worktrees` automatically (derived from the repository location and project name).
+
 ### Example Configuration
 
 ```json
 {
   "projectName": "my-app",
-  "worktreesDir": "/Users/me/projects/my-app_worktrees",
   "mainBranch": "origin/main",
   "devBranch": "origin/develop",
   "devSuffix": "_DEV",
