@@ -3,7 +3,7 @@
 **Epic:** Developer Experience
 **Priority:** Could Have
 **Story Points:** 3
-**Status:** Not Started
+**Status:** Completed
 **Assigned To:** Unassigned
 **Created:** 2026-02-09
 **Sprint:** 4
@@ -86,20 +86,20 @@ The current `wt -c <days>` command only supports age-based filtering with option
 
 ## Acceptance Criteria
 
-- [ ] `wt -c --merged` clears worktrees whose branches are merged into the main branch (from `GWT_MAIN_REF`)
-- [ ] `wt -c --pattern <glob>` clears worktrees whose branch names match the shell glob pattern
-- [ ] `wt -c --dry-run` shows what would be cleared without deleting anything
-- [ ] `--dry-run` output lines are prefixed with `[dry-run]` for clear visual distinction
-- [ ] `--dry-run` shows the count of worktrees that would be removed
-- [ ] `<days>` argument becomes optional when `--merged` or `--pattern` is provided
-- [ ] When `<days>` is omitted, all matching worktrees are candidates (no age filter)
-- [ ] All new flags are combinable with existing flags (`--dev-only`, `--main-only`, `--force`)
-- [ ] `--merged` + `--pattern` can be combined (both filters must match)
-- [ ] Locked worktrees are still skipped (existing behavior preserved)
-- [ ] Main repository worktree is never removed (existing behavior preserved)
-- [ ] Help text (`wt -h`) updated with new flags
-- [ ] Errors on `wt -c` with no flags and no days argument (must provide at least `<days>`, `--merged`, or `--pattern`)
-- [ ] README updated with new `--merged`, `--pattern`, and `--dry-run` flags in the clear command documentation
+- [x] `wt -c --merged` clears worktrees whose branches are merged into the main branch (from `GWT_MAIN_REF`)
+- [x] `wt -c --pattern <glob>` clears worktrees whose branch names match the shell glob pattern
+- [x] `wt -c --dry-run` shows what would be cleared without deleting anything
+- [x] `--dry-run` output lines are prefixed with `[dry-run]` for clear visual distinction
+- [x] `--dry-run` shows the count of worktrees that would be removed
+- [x] `<days>` argument becomes optional when `--merged` or `--pattern` is provided
+- [x] When `<days>` is omitted, all matching worktrees are candidates (no age filter)
+- [x] All new flags are combinable with existing flags (`--dev-only`, `--main-only`, `--force`)
+- [x] `--merged` + `--pattern` can be combined (both filters must match)
+- [x] Locked worktrees are still skipped (existing behavior preserved)
+- [x] Main repository worktree is never removed (existing behavior preserved)
+- [x] Help text (`wt -h`) updated with new flags
+- [x] Errors on `wt -c` with no flags and no days argument (must provide at least `<days>`, `--merged`, or `--pattern`)
+- [x] README updated with new `--merged`, `--pattern`, and `--dry-run` flags in the clear command documentation
 
 ---
 
@@ -203,25 +203,25 @@ Within the worktree iteration loop, filters apply in this order:
 
 ## Definition of Done
 
-- [ ] Code implemented following existing patterns (`_` prefix, POSIX-compatible)
-- [ ] Router parses `--merged`, `--pattern`, `--dry-run` flags correctly
-- [ ] `_cmd_clear` extended with new parameters
-- [ ] BATS tests written covering:
-  - [ ] `--merged` removes only merged worktrees
-  - [ ] `--merged` skips unmerged worktrees
-  - [ ] `--pattern` filters by branch name glob
-  - [ ] `--pattern` with no matches shows "No worktrees to clear"
-  - [ ] `--dry-run` does not delete anything
-  - [ ] `--dry-run` output contains `[dry-run]` prefix
-  - [ ] Combined flags (`--merged --pattern`, `--merged --dry-run`, etc.)
-  - [ ] `<days>` optional when `--merged` or `--pattern` provided
-  - [ ] Error when no days and no `--merged`/`--pattern`
-  - [ ] Existing tests still pass (no regressions)
-- [ ] Shellcheck passes
-- [ ] CI passes (GitHub Actions)
-- [ ] Help text updated
-- [ ] Works in both bash and zsh
-- [ ] Works on macOS and Linux
+- [x] Code implemented following existing patterns (`_` prefix, POSIX-compatible)
+- [x] Router parses `--merged`, `--pattern`, `--dry-run` flags correctly
+- [x] `_cmd_clear` extended with new parameters
+- [x] BATS tests written covering:
+  - [x] `--merged` removes only merged worktrees
+  - [x] `--merged` skips unmerged worktrees
+  - [x] `--pattern` filters by branch name glob
+  - [x] `--pattern` with no matches shows "No worktrees to clear"
+  - [x] `--dry-run` does not delete anything
+  - [x] `--dry-run` output contains `[dry-run]` prefix
+  - [x] Combined flags (`--merged --pattern`, `--merged --dry-run`, etc.)
+  - [x] `<days>` optional when `--merged` or `--pattern` provided
+  - [x] Error when no days and no `--merged`/`--pattern`
+  - [x] Existing tests still pass (no regressions)
+- [x] Shellcheck passes
+- [x] CI passes (GitHub Actions)
+- [x] Help text updated
+- [x] Works in both bash and zsh
+- [x] Works on macOS and Linux
 
 ---
 
@@ -259,8 +259,9 @@ All new logic must be POSIX-compatible:
 **Status History:**
 
 - 2026-02-09: Created
+- 2026-02-15: Completed
 
-**Actual Effort:** TBD
+**Actual Effort:** 3 points (as estimated)
 
 ---
 

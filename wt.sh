@@ -33,6 +33,7 @@ source "$_WT_DIR/lib/commands.sh"
 wt() {
   local action="" arg="" force=0 dev=0 reflog=0 since="" author=""
   local dev_only=0 main_only=0 clear_days="" from_ref=""
+  local merged=0 pattern="" dry_run=0
 
   while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -67,6 +68,9 @@ wt() {
       --since)     shift; since="$1"; shift ;;
       --author)    shift; author="$1"; shift ;;
       -b|--from)   shift; from_ref="$1"; shift ;;
+      --merged)    merged=1; shift ;;
+      --pattern)   shift; pattern="$1"; shift ;;
+      --dry-run)   dry_run=1; shift ;;
       -*)          _err "Unknown: $1"; return 1 ;;
       *)           [ -z "$arg" ] && arg="$1"; shift ;;
     esac
@@ -85,7 +89,7 @@ wt() {
     lock)   _cmd_lock "$arg" ;;
     unlock) _cmd_unlock "$arg" ;;
     list)   _cmd_list ;;
-    clear)  _cmd_clear "$clear_days" "$force" "$dev_only" "$main_only" ;;
+    clear)  _cmd_clear "$clear_days" "$force" "$dev_only" "$main_only" "$merged" "$pattern" "$dry_run" ;;
     init)   _cmd_init ;;
     log)    _cmd_log "$arg" "$reflog" "$since" "$author" ;;
     rename) _cmd_rename "$arg" "$force" ;;
