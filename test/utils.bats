@@ -358,3 +358,63 @@ teardown() {
   run _require_pkg
   assert_failure
 }
+
+# --- _read_input ---
+
+@test "_read_input returns default when user presses Enter (bash)" {
+  run bash -c '
+    source "'"$PROJECT_ROOT"'/lib/utils.sh"
+    echo "" | _read_input "Project [myproj]: " "myproj"
+  '
+  assert_success
+  assert_output "myproj"
+}
+
+@test "_read_input returns custom value when user types input (bash)" {
+  run bash -c '
+    source "'"$PROJECT_ROOT"'/lib/utils.sh"
+    echo "custom-name" | _read_input "Project [myproj]: " "myproj"
+  '
+  assert_success
+  assert_output "custom-name"
+}
+
+@test "_read_input returns default for POSIX fallback when user presses Enter" {
+  run bash -c '
+    unset BASH_VERSION
+    unset ZSH_VERSION
+    source "'"$PROJECT_ROOT"'/lib/utils.sh"
+    echo "" | _read_input "Project [myproj]: " "myproj" 2>/dev/null
+  '
+  assert_success
+  assert_output "myproj"
+}
+
+@test "_read_input returns custom value for POSIX fallback" {
+  run bash -c '
+    unset BASH_VERSION
+    unset ZSH_VERSION
+    source "'"$PROJECT_ROOT"'/lib/utils.sh"
+    echo "other-val" | _read_input "Project [myproj]: " "myproj" 2>/dev/null
+  '
+  assert_success
+  assert_output "other-val"
+}
+
+@test "_read_input handles special characters in default (spaces, hyphens)" {
+  run bash -c '
+    source "'"$PROJECT_ROOT"'/lib/utils.sh"
+    echo "" | _read_input "Project [my project-name]: " "my project-name"
+  '
+  assert_success
+  assert_output "my project-name"
+}
+
+@test "_read_input handles special characters in user input" {
+  run bash -c '
+    source "'"$PROJECT_ROOT"'/lib/utils.sh"
+    echo "my spaced-project" | _read_input "Project [def]: " "def"
+  '
+  assert_success
+  assert_output "my spaced-project"
+}

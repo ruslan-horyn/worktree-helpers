@@ -11,22 +11,23 @@ teardown() {
   teardown
 }
 
-@test "_cmd_init creates config.json and hook files" {
+@test "_cmd_init creates config.json and hook files with defaults" {
   local repo_dir
   repo_dir=$(create_test_repo)
   cd "$repo_dir"
 
-  # Provide answers to interactive prompts via stdin
+  # Provide empty answers (accept all defaults) via heredoc
+  # 3 prompts: Project name, Main branch, Warning threshold
   run bash -c "
+    cd '$repo_dir'
     source '$PROJECT_ROOT/lib/utils.sh'
     source '$PROJECT_ROOT/lib/config.sh'
     source '$PROJECT_ROOT/lib/worktree.sh'
     source '$PROJECT_ROOT/lib/commands.sh'
-    echo '' | _cmd_init <<EOF
-test-proj
-$TEST_TEMP_DIR/test-proj_wt
-origin/main
-20
+    _cmd_init <<EOF
+
+
+
 EOF
   "
   assert_success
@@ -37,6 +38,36 @@ EOF
   # Hooks should exist and be executable
   assert [ -x "$repo_dir/.worktrees/hooks/created.sh" ]
   assert [ -x "$repo_dir/.worktrees/hooks/switched.sh" ]
+}
+
+@test "_cmd_init creates config.json with custom values" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+
+  # Provide custom answers to all 3 prompts
+  run bash -c "
+    cd '$repo_dir'
+    source '$PROJECT_ROOT/lib/utils.sh'
+    source '$PROJECT_ROOT/lib/config.sh'
+    source '$PROJECT_ROOT/lib/worktree.sh'
+    source '$PROJECT_ROOT/lib/commands.sh'
+    _cmd_init <<EOF
+my-custom-project
+origin/main
+15
+EOF
+  "
+  assert_success
+
+  # Config should exist and contain custom project name
+  assert [ -f "$repo_dir/.worktrees/config.json" ]
+  run jq -r '.projectName' "$repo_dir/.worktrees/config.json"
+  assert_output "my-custom-project"
+
+  # Threshold should be custom value
+  run jq -r '.worktreeWarningThreshold' "$repo_dir/.worktrees/config.json"
+  assert_output "15"
 }
 
 @test "_cmd_init errors when package.json missing" {

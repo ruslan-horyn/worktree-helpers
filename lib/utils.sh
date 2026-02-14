@@ -90,6 +90,37 @@ _age_display() {
   esac
 }
 
+# Read user input with readline support (tab completion) when available
+# Usage: _read_input <prompt> <default>
+# Outputs the user's input (or default if empty) to stdout
+# Shell-aware: bash uses read -e, zsh uses vared, POSIX uses plain read -r
+_read_input() {
+  local prompt="$1" default="$2" reply=""
+  if [ -n "${ZSH_VERSION:-}" ]; then
+    # zsh: use vared for readline/tab completion
+    reply="$default"
+    printf "%s" "$prompt" >&2
+    # shellcheck disable=SC2296
+    vared reply
+  elif [ -n "${BASH_VERSION:-}" ]; then
+    # bash: use read -e for readline/tab completion
+    # bash 4.0+ supports -i (initial text); older bash falls back to -e only
+    local major="${BASH_VERSION%%.*}"
+    if [ "$major" -ge 4 ] 2>/dev/null; then
+      # shellcheck disable=SC3045
+      read -e -r -p "$prompt" -i "$default" reply
+    else
+      # shellcheck disable=SC3045
+      read -e -r -p "$prompt" reply
+    fi
+  else
+    # POSIX fallback: plain read
+    printf "%s" "$prompt" >&2
+    read -r reply
+  fi
+  printf '%s' "${reply:-$default}"
+}
+
 # Count total worktrees
 # Usage: _wt_count
 _wt_count() {
