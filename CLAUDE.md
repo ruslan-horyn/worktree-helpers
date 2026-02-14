@@ -13,7 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```
 wt.sh                     # Entry point - source in .zshrc/.bashrc, contains wt() router
 lib/
-  utils.sh                # Core utilities: _err, _info, _require, _repo_root, _branch_exists
+  utils.sh                # Core utilities: _err, _info, _require, _repo_root, _branch_exists, _read_input
   config.sh               # _config_load - parses .worktrees/config.json, sets GWT_* globals
   worktree.sh             # Worktree operations: _wt_create, _wt_open, _wt_resolve, _run_hook
   commands.sh             # Command handlers: _cmd_new, _cmd_switch, _cmd_remove, etc.
