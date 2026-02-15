@@ -35,7 +35,7 @@ stashes, no more broken context.
 - Automated hooks on create and switch (install deps, open editor, copy env files)
 - Hook symlinking — all worktrees share the same hook scripts
 - Interactive selection with fzf integration
-- Age-based worktree cleanup with filters (`--dev-only`, `--main-only`)
+- Flexible worktree cleanup with filters (`--merged`, `--pattern`, `--dry-run`, `--dev-only`, `--main-only`)
 - Lock/unlock worktree protection
 - Branch rename without recreating worktree (`--rename`)
 - Shell-aware prompts — `wt --init` supports tab completion in bash and zsh
@@ -102,7 +102,7 @@ curl -fsSL https://raw.githubusercontent.com/ruslan-horyn/worktree-helpers/main/
 | `wt -r [branch]` | Remove worktree and delete branch |
 | `wt -o [branch]` | Open existing branch as worktree |
 | `wt -l` | List all worktrees |
-| `wt -c <days>` | Clear worktrees older than n days |
+| `wt -c [days]` | Clear worktrees (days optional with `--merged`/`--pattern`) |
 | `wt -L [branch]` | Lock worktree |
 | `wt -U [branch]` | Unlock worktree |
 | `wt --init` | Initialize project configuration |
@@ -151,6 +151,18 @@ wt -c 14 -f
 
 # Clear only dev-based worktrees older than 30 days
 wt -c 30 --dev-only
+
+# Clear worktrees whose branches are merged into main
+wt -c --merged
+
+# Clear worktrees matching a branch name pattern
+wt -c --pattern "fix-*"
+
+# Preview what would be cleared (dry-run)
+wt -c 14 --dry-run
+
+# Combine filters: merged + pattern + dry-run
+wt -c --merged --pattern "fix-*" --dry-run
 
 # Lock important worktree
 wt -L production-fix
@@ -363,7 +375,7 @@ This project is actively developed. Upcoming features:
 
 - [ ] **Shell completions** — tab completion for bash and zsh (flags, branch names, worktree paths)
 - [ ] **Self-update** — `wt --update` with non-blocking version check
-- [ ] **Granular clear** — `wt -c --merged`, `--pattern <glob>`, `--dry-run`
+- [x] **Granular clear** — `wt -c --merged`, `--pattern <glob>`, `--dry-run`
 - [ ] **Dirty/clean status** — `wt -l` shows uncommitted changes per worktree
 - [ ] **Worktree metadata** — annotate worktrees with notes and see creation dates
 - [ ] **Homebrew formula** — `brew install worktree-helpers`

@@ -88,17 +88,21 @@ _cmd_unlock() {
 
 _cmd_clear() {
   local days="$1" force="$2" dev_only="$3" main_only="$4"
+  local merged="${5:-0}" pattern="${6:-}" dry_run="${7:-0}"
   _require_pkg && _repo_root >/dev/null && _config_load || return 1
 
-  # Validate arguments
-  if [ -z "$days" ]; then
-    _err "Usage: wt -c <days>"
+  # Validate arguments: days required unless --merged or --pattern provided
+  if [ -z "$days" ] && [ "$merged" -eq 0 ] && [ -z "$pattern" ]; then
+    _err "Usage: wt -c <days> [--merged] [--pattern <glob>] [--dry-run]"
     return 1
   fi
 
-  if ! [ "$days" -gt 0 ] 2>/dev/null; then
-    _err "Invalid number: $days (must be positive integer)"
-    return 1
+  # Validate days if provided
+  if [ -n "$days" ]; then
+    if ! [ "$days" -gt 0 ] 2>/dev/null; then
+      _err "Invalid number: $days (must be positive integer)"
+      return 1
+    fi
   fi
 
   # Check for mutually exclusive flags
@@ -107,12 +111,20 @@ _cmd_clear() {
     return 1
   fi
 
-  # Calculate cutoff timestamp
-  local cutoff
-  cutoff=$(_calc_cutoff "$days")
-  if [ -z "$cutoff" ]; then
-    _err "Failed to calculate cutoff date"
-    return 1
+  # Calculate cutoff timestamp (only when days is provided)
+  local cutoff=""
+  if [ -n "$days" ]; then
+    cutoff=$(_calc_cutoff "$days")
+    if [ -z "$cutoff" ]; then
+      _err "Failed to calculate cutoff date"
+      return 1
+    fi
+  fi
+
+  # Build merged branch list (only when --merged flag is set)
+  local merged_branches=""
+  if [ "$merged" -eq 1 ]; then
+    merged_branches=$(git branch --merged "$GWT_MAIN_REF" 2>/dev/null | sed 's/^[*+ ]*//')
   fi
 
   local main_root
@@ -144,13 +156,13 @@ _cmd_clear() {
         ;;
       "")
         if [ -n "$worktree" ]; then
-          # Skip main repository
+          # 1. Skip main repository
           if [ "$worktree" = "$main_root" ]; then
             worktree=""
             continue
           fi
 
-          # Apply dev/main filter
+          # 2. Apply dev/main filter
           if [ "$dev_only" -eq 1 ]; then
             case "$branch" in
               *"$GWT_DEV_SUFFIX") ;;
@@ -162,17 +174,60 @@ _cmd_clear() {
             esac
           fi
 
-          # Check age
-          wt_age=$(_wt_age "$worktree")
-          if [ -n "$wt_age" ] && [ "$wt_age" -lt "$cutoff" ]; then
-            if [ -n "$locked" ]; then
-              locked_skipped="${locked_skipped}${worktree}|${branch}
-"
-            else
-              to_delete="${to_delete}${worktree}|${branch}|${wt_age}
-"
-              to_delete_count=$((to_delete_count + 1))
+          # 3. Apply pattern filter
+          if [ -n "$pattern" ]; then
+            # eval is needed because zsh does not expand globs in case
+            # pattern variables; eval inlines the glob as a literal pattern
+            if ! eval "case \"\$branch\" in $pattern) true ;; *) false ;; esac"; then
+              worktree=""
+              continue
             fi
+          fi
+
+          # 4. Apply age filter (only when days is provided)
+          if [ -n "$cutoff" ]; then
+            wt_age=$(_wt_age "$worktree")
+            if [ -z "$wt_age" ] || [ "$wt_age" -ge "$cutoff" ]; then
+              worktree=""
+              continue
+            fi
+          else
+            wt_age=$(_wt_age "$worktree")
+          fi
+
+          # 5. Apply merged filter
+          if [ "$merged" -eq 1 ]; then
+            # Skip detached HEAD worktrees for merged check
+            if [ "$branch" = "(detached)" ]; then
+              worktree=""
+              continue
+            fi
+            # Check if branch is in the merged list
+            local _is_merged=0
+            local _mb=""
+            while IFS= read -r _mb; do
+              [ -z "$_mb" ] && continue
+              if [ "$_mb" = "$branch" ]; then
+                _is_merged=1
+                break
+              fi
+            done <<MERGED
+$merged_branches
+MERGED
+            if [ "$_is_merged" -eq 0 ]; then
+              worktree=""
+              continue
+            fi
+          fi
+
+          # 6. Check locked status
+          if [ -n "$locked" ]; then
+            locked_skipped="${locked_skipped}${worktree}|${branch}
+"
+          else
+            to_delete="${to_delete}${worktree}|${branch}|${wt_age:-0}
+"
+            to_delete_count=$((to_delete_count + 1))
           fi
 
           worktree=""
@@ -200,19 +255,68 @@ EOF
 
   # Check if anything to delete
   if [ "$to_delete_count" -eq 0 ]; then
-    _info "No worktrees to clear"
+    if [ "$dry_run" -eq 1 ]; then
+      echo "[dry-run] No worktrees would be removed"
+    else
+      _info "No worktrees to clear"
+    fi
+    return 0
+  fi
+
+  # Build description of filters applied
+  local filter_desc=""
+  if [ -n "$days" ]; then
+    filter_desc="older than $days day(s)"
+  fi
+  if [ "$merged" -eq 1 ]; then
+    if [ -n "$filter_desc" ]; then
+      filter_desc="$filter_desc, branches merged into ${GWT_MAIN_REF}"
+    else
+      filter_desc="branches merged into ${GWT_MAIN_REF}"
+    fi
+  fi
+  if [ -n "$pattern" ]; then
+    if [ -n "$filter_desc" ]; then
+      filter_desc="$filter_desc, matching pattern: $pattern"
+    else
+      filter_desc="matching pattern: $pattern"
+    fi
+  fi
+
+  # Dry-run mode: show what would be deleted and exit
+  if [ "$dry_run" -eq 1 ]; then
+    echo "[dry-run] Worktrees that would be removed ($filter_desc):"
+    while IFS= read -r item; do
+      [ -z "$item" ] && continue
+      local wt_path="${item%%|*}"
+      local rest="${item#*|}"
+      local br="${rest%%|*}"
+      local ts="${rest#*|}"
+      if [ -n "$ts" ] && [ "$ts" != "0" ]; then
+        echo "  $wt_path ($br) - $(_age_display "$ts")"
+      else
+        echo "  $wt_path ($br)"
+      fi
+    done <<EOF
+$to_delete
+EOF
+    echo "[dry-run] $to_delete_count worktree(s) would be removed"
     return 0
   fi
 
   # Show list of worktrees to delete
-  echo "Worktrees to remove (older than $days day(s)):"
+  echo "Worktrees to remove ($filter_desc):"
   while IFS= read -r item; do
     [ -z "$item" ] && continue
     local wt_path="${item%%|*}"
     local rest="${item#*|}"
     local br="${rest%%|*}"
     local ts="${rest#*|}"
-    echo "  $wt_path ($br) - $(_age_display "$ts")"
+    if [ -n "$ts" ] && [ "$ts" != "0" ]; then
+      echo "  $wt_path ($br) - $(_age_display "$ts")"
+    else
+      echo "  $wt_path ($br)"
+    fi
   done <<EOF
 $to_delete
 EOF
@@ -500,7 +604,7 @@ Commands:
   -r, --remove [branch]  Remove worktree and branch
   -o, --open [branch]    Open existing branch as worktree (fzf if no arg)
   -l, --list             List worktrees
-  -c, --clear <days>     Clear worktrees older than n days
+  -c, --clear [days]     Clear worktrees (days optional with --merged/--pattern)
   -L, --lock [branch]    Lock worktree
   -U, --unlock [branch]  Unlock worktree
   --init                 Initialize config
@@ -516,6 +620,9 @@ Flags:
   -b, --from <ref>       Base branch/ref for -n (default: main branch)
   --dev-only             Filter to dev-based worktrees only (with -c)
   --main-only            Filter to main-based worktrees only (with -c)
+  --merged               Filter to worktrees with branches merged into main (with -c)
+  --pattern <glob>       Filter to worktrees matching branch name glob (with -c)
+  --dry-run              Preview what would be cleared without deleting (with -c)
   --reflog               Show reflog (with --log)
 HELP
 }
