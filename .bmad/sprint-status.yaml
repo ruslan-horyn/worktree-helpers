@@ -153,7 +153,7 @@ sprints:
     end_date: "2026-02-22"
     capacity_points: 17
     committed_points: 20
-    completed_points: 13
+    completed_points: 15
     status: "active"
     goal: "Fix core reliability issues, improve existing branch UX, and polish init/clear workflows"
     stories:
@@ -192,7 +192,8 @@ sprints:
       - story_id: "STORY-022"
         title: "Improve wt --init worktrees path prompt"
         points: 2
-        status: "defined"
+        status: "completed"
+        completion_date: "2026-02-15"
         assigned_to: null
         priority: "should_have"
         blocked_by: ["STORY-026"]
