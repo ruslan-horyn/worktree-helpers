@@ -360,9 +360,10 @@ _cmd_init() {
   name=$(_project_name); main_ref=$(_main_branch)
   warn_threshold=20
 
-  printf "Project [%s]: " "$name" >&2; read -r r; [ -n "$r" ] && name="$r"
-  printf "Main branch [%s]: " "$main_ref" >&2; read -r r; [ -n "$r" ] && main_ref="$r"
-  printf "Worktree warning threshold [%s]: " "$warn_threshold" >&2; read -r r; [ -n "$r" ] && warn_threshold="$r"
+  local r
+  r=$(_read_input "Project [$name]: " "$name"); [ -n "$r" ] && name="$r"
+  r=$(_read_input "Main branch [$main_ref]: " "$main_ref"); [ -n "$r" ] && main_ref="$r"
+  r=$(_read_input "Worktree warning threshold [$warn_threshold]: " "$warn_threshold"); [ -n "$r" ] && warn_threshold="$r"
 
   main_ref=$(_normalize_ref "$main_ref")
 

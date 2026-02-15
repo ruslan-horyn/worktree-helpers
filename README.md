@@ -38,6 +38,7 @@ stashes, no more broken context.
 - Age-based worktree cleanup with filters (`--dev-only`, `--main-only`)
 - Lock/unlock worktree protection
 - Branch rename without recreating worktree (`--rename`)
+- Shell-aware prompts — `wt --init` supports tab completion in bash and zsh
 - Project-specific configuration per repository
 
 ## Requirements
