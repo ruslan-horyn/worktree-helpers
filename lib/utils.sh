@@ -45,7 +45,7 @@ _normalize_ref() {
   for r in $(git remote 2>/dev/null); do
     case "$ref" in ${r}/*) echo "$ref"; return ;; esac
   done
-  echo "origin/$ref"
+  case "$ref" in origin/*) echo "$ref" ;; *) echo "origin/$ref" ;; esac
 }
 
 _current_branch() { git rev-parse --abbrev-ref HEAD 2>/dev/null; }
