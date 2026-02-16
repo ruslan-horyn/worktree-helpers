@@ -1,20 +1,19 @@
 ---
-name: Sprint Orchestrator
+name: sprint-orchestrator
 description: >
   This skill should be used when the user asks to "run sprint", "execute stories",
   "orchestrate sprint", "run stories sequentially", "execute sprint plan",
   "uruchom sprint", "wykonaj stories sekwencyjnie", or wants sequential automated
   execution of sprint stories with Dev and QA sub-agents.
   Accepts optional story IDs as arguments (e.g., "24 25 26").
-version: 0.1.0
+version: 1.0.0
 ---
 
 # Sprint Orchestrator
 
-Sequential sprint orchestrator. Complement to `launch-sprint` (parallel). Executes
-stories one-by-one within a single Claude session using Dev and QA sub-agents via the
-Task tool. Each story merges to main after completion so the next story branches from
-an updated codebase.
+Sequential story executor. Run stories one-by-one using Dev and QA sub-agents via
+the Task tool. All progress is tracked directly in the story doc — no separate
+report files. The orchestrator acts as a message relay between agents and the user.
 
 ## Arguments
 
@@ -27,202 +26,168 @@ Optional story IDs from skill arguments. Accepted formats:
 
 Normalize all to `STORY-XXX` format (zero-padded to 3 digits).
 
-**Without arguments:** execute all pending stories from the active sprint in
-implementation order.
+**Without arguments:** execute all pending stories from the active sprint.
 
 ## Phase 0: Sprint Assessment
 
 1. Read `.bmad/sprint-status.yaml` to find the active sprint and its stories
-2. Read `references/sprint-plan.md` (bundled with this skill) to get:
-   - Implementation order for the active sprint
-   - Branch names from the Sprint Story Map / Branch Mapping table
-   - Story details and dependency chains
-3. Build execution list:
+2. Build execution list:
    - If arguments provided: filter to only those stories
    - If no arguments: all stories with status != `completed`
-   - Order by implementation order from the sprint plan
    - Skip completed stories
    - Check dependency chains (blocked stories cannot execute before their blockers)
-4. **Worktree detection**:
+3. **Worktree detection**:
    - Run: `git rev-parse --show-toplevel` and `git worktree list --porcelain`
-   - If the current directory is a linked worktree (not the main working tree):
+   - If current directory is a linked worktree (not the main working tree):
      - Set `WORKTREE_MODE=true`
-     - Skip Step 1 (Branch Setup) — already on the correct branch in the worktree
-     - In Step 6 (Finalize): commit but do NOT merge to main
-       (user handles merges after all parallel stories complete)
-5. Present execution plan to user and confirm before proceeding:
+     - Skip branch creation in Step 1 — already on the correct branch
+     - In Finalize: commit but do NOT merge to main (user handles merges)
+     - sprint-status.yaml update is STILL mandatory
+4. **Proceed without confirmation** — present the plan and start immediately:
 
 ```
-Sprint N — Execution Plan
-
-Stories to execute (in order):
-  1. STORY-024 (3pts) — Fix race condition in concurrent worktree creation
-  2. STORY-025 (5pts) — Improve UX when opening worktree from existing branch
-  ...
-
+Sprint N — Executing:
+  1. STORY-024 (3pts) — Fix race condition
+  2. STORY-025 (5pts) — Improve UX
 Total: X stories, Y points
-
-Proceed? [confirm with user]
 ```
 
 ## Phase 1: Story Loop
 
-For each pending story in implementation order:
+For each pending story in order:
 
 ### Step 1: Branch Setup
 
-**Skip this step if `WORKTREE_MODE=true`** — the worktree is already on the correct branch.
+**Skip if `WORKTREE_MODE=true`.**
 
 ```
-git checkout main
-git pull origin main
-git checkout -b <branch-name>
+git checkout main && git pull origin main
+git checkout -b story-XXX-<kebab-title>
 ```
 
-Branch name: look up the story in the sprint plan's Branch Mapping table.
-If not found, derive as `story-XXX/<kebab-title>`.
+Branch naming: `story-XXX-<kebab-title>` — NO slashes.
 
-### Step 2: Cleanup
+### Step 2: Story Doc
 
-Delete stale reports from previous runs:
-
-```
-Glob(".ai/reports/STORY-XXX-*.md") → delete all matches
-```
-
-### Step 3: Story Doc
-
-Verify `docs/stories/STORY-XXX.md` exists. If missing, invoke:
+Verify `docs/stories/STORY-XXX.md` exists. If missing, spawn a Story Creator agent:
 
 ```
-Skill(skill: "bmad:create-story", args: "STORY-XXX")
+Task(
+  description="Create story doc STORY-XXX",
+  subagent_type="general-purpose",
+  prompt="Invoke the Skill tool FIRST: Skill(skill: \"bmad:create-story\", args: \"STORY-XXX\"). Follow the skill's workflow to create the story document."
+)
 ```
 
-### Step 4: Dev Agent
+### Step 3: Dev Agent
 
-Spawn a Dev sub-agent via the Task tool using the Developer Prompt Template
-(see Agent Prompt Templates below).
+Spawn a Dev sub-agent via the Task tool.
 
 ```
-continuation_num = 0
-checkpoint_path = ""
+result = Task(
+  description="Dev STORY-XXX",
+  subagent_type="general-purpose",
+  prompt=<<DEV_PROMPT>>
+)
+```
 
-LOOP (max 5 iterations):
-  continuation_num += 1
+**Message relay:** If the agent result contains a question or request for
+confirmation, forward it to the user via AskUserQuestion, then resume the agent
+with the user's answer.
 
-  IF checkpoint_path is empty:
-    prompt = DEVELOPER_PROMPT with {{STORY_ID}}, {{CONTINUATION_NUM}}
-  ELSE:
-    prompt = DEVELOPER_RESUME_PROMPT with {{STORY_ID}}, {{CHECKPOINT_PATH}}, {{CONTINUATION_NUM}}
+Parse result:
+- `DONE` → proceed to Step 4
+- `BLOCKED: <reason>` → report to user, STOP
 
-  result = Task(
-    description="Dev STORY-XXX pass #N",
+### Step 4: QA Code Review Agent
+
+Spawn a QA sub-agent for code review.
+
+```
+result = Task(
+  description="QA review STORY-XXX",
+  subagent_type="general-purpose",
+  prompt=<<QA_REVIEW_PROMPT>>
+)
+```
+
+Parse result:
+- `DONE. No issues.` → proceed to Step 5
+- `DONE. Issues found.` → read updated story doc, spawn a **Dev Fix Agent**:
+  ```
+  Task(
+    description="Dev fix STORY-XXX",
     subagent_type="general-purpose",
-    prompt=<constructed prompt>
+    prompt=<<DEV_FIX_PROMPT>>
   )
+  ```
+  After fix agent completes, re-run QA (max 2 QA-fix cycles). If issues persist
+  after 2 cycles → report to user, STOP.
 
-  Parse result:
-    "DONE. Report:" → extract path, BREAK to Step 5
-    "CONTINUE. Checkpoint:" → extract checkpoint_path, CONTINUE loop
+### Step 5: QA Manual Testing Agent (conditional)
 
-  On crash (no signal):
-    Glob(".ai/reports/STORY-XXX-dev-checkpoint-*.md")
-    IF found → checkpoint_path = latest, CONTINUE
-    IF not found → report BLOCKED, STOP entire orchestration
-
-After 5 iterations without DONE:
-  → Read last checkpoint, report BLOCKED with remaining work, STOP
-```
-
-### Step 5: QA Agent
-
-Same loop pattern as Step 4, but using QA Prompt Templates.
+If the story introduces **new user-facing functionality** (check AC in story doc):
 
 ```
-continuation_num = 0
-checkpoint_path = ""
-
-LOOP (max 5 iterations):
-  continuation_num += 1
-
-  IF checkpoint_path is empty:
-    prompt = QA_REVIEWER_PROMPT with {{STORY_ID}}, {{CONTINUATION_NUM}}
-  ELSE:
-    prompt = QA_RESUME_PROMPT with {{STORY_ID}}, {{CHECKPOINT_PATH}}, {{CONTINUATION_NUM}}
-
-  result = Task(
-    description="QA STORY-XXX pass #N",
-    subagent_type="general-purpose",
-    prompt=<constructed prompt>
-  )
-
-  Parse result:
-    "DONE. Report:" → extract path, BREAK to Step 6
-    "CONTINUE. Checkpoint:" → extract checkpoint_path, CONTINUE loop
-
-  On crash / 5 iterations → same BLOCKED handling as Dev
+result = Task(
+  description="QA manual test STORY-XXX",
+  subagent_type="general-purpose",
+  prompt=<<QA_MANUAL_PROMPT>>
+)
 ```
+
+If no new user-facing functionality → skip this step.
 
 ### Step 6: Finalize
 
-1. **Check QA report**: Read `.ai/reports/STORY-XXX-qa.md`
-   - If "Issues Found and NOT Fixed" has entries (not "None") → STOP, report to user
-2. **Stage & Commit**:
+1. **Stage & Commit**:
    - `git diff --name-only` to review changed files
-   - Stage specific files (NOT `git add .` or `git add -A`)
+   - Stage specific files (NOT `git add .`)
    - Commit with conventional format per CLAUDE.md (no Co-Authored-By)
-3. **Merge to main** — **skip if `WORKTREE_MODE=true`**:
-   - `git checkout main`
-   - `git merge <story-branch> --no-ff`
+2. **Merge to main** — **skip if `WORKTREE_MODE=true`**:
+   - `git checkout main && git merge <branch> --no-ff`
    - If merge conflict → STOP, report to user
-   - `git branch -d <story-branch>`
-4. **Update sprint-status.yaml** — **skip if `WORKTREE_MODE=true`**:
-   - Set story status → `completed`
-   - Set `completion_date` → today (YYYY-MM-DD)
-   - Recalculate `completed_points` for the sprint
-5. **Update story doc** (`docs/stories/STORY-XXX.md`):
-   - Set Status field → `Completed`
+   - `git branch -d <branch>`
+3. **Update sprint-status.yaml** (ALWAYS — including worktree mode):
+   - Set story status → `completed`, `completion_date` → today
+   - Recalculate `completed_points`
+4. **Update story doc**: Set Status → `Completed`
 
 ### Step 7: Story Report
 
-Print per-story completion summary:
-
 ```
 STORY-XXX complete.
-- Branch: <branch> → merged to main  (or "→ committed, merge deferred" in worktree mode)
-- QA report: .ai/reports/STORY-XXX-qa.md
+- Branch: <branch> → merged to main (or "merge deferred" in worktree mode)
 - Commit: <short-hash> — <message>
-- Continuations: Dev=N, QA=M
 ```
-
-Then proceed to the next story in the execution list.
 
 ## Phase 2: Sprint Report
 
-After all stories are processed, print a summary table:
-
 ```
-Sprint N — Execution Complete
-
-| Story | Points | Result | Dev Passes | QA Passes |
-|-------|--------|--------|------------|-----------|
-| STORY-024 | 3 | completed | 1 | 1 |
-| STORY-025 | 5 | completed | 2 | 1 |
-
-Total: X/Y stories completed, Z points delivered
-Sprint status: .bmad/sprint-status.yaml updated
+Sprint N — Complete
+| Story | Points | Result |
+|-------|--------|--------|
+| STORY-024 | 3 | completed |
+Total: X/Y stories, Z points
 ```
+
+## Orchestrator Rules
+
+1. **Message relay**: Always forward agent questions/confirmations to the user.
+   If an agent asks something, use AskUserQuestion to get the answer.
+2. **No separate reports**: All progress written to the story doc by agents.
+3. **Auto-proceed**: Do not ask user for confirmation to start execution.
+   Just present the plan and go.
+4. **Branch naming**: NO slashes — `story-XXX-<kebab-title>`.
 
 ## Error Handling
 
 | Scenario | Action |
 |----------|--------|
-| QA report has unfixed issues | STOP, report to user |
+| QA issues persist after 2 fix cycles | STOP, report to user |
 | Merge conflict | STOP, report to user |
-| Agent crash, no checkpoint | STOP, report BLOCKED |
-| 5 continuations exhausted | STOP, report BLOCKED with remaining work |
-| Story doc missing | Auto-create via `bmad:create-story` |
-| Story not in branch mapping | Derive branch as `story-XXX/<kebab-title>` |
+| Agent crash | Report BLOCKED, STOP |
+| Story doc missing | Spawn Story Creator agent with `Skill(skill: "bmad:create-story")` |
 
 ---
 
@@ -230,275 +195,148 @@ Sprint status: .bmad/sprint-status.yaml updated
 
 ### Project-Specific Overrides
 
-Include these overrides in ALL agent prompts (Dev and QA). They take precedence
-over any conflicting instructions from the skills the agent invokes:
-
-```
-OVERRIDES (follow these instead of conflicting skill instructions):
-  1. No commits — orchestrator handles commit after QA
-  2. No sprint-status update — orchestrator handles after QA
-  3. No Co-Authored-By lines (CLAUDE.md project convention)
-  4. POSIX-compatible shell only in wt.sh and lib/*.sh (project convention)
-  5. Scope discipline: only modify files that {{STORY_ID}} owns
-  6. Use `npm test` to run tests (not raw bats command)
-  7. Do NOT create documentation files unless story AC explicitly requires it
-```
-
-### Context Management Block
-
 Include in ALL agent prompts:
 
 ```
-CONTEXT MANAGEMENT
-==================
-You are continuation #{{CONTINUATION_NUM}} for this phase.
-
-PROACTIVE SAVES (crash recovery):
-After each major step, write/update your checkpoint file at
-.ai/reports/{{STORY_ID}}-<phase>-checkpoint-{{CONTINUATION_NUM}}.md.
-Overwrite the same file each time — save point, NOT a signal to stop.
-
-CONTINUE SIGNAL (fresh context needed):
-Return CONTINUE instead of DONE when ANY of these occur:
-- System compression messages appear in the conversation
-- You have made 40+ tool calls in this session
-- You have gone through 3+ test-fix cycles
-- You find yourself re-reading files you already read earlier
-
-When returning CONTINUE:
-1. Finish your current logical step
-2. Write final checkpoint update
-3. Return: CONTINUE. Checkpoint: .ai/reports/{{STORY_ID}}-<phase>-checkpoint-{{CONTINUATION_NUM}}.md
+OVERRIDES:
+  1. No commits — orchestrator handles commit after QA
+  2. No sprint-status update — orchestrator handles
+  3. No Co-Authored-By lines (CLAUDE.md convention)
+  4. POSIX-compatible shell only in wt.sh and lib/*.sh
+  5. Scope discipline: only modify files that {{STORY_ID}} owns
+  6. Use `npm test` to run tests
+  7. Do NOT create separate report files — write all progress to docs/stories/{{STORY_ID}}.md
 ```
 
-### <<DEVELOPER_PROMPT>>
-
-Construct this prompt for the first Dev agent pass:
+### <<DEV_PROMPT>>
 
 ```
-STEP 1: Read the story doc: docs/stories/{{STORY_ID}}.md
-
-STEP 2: Invoke the Skill tool:
+STEP 1: Invoke the Skill tool FIRST:
   Skill(skill: "bmad:dev-story", args: "{{STORY_ID}}")
-  This is your PRIMARY guide. It defines the full developer workflow.
-
-STEP 3: Follow the skill's complete workflow (Parts 1-9).
-  SKIP these parts (handled by the orchestrator or not applicable):
-  - Part 3: branch creation (branch already exists)
-  - Parts 4-5: web-app specific examples (this is a shell CLI project)
-  - Part 8: browser testing (not applicable)
-
-<< Insert Project-Specific Overrides block >>
-<< Insert Context Management block (phase=dev) >>
-
-REPORT
-======
-When finished, write a dev report to .ai/reports/{{STORY_ID}}-dev.md:
-
-## {{STORY_ID}} Dev Report
-
-### Files Changed
-| File | Change Type | Description |
-|------|-------------|-------------|
-
-### Tests Added
-| Test File | Test Name | What It Covers |
-|-----------|-----------|----------------|
-
-### Test Results
-- Total tests: X / Passed: X / Failed: 0
-
-### Shellcheck
-- Clean: yes/no
-- Issues fixed: (list)
-
-### Notes
-- Implementation decisions that deviated from story doc
-- Ambiguities encountered
-
-RETURN TO ORCHESTRATOR
-======================
-Return EXACTLY ONE signal:
-
-If COMPLETE (all implementation done, tests pass, shellcheck clean):
-  DONE. Report: .ai/reports/{{STORY_ID}}-dev.md
-
-If you need FRESH CONTEXT:
-  CONTINUE. Checkpoint: .ai/reports/{{STORY_ID}}-dev-checkpoint-{{CONTINUATION_NUM}}.md
-```
-
-### <<DEVELOPER_RESUME_PROMPT>>
-
-Construct this prompt when resuming Dev from a checkpoint:
-
-```
-STEP 1: Read the checkpoint file: {{CHECKPOINT_PATH}}
-  This is your primary source of truth for what has been done and what remains.
+  This is your PRIMARY workflow guide.
 
 STEP 2: Read the story doc: docs/stories/{{STORY_ID}}.md
 
-STEP 3: Invoke the Skill tool:
+STEP 3: Follow the skill's workflow.
+  SKIP: branch creation (handled by orchestrator), web-app examples, browser testing.
+
+PROGRESS TRACKING:
+  Update the "## Progress Tracking" section in docs/stories/{{STORY_ID}}.md as
+  you work. After each major step, add/update entries:
+  - Files changed (with change type and description)
+  - Tests added
+  - Test results
+  - Decisions made
+
+<< Project-Specific Overrides >>
+
+RETURN TO ORCHESTRATOR:
+  DONE — when all implementation done, tests pass, shellcheck clean.
+  BLOCKED: <reason> — when you cannot proceed.
+```
+
+### <<DEV_FIX_PROMPT>>
+
+```
+STEP 1: Invoke the Skill tool FIRST:
   Skill(skill: "bmad:dev-story", args: "{{STORY_ID}}")
-  Same SKIP list and OVERRIDES as initial Dev prompt apply.
 
-STEP 4: Continue implementation from the checkpoint.
-  - Read all files listed in checkpoint's "Files Modified So Far". VERIFY they match.
-  - Do NOT redo completed work.
-  - Respect all "Key Decisions Made" — do not contradict them.
-  - Pay attention to "Warnings / Context for Next Agent".
-  - Continue from "Current Step" and "Remaining Work".
+STEP 2: Read docs/stories/{{STORY_ID}}.md — focus on the "## QA Review" section.
+  It contains issues found by QA with severity, description, and file locations.
 
-<< Insert Project-Specific Overrides block >>
-<< Insert Context Management block (phase=dev) >>
+STEP 3: Fix each issue listed. Do NOT fix items marked as "won't fix" or
+  "architectural" — those require user decision.
 
-REPORT: Same format as initial Dev prompt. Cover ALL work across ALL continuations.
+STEP 4: Run tests: `npm test`. Run linter: `shellcheck -x wt.sh lib/*.sh`.
 
-RETURN TO ORCHESTRATOR
-======================
-DONE. Report: .ai/reports/{{STORY_ID}}-dev.md
-  — or —
-CONTINUE. Checkpoint: .ai/reports/{{STORY_ID}}-dev-checkpoint-{{CONTINUATION_NUM}}.md
+STEP 5: Update the story doc — mark fixed issues in the QA Review section.
+
+<< Project-Specific Overrides >>
+
+RETURN: DONE
 ```
 
-### <<QA_REVIEWER_PROMPT>>
-
-Construct this prompt for the first QA agent pass:
+### <<QA_REVIEW_PROMPT>>
 
 ```
-STEP 1: Read the dev report: .ai/reports/{{STORY_ID}}-dev.md
-STEP 2: Read the story doc: docs/stories/{{STORY_ID}}.md
-
-STEP 3: Invoke the Skill tool:
+STEP 1: Invoke the Skill tool FIRST:
   Skill(skill: "qa-engineer")
-  This is your PRIMARY guide for the QA workflow.
+  This is your PRIMARY workflow guide.
 
-STEP 4: Follow the skill's workflow for:
-  - AC audit against docs/stories/{{STORY_ID}}.md
-  - Code quality review of all files in the dev report
-  - Test coverage analysis
-  Project-specific tools:
-  - Test suite: npm test
-  - Linter: shellcheck -x wt.sh lib/*.sh
+STEP 2: Read docs/stories/{{STORY_ID}}.md — understand AC and implementation.
 
-FIX SCOPE
-=========
-Fix directly: style issues, missing quotes, POSIX violations, test gaps, minor bugs,
-  missing edge case tests.
-Report as "NOT Fixed": architectural changes, major logic rewrites, changes that
-  contradict dev checkpoint "Key Decisions Made", adding/removing whole functions.
+STEP 3: Review all changed files (check git diff or the Progress Tracking section).
+  For each file:
+  - Check POSIX compliance, style, variable quoting
+  - Verify AC coverage
+  - Check test coverage
 
-<< Insert Project-Specific Overrides block >>
-<< Insert Context Management block (phase=qa) >>
+STEP 4: Run tests: `npm test`. Run linter: `shellcheck -x wt.sh lib/*.sh`.
 
-REPORT
-======
-When finished, write a QA report to .ai/reports/{{STORY_ID}}-qa.md:
+STEP 5: Write findings to docs/stories/{{STORY_ID}}.md in a new "## QA Review"
+  section (append, do not overwrite existing content):
 
-## {{STORY_ID}} QA Report
+  ## QA Review
 
-### Acceptance Criteria Checklist
-- [x] AC 1 — code: <location>, test: <test name>
+  ### Files Reviewed
+  | File | Status | Notes |
+  |------|--------|-------|
 
-### Issues Found and Fixed
-| # | Severity | Description | Fix Applied |
-(Write "None" if no issues)
+  ### Issues Found
+  | # | Severity (critical/major/minor) | File | Description | Status |
+  (Write "None" if no issues)
 
-### Issues Found and NOT Fixed
-| # | Severity | Description | Reason |
-(Write "None" if all fixed)
+  ### AC Verification
+  - [x] AC 1 — verified: <location>, test: <test name>
 
-### Code Quality
-- POSIX compliance: pass/fail
-- Style consistency: pass/fail
-- Variable quoting: pass/fail
-- Scope discipline: pass/fail
+  ### Test Results
+  - Total: X / Passed: X / Failed: 0
 
-### Final Test Results
-- Total tests: X / Passed: X / Failed: 0
+  ### Shellcheck
+  - Clean: yes/no
 
-### Final Shellcheck
-- Clean: yes/no
+<< Project-Specific Overrides >>
 
-RETURN TO ORCHESTRATOR
-======================
-DONE. Report: .ai/reports/{{STORY_ID}}-qa.md
-  — or —
-CONTINUE. Checkpoint: .ai/reports/{{STORY_ID}}-qa-checkpoint-{{CONTINUATION_NUM}}.md
+RETURN:
+  DONE. No issues. — when everything passes.
+  DONE. Issues found. — when issues are written to the story doc.
 ```
 
-### <<QA_RESUME_PROMPT>>
-
-Construct this prompt when resuming QA from a checkpoint:
+### <<QA_MANUAL_PROMPT>>
 
 ```
-STEP 1: Read the QA checkpoint file: {{CHECKPOINT_PATH}}
-STEP 2: Read the dev report: .ai/reports/{{STORY_ID}}-dev.md
-STEP 3: Read the story doc: docs/stories/{{STORY_ID}}.md
-
-STEP 4: Invoke the Skill tool:
+STEP 1: Invoke the Skill tool FIRST:
   Skill(skill: "qa-engineer")
-  Same OVERRIDES and FIX SCOPE as initial QA prompt apply.
 
-STEP 5: Continue QA review from the checkpoint.
-  - Skip ACs already verified (check "AC Verification Progress").
-  - Track issues already found (check "Issues Found So Far").
-  - Continue from where the previous agent stopped.
+STEP 2: Read docs/stories/{{STORY_ID}}.md — focus on AC and user-facing behavior.
 
-<< Insert Project-Specific Overrides block >>
-<< Insert Context Management block (phase=qa) >>
+STEP 3: Perform manual testing:
+  - Source `wt.sh` and exercise the new/changed commands
+  - Test happy paths from AC
+  - Test edge cases mentioned in Technical Notes
+  - Test error handling (invalid input, missing deps)
 
-REPORT: Same format as initial QA prompt. Cover ALL work across ALL continuations.
+STEP 4: Append results to docs/stories/{{STORY_ID}}.md in a "## Manual Testing"
+  section:
 
-DONE. Report: .ai/reports/{{STORY_ID}}-qa.md
-  — or —
-CONTINUE. Checkpoint: .ai/reports/{{STORY_ID}}-qa-checkpoint-{{CONTINUATION_NUM}}.md
-```
+  ## Manual Testing
 
-### Checkpoint File Format
+  ### Test Scenarios
+  | # | Scenario | Expected | Actual | Pass/Fail |
+  |---|----------|----------|--------|-----------|
 
-Dev and QA checkpoints share this structure:
+  ### Issues Found
+  | # | Severity | Description | Steps to Reproduce |
+  (Write "None" if no issues)
 
-```markdown
-## {{STORY_ID}} <Phase> Checkpoint #N
+<< Project-Specific Overrides >>
 
-### Story Summary
-<1-2 sentences>
-
-### Completed Steps
-- [x] Step 1: ...
-- [ ] Step 4: (not started)
-
-### Current Step
-<In progress + partial notes>
-
-### Files Modified So Far
-| File | Change Type | Description |
-
-### Remaining Work
-- ...
-
-### Key Decisions Made
-<Choices that continuation agent MUST NOT contradict>
-
-### Warnings / Context for Next Agent
-<Gotchas, non-obvious patterns>
-```
-
-QA checkpoints add:
-
-```markdown
-### AC Verification Progress
-| AC | Status | Code Location | Test Name |
-
-### Issues Found So Far
-| # | Severity | Description | Fix Applied | Status |
-
-### Code Files Reviewed
-- [x] lib/commands.sh — fully reviewed
-- [ ] wt.sh — not yet reviewed
+RETURN:
+  DONE. No issues. — all manual tests pass.
+  DONE. Issues found. — issues written to story doc.
 ```
 
 ## References
 
-- `references/sprint-plan.md` — Sprint allocations, implementation order, story details, dependency graph, branch mapping
 - `.bmad/sprint-status.yaml` — Live sprint tracking data
+- `docs/stories/STORY-XXX.md` — Single source of truth for each story
