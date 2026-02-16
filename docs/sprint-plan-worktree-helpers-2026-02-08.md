@@ -579,23 +579,25 @@ STORY-026 (remove worktreesDir - 3pts) ── independent
 
 ---
 
-### Sprint 5 (Weeks 9-10) — 15/17 points
+### Sprint 5 (Weeks 9-10) — 18/17 points
 
-**Goal:** Enhance developer experience with update mechanism and completions
+**Goal:** Fix config detection bug, enhance developer experience with update mechanism and completions
 
 **Stories:**
 
 | Story ID | Title | Points | Priority | Blocked By |
 |----------|-------|--------|----------|------------|
+| STORY-027 | Fix config detection when chpwd hooks output text | 3 | Must Have | — |
 | STORY-013 | Add self-update mechanism (`wt --update`) | 5 | Should Have | STORY-012 |
 | STORY-014 | Add shell completions (bash + zsh) | 5 | Should Have | — |
 | STORY-011 | Show dirty/clean status in `wt -l` | 3 | Should Have | — |
 | STORY-018 | Create oh-my-zsh / zinit plugin | 2 | Could Have | — |
 
-**Total:** 15 points / 17 capacity (88% utilization)
+**Total:** 18 points / 17 capacity (106% utilization — acceptable given velocity avg 16.5)
 
 **Sprint 5 Deliverables:**
 
+- Fix: config detection with chpwd hooks + remove package.json requirement
 - Non-blocking update check + `wt --update`
 - Tab completion for bash and zsh
 - Dirty/clean indicators in `wt -l`
@@ -603,17 +605,18 @@ STORY-026 (remove worktreesDir - 3pts) ── independent
 
 **Implementation Order:**
 
-1. STORY-013 (5pts — Days 1-4)
-2. STORY-014 (5pts — Days 1-5, parallel with 013)
-3. STORY-011 (3pts — Days 5-7)
-4. STORY-018 (2pts — Days 7-8, benefits from 014)
+1. STORY-027 (3pts — Day 1, critical bug fix first)
+2. STORY-013 (5pts — Days 2-5)
+3. STORY-014 (5pts — Days 2-6, parallel with 013)
+4. STORY-011 (3pts — Days 6-8)
+5. STORY-018 (2pts — Days 8-9, benefits from 014)
 
 **Risks:**
 
 - Update mechanism has network/API complexity
 - Completion systems differ significantly between bash and zsh
 
-**Buffer:** 2 points for unexpected complexity
+**Buffer:** None (slightly over capacity, but STORY-027 is a quick fix)
 
 ---
 
@@ -748,9 +751,9 @@ For a story to be considered complete:
 
 ## Next Steps
 
-**Immediate:** Continue Sprint 4
+**Immediate:** Start Sprint 5
 
-Run `/bmad:dev-story STORY-024` to fix the race condition, or `/bmad:dev-story STORY-025` to improve the existing branch UX.
+Run `/launch-sprint` to create worktrees for Sprint 5 stories.
 
 **Sprint cadence:**
 
@@ -763,7 +766,7 @@ Run `/bmad:dev-story STORY-024` to fix the race condition, or `/bmad:dev-story S
 
 ## Progress Tracking
 
-Last updated: 2026-02-13
+Last updated: 2026-02-16
 
 **Sprint 3 (COMPLETE — 17/17 pts):**
 
@@ -773,17 +776,18 @@ Last updated: 2026-02-13
 - [x] STORY-019 — Add `wt --rename` command (3pts)
 - [x] STORY-020 — Add uninstall script (2pts)
 
-**Sprint 4 (CURRENT — 5/17 pts done):**
+**Sprint 4 (COMPLETE — 18/18 pts):**
 
 - [x] STORY-023 — Add `--from`/`-b` flag to `wt -n` (2pts)
 - [x] STORY-024 — Fix race condition in concurrent worktree creation (3pts)
-- [ ] STORY-025 — Improve UX when opening worktree from existing branch (5pts)
-- [ ] STORY-026 — Remove worktreesDir from config, always auto-derive (3pts)
-- [ ] STORY-022 — Improve `wt --init` worktrees path prompt (2pts)
-- [ ] STORY-015 — Add more granular clear options (3pts)
+- [x] STORY-025 — Improve UX when opening worktree from existing branch (5pts)
+- [x] STORY-026 — Remove worktreesDir from config, always auto-derive (3pts)
+- [x] STORY-022 — Improve `wt --init` worktrees path prompt (2pts)
+- [x] STORY-015 — Add more granular clear options (3pts)
 
-**Sprint 5:**
+**Sprint 5 (CURRENT — 0/18 pts):**
 
+- [ ] STORY-027 — Fix config detection when chpwd hooks output text (3pts) **MUST HAVE**
 - [ ] STORY-013 — Add self-update mechanism (5pts)
 - [ ] STORY-014 — Add shell completions (5pts)
 - [ ] STORY-011 — Show dirty/clean status in `wt -l` (3pts)

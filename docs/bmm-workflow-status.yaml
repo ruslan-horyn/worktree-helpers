@@ -19,8 +19,8 @@ phases:
     ux-design: "optional"
 
   implementation:
-    sprint-planning: "docs/sprint-plan-worktree-helpers-2026-02-01.md"
+    sprint-planning: "docs/sprint-plan-worktree-helpers-2026-02-08.md"
     stories: "required"
 
 current_phase: "implementation"
-last_updated: "2026-02-01"
+last_updated: "2026-02-16"
