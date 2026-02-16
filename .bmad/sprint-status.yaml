@@ -212,14 +212,15 @@ sprints:
     end_date: "2026-03-08"
     capacity_points: 17
     committed_points: 16
-    completed_points: 0
-    status: "not_started"
+    completed_points: 3
+    status: "active"
     goal: "Fix config detection bug, enhance developer experience with update mechanism and completions"
     stories:
       - story_id: "STORY-027"
         title: "Fix config detection fails when chpwd hooks output text"
         points: 3
-        status: "not_started"
+        status: "completed"
+        completion_date: "2026-02-16"
         assigned_to: null
         priority: "must_have"
         story_doc: "docs/stories/STORY-027.md"

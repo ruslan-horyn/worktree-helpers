@@ -28,21 +28,28 @@ teardown() {
   assert_failure
 }
 
-# --- Missing package.json ---
+# --- No package.json (non-Node.js repo) ---
 
-@test "commands error gracefully when package.json is missing" {
+@test "commands work in non-Node.js repo without package.json" {
   cd "$TEST_TEMP_DIR"
-  git init test-repo-no-pkg >/dev/null 2>&1
-  cd test-repo-no-pkg
+  local origin_dir="$TEST_TEMP_DIR/origin-no-pkg.git"
+  git init --bare "$origin_dir" >/dev/null 2>&1
+  git clone "$origin_dir" "$TEST_TEMP_DIR/repo-no-pkg" >/dev/null 2>&1
+  cd "$TEST_TEMP_DIR/repo-no-pkg"
   git config user.email "t@t"
   git config user.name "T"
   echo "x" > f.txt
   git add f.txt
   git commit -m "init" >/dev/null 2>&1
+  # Rename branch to main if needed
+  local cur; cur=$(git rev-parse --abbrev-ref HEAD)
+  [ "$cur" != "main" ] && git branch -m "$cur" main >/dev/null 2>&1
+  git push -u origin main >/dev/null 2>&1
+  create_test_config "$TEST_TEMP_DIR/repo-no-pkg"
 
-  run _cmd_new "branch"
-  assert_failure
-  assert_output --partial "package.json"
+  # _cmd_new should work without package.json
+  run _cmd_new "test-branch"
+  assert_success
 }
 
 # --- Missing jq ---
