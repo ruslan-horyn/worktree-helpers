@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.1](///compare/v1.2.0...v1.2.1) (2026-02-16)
+
+
+### Fixed
+
+* **STORY-027:** suppress chpwd hook output in _main_repo_root and remove _require_pkg gates f2de68d
+
 ## [1.2.0](https://github.com/ruslan-horyn/worktree-helpers/compare/v1.1.0...v1.2.0) (2026-02-16)
 
 

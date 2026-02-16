@@ -2,7 +2,7 @@
 
 _cmd_new() {
   local branch="$1" from_ref="$2"
-  _require_pkg && _repo_root >/dev/null && _config_load || return 1
+  _repo_root >/dev/null && _config_load || return 1
   mkdir -p "$GWT_WORKTREES_DIR" || return 1
   [ -z "$branch" ] && { _err "Usage: wt -n <branch> [--from <ref>]"; return 1; }
   _branch_exists "$branch" && { _err "Branch '$branch' already exists. Use 'wt -o $branch' to open it as a worktree."; return 1; }
@@ -13,7 +13,7 @@ _cmd_new() {
 
 _cmd_dev() {
   local base="$1"
-  _require_pkg && _repo_root >/dev/null && _config_load || return 1
+  _repo_root >/dev/null && _config_load || return 1
   mkdir -p "$GWT_WORKTREES_DIR" || return 1
   [ -z "$base" ] && base=$(_current_branch)
   [ -z "$base" ] && { _err "No branch"; return 1; }
@@ -24,14 +24,14 @@ _cmd_dev() {
 
 _cmd_switch() {
   local input="$1"
-  _require_pkg && _repo_root >/dev/null && _config_load || return 1
+  _repo_root >/dev/null && _config_load || return 1
   local wt_path; wt_path=$(_wt_resolve "$input" "switch> ") || return 1
   _run_hook switched "$wt_path" "$(_wt_branch "$wt_path")" "" "$(_main_repo_root)"
 }
 
 _cmd_remove() {
   local input="$1" force="$2"
-  _require_pkg && _repo_root >/dev/null || return 1
+  _repo_root >/dev/null || return 1
   local wt_path; wt_path=$(_wt_resolve "$input" "remove> ") || return 1
   if [ "$PWD" = "$wt_path" ]; then cd "$(_repo_root)" || true; fi
 
@@ -51,7 +51,7 @@ _cmd_remove() {
 
 _cmd_open() {
   local branch="$1"
-  _require_pkg && _repo_root >/dev/null && _config_load || return 1
+  _repo_root >/dev/null && _config_load || return 1
   mkdir -p "$GWT_WORKTREES_DIR" || return 1
 
   # If no branch provided, show fzf picker
@@ -74,14 +74,14 @@ _cmd_open() {
 
 _cmd_lock() {
   local input="$1"
-  _require_pkg && _repo_root >/dev/null || return 1
+  _repo_root >/dev/null || return 1
   local wt_path; wt_path=$(_wt_resolve "$input" "lock> ") || return 1
   git worktree lock "$wt_path" && _info "Locked $wt_path"
 }
 
 _cmd_unlock() {
   local input="$1"
-  _require_pkg && _repo_root >/dev/null || return 1
+  _repo_root >/dev/null || return 1
   local wt_path; wt_path=$(_wt_resolve "$input" "unlock> ") || return 1
   git worktree unlock "$wt_path" && _info "Unlocked $wt_path"
 }
@@ -89,7 +89,7 @@ _cmd_unlock() {
 _cmd_clear() {
   local days="$1" force="$2" dev_only="$3" main_only="$4"
   local merged="${5:-0}" pattern="${6:-}" dry_run="${7:-0}"
-  _require_pkg && _repo_root >/dev/null && _config_load || return 1
+  _repo_root >/dev/null && _config_load || return 1
 
   # Validate arguments: days required unless --merged or --pattern provided
   if [ -z "$days" ] && [ "$merged" -eq 0 ] && [ -z "$pattern" ]; then
@@ -429,7 +429,7 @@ EOF
 
 _cmd_log() {
   local feature="$1" reflog="$2" since="$3" author="$4"
-  _require_pkg && _repo_root >/dev/null && _config_load || return 1
+  _repo_root >/dev/null && _config_load || return 1
   [ -z "$feature" ] && feature=$(_current_branch)
   [ "$reflog" -eq 1 ] && { git reflog --date=relative | head -50; return; }
   local since_arg="" author_arg=""
@@ -456,7 +456,7 @@ _backup_hook() {
 }
 
 _cmd_init() {
-  _require_pkg && _repo_root >/dev/null && _require jq || return 1
+  _repo_root >/dev/null && _require jq || return 1
   local root; root=$(_main_repo_root) || return 1
   local cfg="$root/.worktrees/config.json"
 
@@ -506,7 +506,7 @@ JSON
 
 _cmd_rename() {
   local new_branch="$1" force="$2"
-  _require_pkg && _repo_root >/dev/null && _config_load || return 1
+  _repo_root >/dev/null && _config_load || return 1
 
   # Validate: new branch name required
   [ -z "$new_branch" ] && { _err "Usage: wt --rename <new-branch>"; return 1; }

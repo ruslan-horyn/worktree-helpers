@@ -70,13 +70,30 @@ EOF
   assert_output "15"
 }
 
-@test "_cmd_init errors when package.json missing" {
+@test "_cmd_init works in non-Node.js repo (no package.json)" {
   cd "$TEST_TEMP_DIR"
   mkdir -p init-no-pkg
   cd init-no-pkg
   git init >/dev/null 2>&1
+  git config user.email "test@test.com"
+  git config user.name "Test User"
+  echo "init" > README.md
+  git add README.md
+  git commit -m "initial" >/dev/null 2>&1
 
-  run _cmd_init
-  assert_failure
-  assert_output --partial "package.json"
+  # _cmd_init should work without package.json; project name falls back to dirname
+  run bash -c "
+    cd '$TEST_TEMP_DIR/init-no-pkg'
+    source '$PROJECT_ROOT/lib/utils.sh'
+    source '$PROJECT_ROOT/lib/config.sh'
+    source '$PROJECT_ROOT/lib/worktree.sh'
+    source '$PROJECT_ROOT/lib/commands.sh'
+    _cmd_init <<EOF
+
+
+
+EOF
+  "
+  assert_success
+  assert [ -f "$TEST_TEMP_DIR/init-no-pkg/.worktrees/config.json" ]
 }

@@ -14,7 +14,7 @@ _require() {
 
 _main_repo_root() {
   local d; d=$(git rev-parse --git-common-dir 2>/dev/null) || return 1
-  (cd "$d/.." && pwd -P)
+  (cd "$d/.." >/dev/null 2>&1 && pwd -P)
 }
 
 _repo_root() {

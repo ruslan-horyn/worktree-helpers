@@ -3,7 +3,7 @@
 **Epic:** Core Reliability
 **Priority:** Must Have
 **Story Points:** 3
-**Status:** Pending
+**Status:** Complete
 **Assigned To:** Unassigned
 **Created:** 2026-02-16
 **Sprint:** 5
@@ -60,14 +60,14 @@ Additionally, `_require_pkg` at `lib/utils.sh:24` requires `package.json` to exi
 
 ## Acceptance Criteria
 
-- [ ] `_main_repo_root` suppresses cd output with `>/dev/null 2>&1`, matching the pattern in `wt.sh:17`
-- [ ] No other `cd` calls in `lib/*.sh` are missing output suppression (audit confirms `_main_repo_root` was the only affected call)
-- [ ] `_require_pkg` is removed from all 11 command handlers in `lib/commands.sh` (`_cmd_new`, `_cmd_dev`, `_cmd_switch`, `_cmd_remove`, `_cmd_open`, `_cmd_lock`, `_cmd_unlock`, `_cmd_clear`, `_cmd_log`, `_cmd_init`, `_cmd_rename`)
-- [ ] `_require_pkg` function definition remains in `lib/utils.sh`
-- [ ] `wt` commands work in non-Node.js git repositories (no `package.json` required)
-- [ ] `wt` commands work correctly when zsh chpwd hooks print output on directory change
-- [ ] All existing BATS tests pass (updated as needed)
-- [ ] New BATS test verifies `_main_repo_root` is not contaminated by cd output
+- [x] `_main_repo_root` suppresses cd output with `>/dev/null 2>&1`, matching the pattern in `wt.sh:17`
+- [x] No other `cd` calls in `lib/*.sh` are missing output suppression (audit confirms `_main_repo_root` was the only affected call)
+- [x] `_require_pkg` is removed from all 11 command handlers in `lib/commands.sh` (`_cmd_new`, `_cmd_dev`, `_cmd_switch`, `_cmd_remove`, `_cmd_open`, `_cmd_lock`, `_cmd_unlock`, `_cmd_clear`, `_cmd_log`, `_cmd_init`, `_cmd_rename`)
+- [x] `_require_pkg` function definition remains in `lib/utils.sh`
+- [x] `wt` commands work in non-Node.js git repositories (no `package.json` required)
+- [x] `wt` commands work correctly when zsh chpwd hooks print output on directory change
+- [x] All existing BATS tests pass (updated as needed)
+- [x] New BATS test verifies `_main_repo_root` is not contaminated by cd output
 
 ---
 
@@ -185,16 +185,16 @@ Note: The exact test mechanism may need adjustment since POSIX subshells may not
 
 ## Definition of Done
 
-- [ ] `lib/utils.sh` — `_main_repo_root` cd call includes `>/dev/null 2>&1`
-- [ ] `lib/commands.sh` — `_require_pkg` removed from all 11 command handler guard clauses
-- [ ] `test/utils.bats` — new test verifying `_main_repo_root` output is not contaminated by cd hook output
-- [ ] Existing `_require_pkg` unit tests in `test/utils.bats` remain (function still exists)
-- [ ] Command test files updated to remove dependency on `package.json` existing (if applicable)
-- [ ] Audit of all `cd` calls in `lib/*.sh` completed and documented (only `_main_repo_root` affected)
-- [ ] All existing BATS tests pass
-- [ ] Shellcheck passes on modified files
+- [x] `lib/utils.sh` — `_main_repo_root` cd call includes `>/dev/null 2>&1`
+- [x] `lib/commands.sh` — `_require_pkg` removed from all 11 command handler guard clauses
+- [x] `test/utils.bats` — new test verifying `_main_repo_root` output is not contaminated by cd hook output
+- [x] Existing `_require_pkg` unit tests in `test/utils.bats` remain (function still exists)
+- [x] Command test files updated to remove dependency on `package.json` existing (if applicable)
+- [x] Audit of all `cd` calls in `lib/*.sh` completed and documented (only `_main_repo_root` affected)
+- [x] All existing BATS tests pass
+- [x] Shellcheck passes on modified files
 - [ ] CI pipeline green
-- [ ] Manual testing: `wt` commands work in a git repo without `package.json`
+- [x] Manual testing: `wt` commands work in a git repo without `package.json`
 
 ---
 
@@ -222,5 +222,89 @@ Note: The exact test mechanism may need adjustment since POSIX subshells may not
 
 **Status History:**
 - 2026-02-16: Created
+- 2026-02-16: Implementation started
+- 2026-02-16: Implementation complete, all tests passing, shellcheck clean
 
-**Actual Effort:** TBD
+**Actual Effort:** 3 points (matched estimate)
+
+**Files Changed:**
+
+| File | Change Type | Description |
+|------|-------------|-------------|
+| `lib/utils.sh` | Modified | Added `>/dev/null 2>&1` to `cd` call in `_main_repo_root` (line 17) to suppress chpwd hook output |
+| `lib/commands.sh` | Modified | Removed `_require_pkg &&` from all 11 command handler guard clauses |
+| `test/utils.bats` | Modified | Added 2 new tests: chpwd hook contamination simulation, single-line output verification |
+| `test/cmd_init.bats` | Modified | Replaced `_cmd_init errors when package.json missing` with `_cmd_init works in non-Node.js repo` |
+| `test/edge_cases.bats` | Modified | Replaced `commands error gracefully when package.json is missing` with `commands work in non-Node.js repo without package.json` |
+
+**Tests Added:**
+- `_main_repo_root is not contaminated by cd output (chpwd hook simulation)` -- verifies that overriding `cd` with a function that prints stdout/stderr does not contaminate `_main_repo_root` output
+- `_main_repo_root output is a single line with no extra content` -- verifies output is exactly one line starting with `/`
+- `_cmd_init works in non-Node.js repo (no package.json)` -- verifies `_cmd_init` works in a git repo without `package.json`
+- `commands work in non-Node.js repo without package.json` -- verifies `_cmd_new` works in a git repo without `package.json`
+
+**Test Results:**
+- 180/180 BATS tests pass
+- Shellcheck clean on all `lib/*.sh` files
+
+**Decisions Made:**
+- **cd audit:** Confirmed only `_main_repo_root` was affected. Other `cd` calls in `lib/commands.sh` are direct shell navigation (output goes to terminal, not captured) or embedded in hook script strings.
+- **Test approach for chpwd simulation:** Used `export -f cd` in a bash subshell to override `cd` with a function that prints to both stdout and stderr, then verified `_main_repo_root` output is clean. Initial `cd` to repo dir uses `builtin cd` to avoid contamination from setup.
+- **_require_pkg function retained:** Kept `_require_pkg()` definition in `lib/utils.sh` per story scope (may be useful for user hooks).
+- **Existing _require_pkg unit tests retained:** Tests 152-153 still verify the function works correctly for users who call it from hooks.
+
+---
+
+## QA Review
+
+### Files Reviewed
+| File | Status | Notes |
+|------|--------|-------|
+| `lib/utils.sh` | Pass | `_main_repo_root` cd now suppresses output with `>/dev/null 2>&1`; `_require_pkg` function definition retained at line 24; all variables properly quoted; POSIX-compliant |
+| `lib/commands.sh` | Pass | All 11 `_require_pkg &&` guard clauses removed from command handlers; no residual `_require_pkg` references; all other code unchanged; POSIX-compliant |
+| `test/utils.bats` | Pass | 2 new tests added: chpwd contamination simulation (line 122) and single-line output verification (line 143); both use proper assertions; existing `_require_pkg` unit tests retained (tests 152-153) |
+| `test/cmd_init.bats` | Pass | Replaced `_cmd_init errors when package.json missing` with `_cmd_init works in non-Node.js repo (no package.json)`; properly initializes a git repo with commit before testing; uses `bash -c` subshell for correct sourcing |
+| `test/edge_cases.bats` | Pass | Replaced `commands error gracefully when package.json is missing` with `commands work in non-Node.js repo without package.json`; sets up bare origin + clone for realistic test environment with config |
+
+### Issues Found
+None
+
+### AC Verification
+- [x] AC 1 — `_main_repo_root` suppresses cd output: verified in `lib/utils.sh:17`, tested by `_main_repo_root is not contaminated by cd output (chpwd hook simulation)` (test #130)
+- [x] AC 2 — No other `cd` calls missing suppression: audit of all `cd` calls in `lib/*.sh` confirms only `_main_repo_root` was affected (5 other `cd` calls are direct navigation or in hook strings, none captured via subshell)
+- [x] AC 3 — `_require_pkg` removed from all 11 command handlers: verified by diff (11 removals) and grep (0 occurrences in `lib/commands.sh`)
+- [x] AC 4 — `_require_pkg` function definition remains in `lib/utils.sh`: confirmed at line 24, unit tests 152-153 still exercise it
+- [x] AC 5 — `wt` commands work in non-Node.js repos: tested by `commands work in non-Node.js repo without package.json` (test #108) and `_cmd_init works in non-Node.js repo (no package.json)` (test #29)
+- [x] AC 6 — `wt` commands work with chpwd hooks: tested by `_main_repo_root is not contaminated by cd output (chpwd hook simulation)` (test #130)
+- [x] AC 7 — All existing BATS tests pass: 180/180 pass
+- [x] AC 8 — New BATS test verifies `_main_repo_root` not contaminated: test #130 and test #131
+
+### Test Results
+- Total: 180 / Passed: 180 / Failed: 0
+
+### Shellcheck
+- Clean: yes
+
+## Manual Testing
+
+### Test Scenarios
+| # | Scenario | Expected | Actual | Pass/Fail |
+|---|----------|----------|--------|-----------|
+| 1 | `_main_repo_root` returns clean path (no extra output) in a git repo | Returns single absolute path, no extra lines | Returned single absolute path matching repo root exactly; line count = 1, starts with `/` | Pass |
+| 2 | `wt` commands work in a git repository WITHOUT `package.json` | `_cmd_new`, `_cmd_list` succeed; worktree created correctly | `_cmd_new "test-branch"` exit 0, worktree visible in `git worktree list`; `_cmd_list` exit 0 with correct output | Pass |
+| 3 | `wt` commands still work in a git repository WITH `package.json` | `_cmd_new`, `_cmd_list` succeed; `_project_name` reads from `package.json` | `_cmd_new` exit 0; `_cmd_list` exit 0; `_project_name` returned `my-node-project` from `package.json` | Pass |
+| 4 | `_main_repo_root` with simulated chpwd hook output does not contaminate the path | Clean path even when `cd` override prints to stdout/stderr | 4a: single chpwd hook — PASS (clean path); 4b: multiple hooks (nvm, direnv, oh-my-zsh) — PASS; 4c: line count = 1 — PASS | Pass |
+| 5 | `wt -h` works without `package.json` | Full help text printed, exit 0 | Full help text printed correctly, exit 0 | Pass |
+| 6 | `wt -l` works without `package.json` (after `wt --init`) | Lists worktrees, exit 0 | `wt --init` created config with basename fallback for project name; `wt -l` listed main worktree; `wt -n feature-xyz` created worktree; second `wt -l` showed both worktrees | Pass |
+
+### Additional Verifications
+| # | Check | Result |
+|---|-------|--------|
+| 7 | `_require_pkg` removed from all command handlers in `lib/commands.sh` | Confirmed: `grep _require_pkg lib/commands.sh` returns 0 matches |
+| 8 | `_require_pkg` function definition retained in `lib/utils.sh` | Confirmed: function exists at line 24 |
+| 9 | cd audit in `lib/*.sh` — no other cd calls captured in subshells without suppression | Confirmed: 5 other cd calls are all direct navigation (not captured), only `_main_repo_root` was affected |
+| 10 | Shellcheck clean on `lib/utils.sh`, `lib/commands.sh`, `lib/config.sh` | Clean: no warnings or errors |
+| 11 | BATS test suite (automated) | 180/180 tests pass |
+
+### Issues Found
+None

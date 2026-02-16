@@ -119,6 +119,42 @@ teardown() {
   assert_output "$repo_dir"
 }
 
+@test "_main_repo_root is not contaminated by cd output (chpwd hook simulation)" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+
+  # Create a wrapper script that simulates a chpwd hook by overriding cd
+  # to print extra output, then calls _main_repo_root.
+  # The initial cd to repo_dir is suppressed; then the cd override is set
+  # so _main_repo_root's internal cd invocation would be contaminated
+  # without the >/dev/null 2>&1 fix.
+  run bash -c '
+    source "'"$PROJECT_ROOT"'/lib/utils.sh"
+    builtin cd "'"$repo_dir"'"
+    cd() { echo "chpwd: now in $1" >&1; echo "chpwd-stderr: $1" >&2; builtin cd "$@"; }
+    export -f cd
+    _main_repo_root
+  '
+  assert_success
+  # Output must be exactly the repo path — no chpwd contamination
+  assert_output "$repo_dir"
+}
+
+@test "_main_repo_root output is a single line with no extra content" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+
+  run _main_repo_root
+  assert_success
+  # Verify output is exactly one line (no trailing newline contamination)
+  local line_count
+  line_count=$(printf '%s\n' "$output" | wc -l | tr -d ' ')
+  assert [ "$line_count" -eq 1 ]
+  # Verify output starts with / (absolute path)
+  assert [ "${output#/}" != "$output" ]
+}
+
 # --- _branch_exists ---
 
 @test "_branch_exists detects existing branch" {
