@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0](https://github.com/ruslan-horyn/worktree-helpers/compare/v1.1.0...v1.2.0) (2026-02-16)
+
+
+### Added
+
+* add --from/-b flag to wt -n for custom base branch ([#2](https://github.com/ruslan-horyn/worktree-helpers/issues/2)) ([c019061](https://github.com/ruslan-horyn/worktree-helpers/commit/c0190618b2ad054601612bcbcd8914714f23707c))
+* **STORY-015:** add granular clear options (--merged, --pattern, --dry-run) ([#6](https://github.com/ruslan-horyn/worktree-helpers/issues/6)) ([c7e9da2](https://github.com/ruslan-horyn/worktree-helpers/commit/c7e9da22d5a774f61a198aaf674a22a39ca6f4d5))
+* **STORY-022:** add shell-aware tab completion to wt --init prompts ([#5](https://github.com/ruslan-horyn/worktree-helpers/issues/5)) ([10c8e6b](https://github.com/ruslan-horyn/worktree-helpers/commit/10c8e6bd55daddf55d5b130e360fe66468410524))
+* **STORY-025:** improve UX when opening worktree from existing branch ([#3](https://github.com/ruslan-horyn/worktree-helpers/issues/3)) ([3f5a5d0](https://github.com/ruslan-horyn/worktree-helpers/commit/3f5a5d086a6eb59f6442979671dadcced50914b7))
+* warp tabs + sprint-orchestrator worktree mode for launch-sprint ([ec79473](https://github.com/ruslan-horyn/worktree-helpers/commit/ec79473af6bd378774daed88c8d28f605b5a5283))
+
+
+### Fixed
+
+* handle config.lock race in concurrent worktree creation ([48d1294](https://github.com/ruslan-horyn/worktree-helpers/commit/48d1294683fa2902b6bd1761e7a791262e007697))
+* prevent double origin/ prefix in _normalize_ref without remotes ([#7](https://github.com/ruslan-horyn/worktree-helpers/issues/7)) ([e100235](https://github.com/ruslan-horyn/worktree-helpers/commit/e100235ae0aac0d7752c1e3e4800967314036e04))
+
+
+### Changed
+
+* redesign launch-sprint and sprint-orchestrator skills ([4ede421](https://github.com/ruslan-horyn/worktree-helpers/commit/4ede4210c288b30b2d8c6242050ab8284e95cc8f))
+* remove worktreesDir from config, always auto-derive path ([#4](https://github.com/ruslan-horyn/worktree-helpers/issues/4)) ([b362cec](https://github.com/ruslan-horyn/worktree-helpers/commit/b362cecc63f8f99852548ef73b356bdba11bfa6b))
+
 ## [1.1.0](https://github.com/ruslan-horyn/worktree-helpers/compare/v1.0.1...v1.1.0) (2026-02-09)
 
 
