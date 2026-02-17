@@ -17,7 +17,7 @@ jobs:
         run: sudo apt-get install -y shellcheck
 
       - name: Run shellcheck
-        run: shellcheck wt.sh lib/utils.sh lib/config.sh lib/worktree.sh lib/commands.sh install.sh
+        run: shellcheck wt.sh lib/utils.sh lib/config.sh lib/worktree.sh lib/commands.sh lib/update.sh install.sh
 
   test:
     name: Tests
