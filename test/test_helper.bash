@@ -117,6 +117,7 @@ load_wt() {
   source "$PROJECT_ROOT/lib/config.sh"
   source "$PROJECT_ROOT/lib/worktree.sh"
   source "$PROJECT_ROOT/lib/commands.sh"
+  source "$PROJECT_ROOT/lib/update.sh"
 }
 
 # Source wt.sh (includes router)

@@ -109,6 +109,8 @@ curl -fsSL https://raw.githubusercontent.com/ruslan-horyn/worktree-helpers/main/
 | `wt --init` | Initialize project configuration |
 | `wt --log [branch]` | Show commits vs main branch |
 | `wt --rename <new-branch>` | Rename current worktree's branch |
+| `wt --update` | Update to latest version |
+| `wt --update --check` | Check for updates without installing |
 | `wt --uninstall` | Uninstall worktree-helpers |
 | `wt -v` / `wt --version` | Show version |
 | `wt -h` | Show help |
@@ -417,7 +419,7 @@ git push --follow-tags origin main
 This project is actively developed. Upcoming features:
 
 - [x] **Shell completions** — tab completion for bash and zsh (flags, branch names, worktree paths)
-- [ ] **Self-update** — `wt --update` with non-blocking version check
+- [x] **Self-update** — `wt --update` with non-blocking version check
 - [x] **Granular clear** — `wt -c --merged`, `--pattern <glob>`, `--dry-run`
 - [x] **Dirty/clean status** — `wt -l` shows uncommitted changes per worktree
 - [ ] **Worktree metadata** — annotate worktrees with notes and see creation dates
