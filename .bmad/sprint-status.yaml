@@ -227,7 +227,8 @@ sprints:
       - story_id: "STORY-013"
         title: "Add self-update mechanism (wt --update)"
         points: 5
-        status: "not_started"
+        status: "completed"
+        completion_date: "2026-02-17"
         assigned_to: null
         priority: "should_have"
         blocked_by: ["STORY-012"]

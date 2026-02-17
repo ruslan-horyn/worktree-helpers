@@ -592,6 +592,15 @@ _cmd_uninstall() {
   fi
 }
 
+_cmd_update() {
+  local check_only="${1:-0}"
+  if [ "$check_only" -eq 1 ]; then
+    _update_check_only
+  else
+    _update_install
+  fi
+}
+
 _cmd_version() {
   local ver=""
   if [ -f "$_WT_DIR/VERSION" ]; then
@@ -620,6 +629,8 @@ Commands:
   --log [branch]         Show commits vs main
   --rename <new-branch>  Rename current worktree's branch
   --uninstall            Uninstall worktree-helpers
+  --update               Update to latest version
+  --update --check       Check for updates without installing
   -v, --version          Show version
   -h, --help             This help
 

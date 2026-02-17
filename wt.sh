@@ -29,11 +29,14 @@ source "$_WT_DIR/lib/utils.sh"
 source "$_WT_DIR/lib/config.sh"
 source "$_WT_DIR/lib/worktree.sh"
 source "$_WT_DIR/lib/commands.sh"
+source "$_WT_DIR/lib/update.sh"
 
 wt() {
   local action="" arg="" force=0 dev=0 reflog=0 since="" author=""
   local dev_only=0 main_only=0 clear_days="" from_ref=""
-  local merged=0 pattern="" dry_run=0
+  local merged=0 pattern="" dry_run=0 check_only=0
+
+  _update_notify
 
   while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -58,6 +61,8 @@ wt() {
       --rename)    action="rename"; shift
                    case "${1:-}" in -*|"") ;; *) arg="$1"; shift ;; esac ;;
       --uninstall) action="uninstall"; shift ;;
+      --update)     action="update"; shift ;;
+      --check)     check_only=1; shift ;;
       -v|--version) action="version"; shift ;;
       -h|--help)   action="help"; shift ;;
       -f|--force)  force=1; shift ;;
@@ -76,6 +81,7 @@ wt() {
     esac
   done
 
+  local _wt_rc=0
   case "${action:-help}" in
     new)    if [ "$dev" -eq 1 ] && [ -n "$from_ref" ]; then
               _err "--from and --dev are mutually exclusive"; return 1
@@ -94,9 +100,15 @@ wt() {
     log)    _cmd_log "$arg" "$reflog" "$since" "$author" ;;
     rename) _cmd_rename "$arg" "$force" ;;
     uninstall) _cmd_uninstall "$force" ;;
+    update)  _cmd_update "$check_only" ;;
     version) _cmd_version ;;
     help)   _cmd_help ;;
   esac
+  _wt_rc=$?
+
+  _bg_update_check
+
+  return "$_wt_rc"
 }
 
 # Load shell completions

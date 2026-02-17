@@ -3,10 +3,10 @@
 **Epic:** Developer Experience
 **Priority:** Should Have
 **Story Points:** 5
-**Status:** Not Started
+**Status:** Completed
 **Assigned To:** Unassigned
 **Created:** 2026-02-09
-**Sprint:** 4
+**Sprint:** 5
 
 ---
 
@@ -498,6 +498,170 @@ Before updating, the entire `~/.worktree-helpers` directory is copied to `~/.wor
 **Status History:**
 
 - 2026-02-09: Created
+- 2026-02-17: Implementation started
+- 2026-02-17: Implementation complete, all tests passing, shellcheck clean
+- 2026-02-17: QA fix -- added `--update` docs to README.md (Commands table + Roadmap checkbox), AC 13 now met
+
+**Files Changed:**
+
+| File | Change Type | Description |
+|------|-------------|-------------|
+| `lib/update.sh` | New | Update module: `_version_lt`, `_update_cache_fresh`, `_fetch_latest`, `_update_cache_write`, `_update_notify`, `_bg_update_check`, `_update_install`, `_update_check_only` |
+| `wt.sh` | Modified | Source `lib/update.sh`; add `--update`/`--check` flags; call `_update_notify` at start, `_bg_update_check` at end; preserve command exit code with `_wt_rc` |
+| `lib/commands.sh` | Modified | Add `_cmd_update` handler; add `--update` and `--update --check` to `_cmd_help` output |
+| `test/test_helper.bash` | Modified | Source `lib/update.sh` in `load_wt()` |
+| `test/cmd_update.bats` | New | 39 BATS tests for update functionality |
+| `README.md` | Modified | Added `--update` / `--update --check` to Commands table; checked Self-update Roadmap checkbox |
+
+**Tests Added:**
+
+- 39 new tests in `test/cmd_update.bats`:
+  - 12 tests for `_version_lt` semver comparison (including edge cases: equal, greater, 1.10.0 > 1.9.0, partial versions)
+  - 6 tests for `_update_cache_write`/`_update_cache_fresh` (create, timestamp, fresh, stale >24h, empty, missing)
+  - 6 tests for `_update_notify` (no cache, update available, up to date, newer installed, missing VERSION, empty cache version)
+  - 2 tests for `_cmd_update` dispatching (check_only=1 vs check_only=0)
+  - 5 tests for `_update_install` (up to date, network error, update available with backup, backup verification, unknown version)
+  - 4 tests for `_update_check_only` (up to date, update available, network error, cache update)
+  - 2 tests for help text (`--update` and `--update --check` presence)
+  - 2 router integration tests (`wt --update` and `wt --update --check`)
+
+**Test Results:**
+
+- All 219 tests pass (180 pre-existing + 39 new)
+- No regressions
+- shellcheck clean on `lib/update.sh`, `lib/commands.sh`, and `wt.sh` (only pre-existing SC1091 info on `wt.sh` for dynamic source paths)
+
+**Decisions Made:**
+
+1. **Flag design**: Used `--update` for the action and `--check` as a modifier flag (not `--update-check` as a single flag). This follows the existing pattern where flags like `--force` modify the action behavior.
+2. **Exit code preservation**: Added `_wt_rc` variable to capture and return the command's exit code after `_bg_update_check` runs. This also fixed a pre-existing bug where `_bg_update_check` at the end of `wt()` would override the command exit code with 0.
+3. **Arrow character**: Used `->` instead of Unicode arrow in notification messages for maximum terminal compatibility across all systems.
+4. **2>/dev/null on arithmetic comparisons**: Added `2>/dev/null` to `-lt`/`-gt` comparisons in `_version_lt` to gracefully handle non-numeric inputs.
+
+---
+
+## QA Review
+
+### Files Reviewed
+
+| File | Status | Notes |
+|------|--------|-------|
+| `lib/update.sh` | Pass | New file. POSIX-compatible, well-structured, proper variable quoting, shellcheck clean. `disown` usage acceptable per story notes (bash/zsh target). |
+| `wt.sh` | Pass | Router correctly handles `--update` and `--check` flags. `_update_notify` called before command, `_bg_update_check` after. Exit code preserved via `_wt_rc`. |
+| `lib/commands.sh` | Pass | `_cmd_update` dispatches correctly. Help text includes both `--update` and `--update --check`. |
+| `test/test_helper.bash` | Pass | Sources `lib/update.sh` in `load_wt()`. |
+| `test/cmd_update.bats` | Pass | 39 comprehensive tests covering semver, cache, notify, install, check-only, help, and router integration. Good use of mocks for network-dependent functions. |
+| `README.md` | Pass | Added `--update` / `--update --check` to Commands table. Roadmap checkbox checked. AC 13 met. |
+
+### Issues Found
+
+| # | Severity | File | Description | Status |
+|---|----------|------|-------------|--------|
+| 1 | major | `README.md` | AC 13 requires "README and docs updated with `--update` usage". The Commands table (lines 96-113) does not include `wt --update` or `wt --update --check`. The Roadmap checkbox on line 377 is still unchecked. | fixed |
+
+### AC Verification
+
+- [x] AC 1 -- `wt --update` fetches the latest version from GitHub and installs it: verified in `lib/update.sh` `_update_install()`, test: `_update_install detects available update`
+- [x] AC 2 -- `wt --update --check` checks for updates without installing: verified in `lib/update.sh` `_update_check_only()`, test: `_update_check_only shows update available`
+- [x] AC 3 -- Background version check runs after `wt` actions: verified in `wt.sh` line 109 `_bg_update_check`, test: `wt --update routes to _cmd_update` (router integration)
+- [x] AC 4 -- Notification shown on next `wt` invocation: verified in `wt.sh` line 39 `_update_notify`, test: `_update_notify shows notification when update available`
+- [x] AC 5 -- Check frequency at most once per day: verified in `lib/update.sh` `_update_cache_fresh()` with 86400s threshold, test: `_update_cache_fresh returns false for stale cache (>24h)`
+- [x] AC 6 -- Shows changelog summary: verified in `lib/update.sh` `_update_install()` lines 128-131, test: `_update_install detects available update` (asserts "Changes:" and "feat: new feature")
+- [x] AC 7 -- Backs up current installation: verified in `lib/update.sh` `_update_install()` lines 137-142, test: `_update_install creates backup before updating`
+- [x] AC 8 -- Handles network errors gracefully: verified in `lib/update.sh` `_fetch_latest()` returns 1 on failure, bg check exits 0 on failure, test: `_update_install shows error on network failure`
+- [x] AC 9 -- When up-to-date reports current version: verified in `lib/update.sh` `_update_install()` line 120, test: `_update_install shows already up to date when versions match`
+- [x] AC 10 -- Semver comparison correct: verified in `lib/update.sh` `_version_lt()`, test: `_version_lt: 1.9.0 < 1.10.0 is true (numeric comparison)`
+- [x] AC 11 -- Works for both install types: verified by code -- `_WT_DIR` is used uniformly regardless of install method
+- [x] AC 12 -- Update preserves shell config: verified -- `_update_install()` only copies `wt.sh`, `lib/`, `VERSION`, does not modify `.zshrc`/`.bashrc`
+- [x] AC 13 -- README and docs updated with `--update` usage: verified -- README Commands table updated with `--update` and `--update --check` entries, Roadmap checkbox checked
+
+### Test Results
+
+- Total: 219 / Passed: 219 / Failed: 0
+- New tests: 39 (in `test/cmd_update.bats`)
+- Pre-existing tests: 180 (no regressions)
+
+### Shellcheck
+
+- Clean: yes (all severity levels, including info)
+
+### QA Re-Review (Cycle 2)
+
+**Reviewer:** QA Engineer (automated)
+**Date:** 2026-02-17
+
+**Purpose:** Verify that Issue #1 from Cycle 1 (missing `--update` docs in README.md) was fixed correctly.
+
+**Fix Verification:**
+
+| Item | Expected | Actual | Status |
+|------|----------|--------|--------|
+| README Commands table includes `wt --update` | Row with "Update to latest version" | Line 111: `\| \`wt --update\` \| Update to latest version \|` | Pass |
+| README Commands table includes `wt --update --check` | Row with "Check for updates without installing" | Line 112: `\| \`wt --update --check\` \| Check for updates without installing \|` | Pass |
+| README Roadmap Self-update checkbox checked | `[x]` | Line 379: `- [x] **Self-update** -- \`wt --update\` with non-blocking version check` | Pass |
+
+**Re-run Results:**
+
+- **Tests:** 219 / 219 passed (0 failures, 0 skipped relevant)
+- **Shellcheck:** Clean (no warnings, no errors)
+- **Regressions:** None detected
+
+**AC 13 Re-Verification:**
+- README.md Commands table (lines 111-112) now includes both `wt --update` and `wt --update --check` entries
+- README.md Roadmap (line 379) checkbox is checked for Self-update
+- `_cmd_help` output (lines 623-624 in `lib/commands.sh`) includes both `--update` and `--update --check`
+- AC 13 is fully met
+
+**All Issues from Cycle 1:** Resolved
+
+**Verdict:** PASS -- all acceptance criteria met, all tests passing, shellcheck clean, no regressions, Cycle 1 fix verified.
+
+---
+
+## Manual Testing
+
+**Date:** 2026-02-17
+**Tester:** QA Engineer (automated)
+**Shell:** zsh 5.9, macOS Darwin 24.6.0
+**Installed version:** 1.2.1
+**Latest GitHub release:** 1.2.1
+
+### Test Scenarios
+
+| # | Scenario | Expected | Actual | Pass/Fail |
+|---|----------|----------|--------|-----------|
+| 1 | `wt --update --check` | Contacts GitHub API, reports "up to date (1.2.1)" | `wt is up to date (1.2.1)` | Pass |
+| 2 | `wt --update` | Checks GitHub, reports "already at the latest version (1.2.1)" | `Checking for updates... wt is already at the latest version (1.2.1)` | Pass |
+| 3 | `wt --version` | Displays "wt version 1.2.1" | `wt version 1.2.1` | Pass |
+| 4 | `wt -v` | Same as `wt --version` | `wt version 1.2.1` | Pass |
+| 5 | `wt -h` shows `--update` in help | `--update` and `--update --check` present in Commands section | Both lines present: `--update  Update to latest version` and `--update --check  Check for updates without installing` | Pass |
+| 6 | Background check creates cache file | `~/.wt_update_check` created with timestamp + version | File created: line 1 = Unix timestamp, line 2 = `1.2.1` | Pass |
+| 7 | Notification with cached newer version | Notification "Update available: 1.2.1 -> 99.0.0" before command output | Initially FAILED (no notification appeared). After fix: notification displayed correctly | Pass (after fix) |
+| 8 | Network error: `wt --update` | Error message "Failed to check for updates (network error)", exit code 1 | Exact message shown, exit code 1 | Pass |
+| 9 | Network error: `wt --update --check` | Error message, exit code 1 | Exact message shown, exit code 1 | Pass |
+| 10 | Network error: background check | Fails silently, no cache file created, no error output | No cache file, no output | Pass |
+| 11 | Cache freshness: fresh (just written) | `_update_cache_fresh` returns true | Returns true (0) | Pass |
+| 12 | Cache freshness: 48h old | `_update_cache_fresh` returns false | Returns false (1) | Pass |
+| 13 | Cache freshness: exactly 24h old | `_update_cache_fresh` returns false (strict < 86400) | Returns false (1) | Pass |
+| 14 | Cache freshness: 23h 59m old | `_update_cache_fresh` returns true | Returns true (0) | Pass |
+| 15 | Flag order: `--check --update` | Same as `--update --check` | Both orders route to check-only mode | Pass |
+| 16 | `--check` without `--update` | Falls through to default (help) | Shows help text | Pass |
+| 17 | Exit code propagation after `--update` failure | Exit code 1 returned (not masked by `_bg_update_check`) | Exit code 1 returned | Pass |
+| 18 | `_version_lt` in zsh: `1.2.1 < 99.0.0` | Returns true (0) | Initially FAILED (returned 1). After fix: returns 0 | Pass (after fix) |
+| 19 | `_version_lt` in zsh: `1.9.0 < 1.10.0` | Returns true (0) | Initially FAILED (returned 1). After fix: returns 0 | Pass (after fix) |
+| 20 | `_version_lt` in zsh: `1.2.0 = 1.2.0` | Returns false (1) | Initially returned 1 (appeared correct, but for wrong reason). After fix: returns 1 correctly | Pass (after fix) |
+| 21 | BATS tests: all 219 pass | 219/219 pass | 219/219 pass (before and after fix) | Pass |
+| 22 | Shellcheck on `lib/update.sh` | Clean (no warnings) | Clean | Pass |
+
+### Issues Found
+
+| # | Severity | Description | Steps to Reproduce |
+|---|----------|-------------|---------------------|
+| 1 | Critical | `_version_lt` is completely broken in zsh. The function uses `IFS='.'; set -- $v1` to split version strings on dots, but zsh does not perform word splitting on unquoted parameter expansions by default (unlike bash). This causes `set --` to receive the entire version string as a single argument instead of splitting it into major/minor/patch components. As a result, all numeric comparisons compare the full string (e.g., "1.2.1") against 0, and the function always returns 1 (false). This breaks: (a) `_update_notify` never shows notifications, (b) `_update_install` always reports "already at latest version", (c) `_update_check_only` always reports "up to date". BATS tests did not catch this because BATS runs under bash where `set -- $v1` works correctly. | 1. Source `wt.sh` in zsh. 2. Run `_version_lt "1.0.0" "2.0.0"; echo $?` -- returns 1 (should be 0). 3. Set cache to newer version: `printf '%s\n%s\n' "$(date +%s)" "99.0.0" > ~/.wt_update_check`. 4. Run `wt --version` -- no notification appears. |
+
+### Fix Applied
+
+**Issue #1 fix:** Replaced `IFS='.'; set -- $v1` with `IFS='.' read -r v1_major v1_minor v1_patch <<EOF` (heredoc-based splitting). The `read` builtin with IFS works identically in both bash and zsh. The fix was applied to `lib/update.sh` lines 18-25. After the fix, all 219 BATS tests pass, shellcheck is clean, and all 22 manual test scenarios pass in zsh.
 
 ---
 
