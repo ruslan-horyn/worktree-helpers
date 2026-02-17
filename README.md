@@ -102,7 +102,7 @@ curl -fsSL https://raw.githubusercontent.com/ruslan-horyn/worktree-helpers/main/
 | `wt -s [branch]` | Switch to worktree (fzf picker if no arg) |
 | `wt -r [branch]` | Remove worktree and delete branch |
 | `wt -o [branch]` | Open existing branch as worktree |
-| `wt -l` | List all worktrees |
+| `wt -l` | List all worktrees (with dirty/clean status) |
 | `wt -c [days]` | Clear worktrees (days optional with `--merged`/`--pattern`) |
 | `wt -L [branch]` | Lock worktree |
 | `wt -U [branch]` | Unlock worktree |
@@ -419,7 +419,7 @@ This project is actively developed. Upcoming features:
 - [x] **Shell completions** — tab completion for bash and zsh (flags, branch names, worktree paths)
 - [ ] **Self-update** — `wt --update` with non-blocking version check
 - [x] **Granular clear** — `wt -c --merged`, `--pattern <glob>`, `--dry-run`
-- [ ] **Dirty/clean status** — `wt -l` shows uncommitted changes per worktree
+- [x] **Dirty/clean status** — `wt -l` shows uncommitted changes per worktree
 - [ ] **Worktree metadata** — annotate worktrees with notes and see creation dates
 - [ ] **Homebrew formula** — `brew install worktree-helpers`
 - [ ] **oh-my-zsh / zinit plugin** — one-liner plugin installation

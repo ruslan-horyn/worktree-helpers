@@ -403,6 +403,15 @@ _cmd_list() {
             lock_indicator="${C_GREEN}[active]${C_RESET}"
           fi
 
+          # Format dirty/clean indicator
+          local dirty_indicator=""
+          _wt_is_dirty "$worktree"
+          case $? in
+            0) dirty_indicator="${C_YELLOW}[dirty]${C_RESET}" ;;
+            1) dirty_indicator="${C_DIM}[clean]${C_RESET}" ;;
+            *) dirty_indicator="${C_DIM}[?]${C_RESET}" ;;
+          esac
+
           # Format branch name
           local branch_display="$branch"
           if [ -n "$is_main" ]; then
@@ -410,7 +419,7 @@ _cmd_list() {
           fi
 
           # Print formatted line
-          printf "%-50s %s %s\n" "$worktree" "$branch_display" "$lock_indicator"
+          printf "%-50s %s %s %s\n" "$worktree" "$branch_display" "$lock_indicator" "$dirty_indicator"
 
           worktree=""
         fi
