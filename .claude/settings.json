@@ -30,6 +30,13 @@
       "Bash(pip3 install:*)",
       "Bash(open:*)",
       "Bash(osascript:*)",
+      "Bash(git worktree list:*)",
+      "Bash(mkdir -p:*)",
+      "Bash(cat:*)",
+      "Bash(ls:*)",
+      "Bash(echo:*)",
+      "Bash(pwd:*)",
+      "Bash(zsh -c:*)",
       "WebSearch"
     ],
     "deny": [

@@ -1,0 +1,127 @@
+#compdef wt
+# shellcheck shell=bash disable=SC2148,SC2034,SC2207,SC2296,SC2206,SC2154
+# Zsh completion for wt (worktree-helpers)
+# Note: This file uses zsh-specific syntax (compdef, _describe, ${(f)...}).
+# Shellcheck warnings for zsh-only features are suppressed above.
+
+_wt() {
+  local -a commands flags
+  local context state
+
+  commands=(
+    '-n:Create worktree from main'
+    '--new:Create worktree from main'
+    '-s:Switch worktree'
+    '--switch:Switch worktree'
+    '-r:Remove worktree and branch'
+    '--remove:Remove worktree and branch'
+    '-o:Open existing branch as worktree'
+    '--open:Open existing branch as worktree'
+    '-l:List worktrees'
+    '--list:List worktrees'
+    '-c:Clear old worktrees'
+    '--clear:Clear old worktrees'
+    '-L:Lock worktree'
+    '--lock:Lock worktree'
+    '-U:Unlock worktree'
+    '--unlock:Unlock worktree'
+    '--init:Initialize config'
+    '--log:Show commits vs main'
+    '--rename:Rename current worktree branch'
+    '--uninstall:Uninstall worktree-helpers'
+    '-v:Show version'
+    '--version:Show version'
+    '-h:Show help'
+    '--help:Show help'
+  )
+
+  flags=(
+    '-f:Force operation'
+    '--force:Force operation'
+    '-d:Use dev branch as base'
+    '--dev:Use dev branch as base'
+    '-b:Use custom base branch'
+    '--from:Use custom base branch'
+    '--dev-only:Filter to dev worktrees only'
+    '--main-only:Filter to main worktrees only'
+    '--reflog:Show reflog'
+    '--since:Filter by date'
+    '--author:Filter by author'
+    '--merged:Clear merged worktrees only'
+    '--pattern:Clear worktrees matching pattern'
+    '--dry-run:Show what would be cleared'
+  )
+
+  # Determine what we're completing based on the previous word
+  local prev_action=""
+  local i
+  for ((i = 1; i < CURRENT; i++)); do
+    case "${words[i]}" in
+      -s|--switch|-r|--remove|-L|--lock|-U|--unlock)
+        prev_action="worktree_branch" ;;
+      -o|--open)
+        prev_action="git_branch" ;;
+      -b|--from)
+        prev_action="git_branch" ;;
+      --log)
+        prev_action="local_branch" ;;
+      -n|--new|--rename)
+        prev_action="no_complete" ;;
+      -c|--clear)
+        prev_action="clear_context" ;;
+      --pattern|--since|--author)
+        prev_action="no_complete" ;;
+    esac
+  done
+
+  # Check if the immediately previous word expects a value argument
+  # (overrides the action-based context for the next token)
+  case "${words[CURRENT-1]}" in
+    -s|--switch|-r|--remove|-L|--lock|-U|--unlock)
+      prev_action="worktree_branch" ;;
+    -o|--open)
+      prev_action="git_branch" ;;
+    -b|--from)
+      prev_action="git_branch" ;;
+    --log)
+      prev_action="local_branch" ;;
+    -n|--new|--rename)
+      prev_action="no_complete" ;;
+    --pattern|--since|--author)
+      prev_action="no_complete" ;;
+  esac
+
+  case "$prev_action" in
+    worktree_branch)
+      local -a wt_branches
+      wt_branches=(${(f)"$(git worktree list --porcelain 2>/dev/null | \
+        sed -n 's/^branch refs\/heads\///p')"})
+      _describe 'worktree branch' wt_branches
+      ;;
+    git_branch)
+      local -a branches
+      branches=(${(f)"$(git for-each-ref --format='%(refname:short)' \
+        refs/heads refs/remotes/origin 2>/dev/null | \
+        sed 's|^origin/||' | sort -u)"})
+      _describe 'branch' branches
+      ;;
+    local_branch)
+      local -a branches
+      branches=(${(f)"$(git for-each-ref --format='%(refname:short)' \
+        refs/heads 2>/dev/null)"})
+      _describe 'branch' branches
+      ;;
+    clear_context)
+      _describe 'flag' flags
+      ;;
+    no_complete)
+      return
+      ;;
+    *)
+      _describe 'command' commands
+      _describe 'flag' flags
+      ;;
+  esac
+}
+
+_wt "$@"

@@ -38,6 +38,7 @@ stashes, no more broken context.
 - Flexible worktree cleanup with filters (`--merged`, `--pattern`, `--dry-run`, `--dev-only`, `--main-only`)
 - Lock/unlock worktree protection
 - Branch rename without recreating worktree (`--rename`)
+- Shell completions for bash and zsh (flags, branch names, context-sensitive arguments)
 - Shell-aware prompts — `wt --init` supports tab completion in bash and zsh
 - Project-specific configuration per repository
 
@@ -235,6 +236,48 @@ code .
 
 For advanced usage, custom examples, and troubleshooting see [docs/hooks.md](docs/hooks.md).
 
+## Shell Completions
+
+Tab completion is automatically enabled for both **bash** and **zsh** when you source `wt.sh`. No manual setup is needed.
+
+### What gets completed
+
+| Context | Completion |
+|---------|------------|
+| `wt <Tab>` | All flags (short and long forms) |
+| `wt -s <Tab>` | Existing worktree branch names |
+| `wt -r <Tab>` | Existing worktree branch names |
+| `wt -L <Tab>` / `wt -U <Tab>` | Existing worktree branch names |
+| `wt -o <Tab>` | Git branches (local + remote) |
+| `wt -b <Tab>` / `wt --from <Tab>` | Git branches (base ref selection) |
+| `wt --log <Tab>` | Local branch names |
+| `wt -n <Tab>` | No completion (new name expected) |
+| `wt --rename <Tab>` | No completion (new name expected) |
+| `wt -c 14 --<Tab>` | Modifier flags (`--merged`, `--pattern`, `--dry-run`, etc.) |
+
+### How it works
+
+- **Zsh**: Completions use `compdef`/`_describe` via `completions/_wt`, loaded through `fpath` and `autoload`.
+- **Bash**: Completions use `complete`/`COMPREPLY` via `completions/wt.bash`, sourced directly. A fallback is provided when `bash-completion` is not installed.
+
+### Manual setup (if auto-registration fails)
+
+If completions are not working after sourcing `wt.sh`, add the following to your shell config:
+
+**Zsh** (`~/.zshrc`):
+
+```zsh
+fpath=("$HOME/.worktree-helpers/completions" $fpath)
+autoload -Uz _wt
+compdef _wt wt
+```
+
+**Bash** (`~/.bashrc`):
+
+```bash
+source "$HOME/.worktree-helpers/completions/wt.bash"
+```
+
 ## Troubleshooting
 
 ### "Run 'wt --init' first"
@@ -373,7 +416,7 @@ git push --follow-tags origin main
 
 This project is actively developed. Upcoming features:
 
-- [ ] **Shell completions** — tab completion for bash and zsh (flags, branch names, worktree paths)
+- [x] **Shell completions** — tab completion for bash and zsh (flags, branch names, worktree paths)
 - [ ] **Self-update** — `wt --update` with non-blocking version check
 - [x] **Granular clear** — `wt -c --merged`, `--pattern <glob>`, `--dry-run`
 - [ ] **Dirty/clean status** — `wt -l` shows uncommitted changes per worktree

@@ -98,3 +98,18 @@ wt() {
     help)   _cmd_help ;;
   esac
 }
+
+# Load shell completions
+if [ -n "${ZSH_VERSION:-}" ]; then
+  # Zsh: add completions dir to fpath, autoload
+  # shellcheck disable=SC2206
+  fpath=("$_WT_DIR/completions" $fpath)
+  autoload -Uz _wt
+  compdef _wt wt 2>/dev/null
+elif [ -n "${BASH_VERSION:-}" ]; then
+  # Bash: source completion file
+  if [ -f "$_WT_DIR/completions/wt.bash" ]; then
+    # shellcheck disable=SC1091
+    . "$_WT_DIR/completions/wt.bash"
+  fi
+fi

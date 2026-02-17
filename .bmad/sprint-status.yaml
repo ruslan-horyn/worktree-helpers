@@ -212,7 +212,7 @@ sprints:
     end_date: "2026-03-08"
     capacity_points: 17
     committed_points: 16
-    completed_points: 3
+    completed_points: 8
     status: "active"
     goal: "Fix config detection bug, enhance developer experience with update mechanism and completions"
     stories:
@@ -235,7 +235,8 @@ sprints:
       - story_id: "STORY-014"
         title: "Add shell completions (bash + zsh)"
         points: 5
-        status: "not_started"
+        status: "completed"
+        completion_date: "2026-02-17"
         assigned_to: null
         priority: "should_have"
         story_doc: "docs/stories/STORY-014.md"
