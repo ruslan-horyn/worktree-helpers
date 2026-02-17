@@ -127,6 +127,18 @@ _wt_count() {
   git worktree list --porcelain 2>/dev/null | grep -c "^worktree " || echo 0
 }
 
+# Check if a worktree has uncommitted changes
+# Usage: _wt_is_dirty <worktree_path>
+# Returns: 0 if dirty, 1 if clean, 2 if inaccessible
+_wt_is_dirty() {
+  local wt_path="$1"
+  [ ! -d "$wt_path" ] && return 2
+  local status_output
+  status_output=$(git -C "$wt_path" status --porcelain 2>/dev/null) || return 2
+  [ -n "$status_output" ] && return 0
+  return 1
+}
+
 # Warn if worktree count exceeds threshold
 # Usage: _wt_warn_count (call after worktree creation)
 _wt_warn_count() {

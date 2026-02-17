@@ -212,7 +212,7 @@ sprints:
     end_date: "2026-03-08"
     capacity_points: 17
     committed_points: 16
-    completed_points: 8
+    completed_points: 11
     status: "active"
     goal: "Fix config detection bug, enhance developer experience with update mechanism and completions"
     stories:
@@ -243,9 +243,11 @@ sprints:
       - story_id: "STORY-011"
         title: "Show dirty/clean status in wt -l"
         points: 3
-        status: "not_started"
+        status: "completed"
+        completion_date: "2026-02-17"
         assigned_to: null
         priority: "should_have"
+        story_doc: "docs/stories/STORY-011.md"
 
   - sprint_number: 6
     start_date: "2026-03-09"

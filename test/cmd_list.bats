@@ -50,3 +50,104 @@ teardown() {
   assert_success
   assert_output --partial "main"
 }
+
+@test "_cmd_list shows [clean] for worktree with no changes" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+
+  local wt_path="$TEST_TEMP_DIR/test-project_worktrees/clean-branch"
+  mkdir -p "$TEST_TEMP_DIR/test-project_worktrees"
+  git worktree add -b clean-branch "$wt_path" HEAD >/dev/null 2>&1
+
+  run _cmd_list
+  assert_success
+  assert_output --partial "clean-branch"
+  assert_output --partial "[clean]"
+}
+
+@test "_cmd_list shows [dirty] for worktree with unstaged changes" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+
+  local wt_path="$TEST_TEMP_DIR/test-project_worktrees/dirty-unstaged"
+  mkdir -p "$TEST_TEMP_DIR/test-project_worktrees"
+  git worktree add -b dirty-unstaged "$wt_path" HEAD >/dev/null 2>&1
+
+  # Create unstaged change in the worktree
+  echo "modified" >> "$wt_path/README.md"
+
+  run _cmd_list
+  assert_success
+  assert_output --partial "dirty-unstaged"
+  assert_output --partial "[dirty]"
+}
+
+@test "_cmd_list shows [dirty] for worktree with untracked files" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+
+  local wt_path="$TEST_TEMP_DIR/test-project_worktrees/dirty-untracked"
+  mkdir -p "$TEST_TEMP_DIR/test-project_worktrees"
+  git worktree add -b dirty-untracked "$wt_path" HEAD >/dev/null 2>&1
+
+  # Create untracked file in the worktree
+  echo "new file" > "$wt_path/newfile.txt"
+
+  run _cmd_list
+  assert_success
+  assert_output --partial "dirty-untracked"
+  assert_output --partial "[dirty]"
+}
+
+@test "_cmd_list shows dirty/clean indicator for main worktree" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+
+  run _cmd_list
+  assert_success
+  assert_output --partial "main"
+  # Main worktree should show either [clean] or [dirty]
+  # Since create_test_repo leaves a clean state, it should show [clean]
+  assert_output --partial "[clean]"
+}
+
+@test "_cmd_list shows [dirty] for worktree with staged changes" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+
+  local wt_path="$TEST_TEMP_DIR/test-project_worktrees/dirty-staged"
+  mkdir -p "$TEST_TEMP_DIR/test-project_worktrees"
+  git worktree add -b dirty-staged "$wt_path" HEAD >/dev/null 2>&1
+
+  # Create staged change in the worktree
+  echo "staged content" > "$wt_path/staged.txt"
+  git -C "$wt_path" add staged.txt
+
+  run _cmd_list
+  assert_success
+  assert_output --partial "dirty-staged"
+  assert_output --partial "[dirty]"
+}
+
+@test "_cmd_list shows [?] for inaccessible worktree path" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+
+  local wt_path="$TEST_TEMP_DIR/test-project_worktrees/missing-wt"
+  mkdir -p "$TEST_TEMP_DIR/test-project_worktrees"
+  git worktree add -b missing-wt "$wt_path" HEAD >/dev/null 2>&1
+
+  # Remove the worktree directory (but git still references it)
+  rm -rf "$wt_path"
+
+  run _cmd_list
+  assert_success
+  assert_output --partial "missing-wt"
+  assert_output --partial "[?]"
+}
