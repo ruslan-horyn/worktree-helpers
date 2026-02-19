@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0](https://github.com/ruslan-horyn/worktree-helpers/compare/v1.2.0...v1.3.0) (2026-02-19)
+
+
+### Added
+
+* **STORY-011:** show dirty/clean status indicator in wt -l ([#9](https://github.com/ruslan-horyn/worktree-helpers/issues/9)) ([957b9a4](https://github.com/ruslan-horyn/worktree-helpers/commit/957b9a4b5f01fd0d7150f18396d5b1ef5ad8a41a))
+* **STORY-013:** add self-update mechanism (wt --update) ([#11](https://github.com/ruslan-horyn/worktree-helpers/issues/11)) ([6913467](https://github.com/ruslan-horyn/worktree-helpers/commit/6913467e12debea2d35ac8046cb92411544f1237))
+* **STORY-014:** add shell completions for bash and zsh ([ff6b019](https://github.com/ruslan-horyn/worktree-helpers/commit/ff6b019a9369c7f48de26fffbd3af821eef9ae70))
+
+
+### Fixed
+
+* suppress chpwd hook output in config detection, remove package.json requirement ([#8](https://github.com/ruslan-horyn/worktree-helpers/issues/8)) ([31dc412](https://github.com/ruslan-horyn/worktree-helpers/commit/31dc4125b46e7bd9478d49f6b8f308458a065923))
+
 ## [1.2.1](///compare/v1.2.0...v1.2.1) (2026-02-16)
 
 
