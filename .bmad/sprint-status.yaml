@@ -264,7 +264,7 @@ sprints:
     end_date: "2026-03-08"
     capacity_points: 17
     committed_points: 17
-    completed_points: 0
+    completed_points: 2
     status: "not_started"
     goal: "Fix critical bugs from real-world usage and overhaul completions"
     stories:
@@ -292,7 +292,8 @@ sprints:
       - story_id: "STORY-032"
         title: "Show only worktree name instead of full path everywhere"
         points: 2
-        status: "not_started"
+        status: "completed"
+        completion_date: "2026-02-19"
         assigned_to: null
         priority: "should_have"
         story_doc: "docs/stories/STORY-032.md"

@@ -3,7 +3,7 @@
 **Epic:** UX Polish
 **Priority:** Should Have
 **Story Points:** 2
-**Status:** Not Started
+**Status:** Completed
 **Assigned To:** Unassigned
 **Created:** 2026-02-19
 **Sprint:** 6
