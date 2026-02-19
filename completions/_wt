@@ -28,6 +28,7 @@ _wt() {
     '--init:Initialize config'
     '--log:Show commits vs main'
     '--rename:Rename current worktree branch'
+    '--update:Update worktree-helpers to latest version'
     '--uninstall:Uninstall worktree-helpers'
     '-v:Show version'
     '--version:Show version'
@@ -50,6 +51,7 @@ _wt() {
     '--merged:Clear merged worktrees only'
     '--pattern:Clear worktrees matching pattern'
     '--dry-run:Show what would be cleared'
+    '--check:Check for updates without installing'
   )
 
   # Determine what we're completing based on the previous word
@@ -96,20 +98,20 @@ _wt() {
       local -a wt_branches
       wt_branches=(${(f)"$(git worktree list --porcelain 2>/dev/null | \
         sed -n 's/^branch refs\/heads\///p')"})
-      _describe 'worktree branch' wt_branches
+      compadd -V unsorted -a wt_branches
       ;;
     git_branch)
       local -a branches
       branches=(${(f)"$(git for-each-ref --format='%(refname:short)' \
         refs/heads refs/remotes/origin 2>/dev/null | \
         sed 's|^origin/||' | sort -u)"})
-      _describe 'branch' branches
+      compadd -V unsorted -a branches
       ;;
     local_branch)
       local -a branches
       branches=(${(f)"$(git for-each-ref --format='%(refname:short)' \
         refs/heads 2>/dev/null)"})
-      _describe 'branch' branches
+      compadd -V unsorted -a branches
       ;;
     clear_context)
       _describe 'flag' flags
@@ -118,8 +120,9 @@ _wt() {
       return
       ;;
     *)
-      _describe 'command' commands
-      _describe 'flag' flags
+      local -a all_options
+      all_options=($commands $flags)
+      _describe 'option' all_options
       ;;
   esac
 }

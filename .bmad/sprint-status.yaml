@@ -211,8 +211,8 @@ sprints:
     start_date: "2026-02-23"
     end_date: "2026-03-08"
     capacity_points: 17
-    committed_points: 16
-    completed_points: 11
+    committed_points: 18
+    completed_points: 18
     status: "active"
     goal: "Fix config detection bug, enhance developer experience with update mechanism and completions"
     stories:
@@ -249,6 +249,15 @@ sprints:
         assigned_to: null
         priority: "should_have"
         story_doc: "docs/stories/STORY-011.md"
+      - story_id: "STORY-028"
+        title: "Fix zsh tab completions silently failing when wt.sh sourced before compinit"
+        points: 2
+        status: "completed"
+        completion_date: "2026-02-19"
+        assigned_to: null
+        priority: "must_have"
+        blocked_by: ["STORY-014"]
+        story_doc: "docs/stories/STORY-028.md"
 
   - sprint_number: 6
     start_date: "2026-03-09"
