@@ -1,8 +1,8 @@
 version: "6.0.0"
 project_name: "worktree-helpers"
 project_level: 1
-current_sprint: 4
-sprint_plan_path: "docs/sprint-plan-worktree-helpers-2026-02-08.md"
+current_sprint: 6
+sprint_plan_path: "docs/sprint-plan-worktree-helpers-2026-02-19.md"
 
 sprints:
   - sprint_number: 1
@@ -209,11 +209,11 @@ sprints:
 
   - sprint_number: 5
     start_date: "2026-02-23"
-    end_date: "2026-03-08"
+    end_date: "2026-02-19"
     capacity_points: 17
     committed_points: 18
     completed_points: 18
-    status: "active"
+    status: "completed"
     goal: "Fix config detection bug, enhance developer experience with update mechanism and completions"
     stories:
       - story_id: "STORY-027"
@@ -260,48 +260,141 @@ sprints:
         story_doc: "docs/stories/STORY-028.md"
 
   - sprint_number: 6
+    start_date: "2026-02-23"
+    end_date: "2026-03-08"
+    capacity_points: 17
+    committed_points: 17
+    completed_points: 0
+    status: "not_started"
+    goal: "Fix critical bugs from real-world usage and overhaul completions"
+    stories:
+      - story_id: "STORY-029"
+        title: "Protect main/dev branches from wt -c deletion"
+        points: 3
+        status: "not_started"
+        assigned_to: null
+        priority: "must_have"
+        story_doc: "docs/stories/STORY-029.md"
+      - story_id: "STORY-031"
+        title: "Replace slashes with dashes in worktree directory names"
+        points: 2
+        status: "not_started"
+        assigned_to: null
+        priority: "must_have"
+        story_doc: "docs/stories/STORY-031.md"
+      - story_id: "STORY-030"
+        title: "Fix completions in Warp + zsh to work like git"
+        points: 5
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+        story_doc: "docs/stories/STORY-030.md"
+      - story_id: "STORY-032"
+        title: "Show only worktree name instead of full path everywhere"
+        points: 2
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+        story_doc: "docs/stories/STORY-032.md"
+      - story_id: "STORY-033"
+        title: "Prompt to re-source after wt --update"
+        points: 2
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+        story_doc: "docs/stories/STORY-033.md"
+      - story_id: "STORY-036"
+        title: "Per-command help (wt <cmd> --help)"
+        points: 3
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+        story_doc: "docs/stories/STORY-036.md"
+
+  - sprint_number: 7
     start_date: "2026-03-09"
     end_date: "2026-03-22"
     capacity_points: 17
-    committed_points: 10
+    committed_points: 17
     completed_points: 0
     status: "not_started"
-    goal: "Polish UX and expand distribution channels"
+    goal: "Polish CLI output, init experience, and add worktree metadata"
     stories:
+      - story_id: "STORY-034"
+        title: "Add verbose feedback to wt -c and wt --init"
+        points: 3
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+        story_doc: "docs/stories/STORY-034.md"
+      - story_id: "STORY-035"
+        title: "wt --init: offer to copy/backup existing hooks"
+        points: 2
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+        story_doc: "docs/stories/STORY-035.md"
+      - story_id: "STORY-037"
+        title: "Completions: show example usage hint when nothing to suggest"
+        points: 2
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+        story_doc: "docs/stories/STORY-037.md"
+      - story_id: "STORY-038"
+        title: "Descriptive usage with placeholders in command output"
+        points: 2
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+        story_doc: "docs/stories/STORY-038.md"
+      - story_id: "STORY-021"
+        title: "Improve wt --init UX: colorized output, hook suggestions, auto .gitignore"
+        points: 3
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
       - story_id: "STORY-016"
         title: "Add worktree metadata tracking"
         points: 5
         status: "not_started"
         assigned_to: null
         priority: "could_have"
+        story_doc: "docs/stories/STORY-016.md"
+
+  - sprint_number: 8
+    start_date: "2026-03-23"
+    end_date: "2026-04-05"
+    capacity_points: 17
+    committed_points: 5
+    completed_points: 0
+    status: "not_started"
+    goal: "Expand distribution channels"
+    stories:
       - story_id: "STORY-017"
         title: "Create Homebrew formula"
         points: 3
         status: "not_started"
         assigned_to: null
         priority: "could_have"
+        story_doc: "docs/stories/STORY-017.md"
       - story_id: "STORY-018"
         title: "Create oh-my-zsh / zinit plugin"
         points: 2
         status: "not_started"
         assigned_to: null
         priority: "could_have"
+        story_doc: "docs/stories/STORY-018.md"
 
-backlog:
-  - story_id: "STORY-021"
-    title: "Improve wt --init UX: colorized output, hook suggestions, auto .gitignore"
-    points: 3
-    status: "not_started"
-    assigned_to: null
-    priority: "should_have"
+backlog: []
 
 velocity:
   sprint_1: 14
   sprint_2: 17
   sprint_3: 17
   sprint_4: 18
-  sprint_5: null
-  rolling_average: 16.5
+  sprint_5: 18
+  rolling_average: 16.8
 
 team:
   size: 1

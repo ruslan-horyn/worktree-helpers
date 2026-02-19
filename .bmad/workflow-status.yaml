@@ -7,12 +7,12 @@ workflows:
   product-brief: "docs/product-brief-worktree-helpers-2026-02-01.md"
   tech-spec: "docs/tech-spec-worktree-helpers-2026-02-01.md"
   architecture: "not_needed"
-  sprint-planning: "docs/sprint-plan-worktree-helpers-2026-02-08.md"
+  sprint-planning: "docs/sprint-plan-worktree-helpers-2026-02-19.md"
 
-last_updated: "2026-02-14"
-last_workflow: "sprint-status-update"
+last_updated: "2026-02-19"
+last_workflow: "sprint-5-retrospective"
 
 next_recommended:
   workflow: "dev-story"
-  reason: "Sprint 4 active (13/20 pts done). STORY-023, STORY-024, STORY-025, STORY-026 completed. Remaining: STORY-022 (init path, 2pts), STORY-015 (granular clear, 3pts). Both unblocked."
-  command: "/dev-story STORY-022"
+  reason: "Sprint 5 complete (18/18 pts). Sprint 6 not started. STORY-029 (protect branches) and STORY-031 (slash→dash dirs) are critical must-have fixes — start there."
+  command: "/dev-story STORY-029"
