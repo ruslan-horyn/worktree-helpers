@@ -9,7 +9,25 @@ permissions:
   contents: write
 
 jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Install dependencies
+        run: sudo apt-get install -y jq shellcheck
+
+      - name: Run shellcheck
+        run: shellcheck wt.sh lib/utils.sh lib/config.sh lib/worktree.sh lib/commands.sh lib/update.sh install.sh
+
+      - name: Run BATS tests
+        run: ./test/libs/bats-core/bin/bats test/
+
   github-release:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
