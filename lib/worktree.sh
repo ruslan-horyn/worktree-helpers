@@ -33,7 +33,12 @@ _wt_branch() {
 
 _wt_select() {
   command -v fzf >/dev/null 2>&1 || { _err "Install fzf or pass branch"; return 1; }
-  git worktree list --porcelain | awk '/^worktree /{print substr($0,10)}' | fzf --prompt="${1:-wt> }"
+  # Display only the worktree name (basename) in fzf, but return the full path to callers
+  # Format: "name\tfull_path" — fzf shows only field 1, cut outputs field 2
+  git worktree list --porcelain \
+    | awk '/^worktree /{p=substr($0,10); n=p; sub(/.*\//, "", n); print n "\t" p}' \
+    | fzf --prompt="${1:-wt> }" --with-nth=1 --delimiter='\t' \
+    | cut -f2
 }
 
 _branch_select() {
@@ -138,7 +143,7 @@ _wt_open() {
   local branch="$1" dir="$2"
   local existing; existing=$(_wt_path "$branch")
   if [ -n "$existing" ]; then
-    _info "Switching to '$branch': $existing"
+    _info "Switching to '$branch': $(_wt_display_name "$existing")"
     _run_hook switched "$existing" "$branch" "" "$(_main_repo_root)"
     return
   fi

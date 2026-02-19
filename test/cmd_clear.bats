@@ -30,6 +30,45 @@ teardown() {
   assert_output --partial "Removed"
 }
 
+@test "_cmd_clear removal message shows worktree name not full path" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+  local wt_path="$GWT_WORKTREES_DIR/name-display-branch"
+  git worktree add -b name-display-branch "$wt_path" HEAD >/dev/null 2>&1
+
+  # Backdate the .git file to make it "old"
+  touch -t 202001010000 "$wt_path/.git"
+
+  run _cmd_clear "1" "1" "0" "0"
+  assert_success
+  assert_output --partial "Removed name-display-branch"
+  refute_output --partial "Removed $wt_path"
+}
+
+@test "_cmd_clear listing shows worktree name not full path" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+  local wt_path="$GWT_WORKTREES_DIR/listed-name-branch"
+  git worktree add -b listed-name-branch "$wt_path" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$wt_path/.git"
+
+  # dry-run to see the listing without deleting
+  run _cmd_clear "1" "1" "0" "0" "0" "" "1"
+  assert_success
+  assert_output --partial "listed-name-branch"
+  refute_output --partial "$wt_path"
+}
+
 @test "_cmd_clear skips locked worktrees" {
   local repo_dir
   repo_dir=$(create_test_repo)
