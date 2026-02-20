@@ -1,5 +1,5 @@
 #compdef wt
-# shellcheck shell=bash disable=SC2148,SC2034,SC2207,SC2296,SC2206,SC2154
+# shellcheck shell=bash disable=SC2148,SC2034,SC2207,SC2296,SC2206,SC2154,SC2128
 # Zsh completion for wt (worktree-helpers)
 # Note: This file uses zsh-specific syntax (compdef, _describe, ${(f)...}).
 # Shellcheck warnings for zsh-only features are suppressed above.
