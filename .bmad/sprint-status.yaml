@@ -264,7 +264,7 @@ sprints:
     end_date: "2026-03-08"
     capacity_points: 17
     committed_points: 17
-    completed_points: 14
+    completed_points: 17
     status: "active"
     goal: "Fix critical bugs from real-world usage and overhaul completions"
     stories:
@@ -312,7 +312,8 @@ sprints:
       - story_id: "STORY-036"
         title: "Per-command help (wt <cmd> --help)"
         points: 3
-        status: "not_started"
+        status: "completed"
+        completion_date: "2026-02-20"
         assigned_to: null
         priority: "should_have"
         story_doc: "docs/stories/STORY-036.md"
