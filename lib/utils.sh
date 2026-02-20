@@ -121,6 +121,12 @@ _read_input() {
   printf '%s' "${reply:-$default}"
 }
 
+# Return display-friendly worktree name (basename of path)
+# Usage: _wt_display_name <wt_path>
+_wt_display_name() {
+  basename "$1"
+}
+
 # Count total worktrees
 # Usage: _wt_count
 _wt_count() {

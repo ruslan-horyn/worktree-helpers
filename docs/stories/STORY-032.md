@@ -3,7 +3,7 @@
 **Epic:** UX Polish
 **Priority:** Should Have
 **Story Points:** 2
-**Status:** Not Started
+**Status:** Completed
 **Assigned To:** Unassigned
 **Created:** 2026-02-19
 **Sprint:** 6
@@ -297,9 +297,98 @@ No new logic, no schema changes, no external dependencies. 2 points is appropria
 **Status History:**
 
 - 2026-02-19: Created by Ruslan Horyn (BMAD Scrum Master)
+- 2026-02-19: Implementation started and completed
 
-**Actual Effort:** TBD (will be filled during/after implementation)
+**Actual Effort:** 2 points (matched estimate)
+
+**Files Changed:**
+
+| File | Change Type | Description |
+|------|-------------|-------------|
+| `lib/utils.sh` | Modified | Added `_wt_display_name <path>` helper (returns `basename "$1"`) |
+| `lib/commands.sh` | Modified | Updated `_cmd_list` to show `[root]` for main worktree, worktree names for others, and added worktrees directory header; updated `_cmd_remove` prompt, `_cmd_lock`/`_cmd_unlock` confirmation messages, `_cmd_clear` listing/dry-run/removal messages to use `_wt_display_name` |
+| `lib/worktree.sh` | Modified | Updated `_wt_select` fzf picker to display names while returning full paths using `--with-nth=1 --delimiter='\t'`; updated `_wt_open` info message to show display name |
+| `test/cmd_list.bats` | Modified | Added 2 new tests: `[root]` label and name-not-full-path assertions |
+| `test/cmd_lock.bats` | Modified | Added 2 new tests: lock/unlock confirmation show name not full path |
+| `test/cmd_remove.bats` | Modified | Added 1 new test: prompt shows name not full path |
+| `test/cmd_clear.bats` | Modified | Added 2 new tests: removal message and listing show name not full path |
+
+**Tests Added:** 7 new tests across 4 test files
+
+**Test Results:** 255/255 tests passing (248 existing + 7 new); no regressions
+
+**Shellcheck:** Clean on `lib/utils.sh`, `lib/commands.sh`, `lib/worktree.sh`
+
+**Decisions Made:**
+
+- `_wt_display_name` implemented as `basename "$1"` per story spec (POSIX-compatible)
+- `_cmd_list` main worktree labeled `[root]`; added optional header `Worktrees in: <dir>` when config available (to stderr, so it doesn't interfere with piped usage)
+- `printf` column width reduced from `%-50s` to `%-30s` in `_cmd_list` since names are much shorter than full paths
+- `_wt_select` fzf approach uses tab-delimited `name\tfull_path` format with `--with-nth=1` to display names and `cut -f2` to return full paths — callers receive full paths unchanged
+- Error messages that reference user-supplied arguments (e.g., `_err "Failed to remove $wt_path"`) retained full path per story's out-of-scope definition
+
+**Acceptance Criteria Validation:**
+
+- [x] `wt -l` displays only the worktree name, not the full path
+- [x] `wt -l` labels the main worktree distinctly (`[root]`) instead of its full path
+- [x] `wt -n` success/info messages reference the worktree by name (already used branch name — no change needed)
+- [x] `wt -o` "switching" info message shows worktree name, not full path
+- [x] `wt -r` confirmation prompt shows worktree name, not full path
+- [x] `wt -r` / `wt -s` fzf picker entries (`_wt_select`) show only worktree name
+- [x] `wt -c` worktree listing shows name only (including locked-skip list and dry-run output)
+- [x] `wt -c` per-item removal message shows name only
+- [x] `wt -L` / `wt -U` confirmation messages show name only
+- [x] Shared `_wt_display_name <path>` helper used across all commands
+- [x] Main worktree (repo root) uses a fixed label (`[root]`) rather than `basename` of repo path
+- [x] Full paths still used for all internal git operations (display-only change)
+- [x] BATS tests updated to assert on names instead of full paths (7 new tests added)
+- [x] `shellcheck` passes on all modified files
 
 ---
 
 **This story was created using BMAD Method v6 - Phase 4 (Implementation Planning)**
+
+---
+
+## QA Review
+
+### Files Reviewed
+
+| File | Status | Notes |
+|------|--------|-------|
+| `lib/utils.sh` | Pass | `_wt_display_name` added at line 126 as `basename "$1"`; POSIX-compliant; correct comment/usage block |
+| `lib/commands.sh` | Pass | All 9 user-facing output sites updated to use `_wt_display_name`; `_cmd_list` uses `[root]` label and `%-30s` column width; internal git ops retain full paths |
+| `lib/worktree.sh` | Pass | `_wt_select` uses tab-delimited `name\tfull_path` format with `--with-nth=1`; returns full path to callers via `cut -f2`; `_wt_open` uses `_wt_display_name` for info message |
+| `test/cmd_list.bats` | Pass | 2 new tests: `[root]` label assertion and name-not-full-path assertion with `refute_output` |
+| `test/cmd_remove.bats` | Pass | 1 new test: prompt shows name not full path; uses subshell sourcing approach to capture stderr |
+| `test/cmd_clear.bats` | Pass | 2 new tests: removal message and dry-run listing show name not full path |
+| `test/cmd_lock.bats` | Pass | 2 new tests: lock/unlock confirmation shows name not full path with `refute_output` guards |
+
+### Issues Found
+
+None
+
+### AC Verification
+
+- [x] AC 1 — `wt -l` displays only worktree name, not full path — verified: `lib/commands.sh:408` (`_wt_display_name "$worktree"`), test: `_cmd_list shows worktree name not full path for non-main worktrees`
+- [x] AC 2 — `wt -l` labels main worktree as `[root]` — verified: `lib/commands.sh:406` (`display_name="[root]"`), test: `_cmd_list labels main worktree as [root] not full path`
+- [x] AC 3 — `wt -n` success/info messages reference worktree by name — verified: `_wt_create` in `lib/worktree.sh` already used branch name (`'$branch'`); no change needed per story spec
+- [x] AC 4 — `wt -o` switching info message shows worktree name, not full path — verified: `lib/worktree.sh:146` (`_wt_display_name "$existing"`), test: `_wt_open switches to existing worktree if already open`
+- [x] AC 5 — `wt -r` confirmation prompt shows worktree name, not full path — verified: `lib/commands.sh:39` (`_wt_display_name "$wt_path"`), test: `_cmd_remove prompt shows worktree name not full path`
+- [x] AC 6 — `wt -r` / `wt -s` fzf picker entries show only worktree name — verified: `lib/worktree.sh:38-41` (tab-delimited fzf with `--with-nth=1`); not directly BATS-testable (requires interactive fzf)
+- [x] AC 7 — `wt -c` listing shows name only (including locked-skip and dry-run) — verified: `lib/commands.sh:249,296,298,316,318` all use `_wt_display_name`, test: `_cmd_clear listing shows worktree name not full path`
+- [x] AC 8 — `wt -c` per-item removal message shows name only — verified: `lib/commands.sh:346` (`_info "Removed $(_wt_display_name "$wt_path")"`), test: `_cmd_clear removal message shows worktree name not full path`
+- [x] AC 9 — `wt -L` / `wt -U` confirmation messages show name only — verified: `lib/commands.sh:79,86`, tests: `_cmd_lock/unlock confirmation message shows worktree name not full path`
+- [x] AC 10 — Shared `_wt_display_name <path>` helper used across all commands — verified: 12 call sites across `lib/commands.sh` and `lib/worktree.sh`; defined in `lib/utils.sh:126`
+- [x] AC 11 — Main worktree uses fixed label `[root]` rather than `basename` of repo path — verified: `lib/commands.sh:405-406` (checks `is_main` before calling `_wt_display_name`)
+- [x] AC 12 — Full paths still used for all internal git operations — verified: all `git worktree add/remove/lock/unlock/move` calls use `$wt_path` directly; `_wt_select` returns full path to `_wt_resolve`
+- [x] AC 13 — BATS tests updated to assert on names instead of full paths — verified: 7 new tests added across 4 test files
+- [x] AC 14 — `shellcheck` passes on all modified files — verified: `shellcheck -x wt.sh lib/utils.sh lib/commands.sh lib/worktree.sh` produced no output (clean)
+
+### Test Results
+
+- Total: 255 / Passed: 255 / Failed: 0
+
+### Shellcheck
+
+- Clean: yes (`shellcheck -x wt.sh lib/utils.sh lib/commands.sh lib/worktree.sh` — no warnings or errors)

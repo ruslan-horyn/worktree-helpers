@@ -292,7 +292,8 @@ sprints:
       - story_id: "STORY-032"
         title: "Show only worktree name instead of full path everywhere"
         points: 2
-        status: "not_started"
+        status: "completed"
+        completion_date: "2026-02-19"
         assigned_to: null
         priority: "should_have"
         story_doc: "docs/stories/STORY-032.md"

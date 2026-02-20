@@ -36,7 +36,7 @@ _cmd_remove() {
   if [ "$PWD" = "$wt_path" ]; then cd "$(_repo_root)" || true; fi
 
   if [ "$force" -ne 1 ]; then
-    printf "Remove '%s'? [y/N] " "$wt_path" >&2; read -r r
+    printf "Remove '%s'? [y/N] " "$(_wt_display_name "$wt_path")" >&2; read -r r
     case "$r" in y|Y) ;; *) return 1 ;; esac
   fi
 
@@ -76,14 +76,14 @@ _cmd_lock() {
   local input="$1"
   _repo_root >/dev/null || return 1
   local wt_path; wt_path=$(_wt_resolve "$input" "lock> ") || return 1
-  git worktree lock "$wt_path" && _info "Locked $wt_path"
+  git worktree lock "$wt_path" && _info "Locked $(_wt_display_name "$wt_path")"
 }
 
 _cmd_unlock() {
   local input="$1"
   _repo_root >/dev/null || return 1
   local wt_path; wt_path=$(_wt_resolve "$input" "unlock> ") || return 1
-  git worktree unlock "$wt_path" && _info "Unlocked $wt_path"
+  git worktree unlock "$wt_path" && _info "Unlocked $(_wt_display_name "$wt_path")"
 }
 
 _cmd_clear() {
@@ -246,7 +246,7 @@ EOF
       [ -z "$item" ] && continue
       local wt_path="${item%%|*}"
       local br="${item#*|}"
-      echo "  ${C_DIM}$wt_path${C_RESET} ($br) ${C_RED}[locked]${C_RESET}" >&2
+      echo "  ${C_DIM}$(_wt_display_name "$wt_path")${C_RESET} ($br) ${C_RED}[locked]${C_RESET}" >&2
     done <<EOF
 $locked_skipped
 EOF
@@ -293,9 +293,9 @@ EOF
       local br="${rest%%|*}"
       local ts="${rest#*|}"
       if [ -n "$ts" ] && [ "$ts" != "0" ]; then
-        echo "  $wt_path ($br) - $(_age_display "$ts")"
+        echo "  $(_wt_display_name "$wt_path") ($br) - $(_age_display "$ts")"
       else
-        echo "  $wt_path ($br)"
+        echo "  $(_wt_display_name "$wt_path") ($br)"
       fi
     done <<EOF
 $to_delete
@@ -313,9 +313,9 @@ EOF
     local br="${rest%%|*}"
     local ts="${rest#*|}"
     if [ -n "$ts" ] && [ "$ts" != "0" ]; then
-      echo "  $wt_path ($br) - $(_age_display "$ts")"
+      echo "  $(_wt_display_name "$wt_path") ($br) - $(_age_display "$ts")"
     else
-      echo "  $wt_path ($br)"
+      echo "  $(_wt_display_name "$wt_path") ($br)"
     fi
   done <<EOF
 $to_delete
@@ -343,7 +343,7 @@ EOF
     if [ "$PWD" = "$wt_path" ]; then cd "$main_root" || true; fi
 
     if git worktree remove "$wt_path" 2>/dev/null; then
-      _info "Removed $wt_path"
+      _info "Removed $(_wt_display_name "$wt_path")"
       if [ -n "$br" ] && [ "$br" != "(detached)" ] && _branch_exists "$br"; then
         git branch -D "$br" 2>/dev/null && _info "Deleted branch $br"
       fi
@@ -367,6 +367,11 @@ _cmd_list() {
   local count=0
   local output=""
   output=$(git worktree list --porcelain)
+
+  # Show worktrees directory header if config is available
+  if _config_load 2>/dev/null && [ -n "${GWT_WORKTREES_DIR:-}" ]; then
+    echo "${C_DIM}Worktrees in: $GWT_WORKTREES_DIR${C_RESET}" >&2
+  fi
 
   # Parse porcelain output line by line
   while IFS= read -r line || [ -n "$line" ]; do
@@ -395,6 +400,14 @@ _cmd_list() {
           # Check if this is the main worktree
           [ "$worktree" = "$main_root" ] && is_main="1"
 
+          # Determine display name
+          local display_name=""
+          if [ -n "$is_main" ]; then
+            display_name="[root]"
+          else
+            display_name=$(_wt_display_name "$worktree")
+          fi
+
           # Format lock indicator
           local lock_indicator=""
           if [ -n "$locked" ]; then
@@ -419,7 +432,7 @@ _cmd_list() {
           fi
 
           # Print formatted line
-          printf "%-50s %s %s %s\n" "$worktree" "$branch_display" "$lock_indicator" "$dirty_indicator"
+          printf "%-30s %s %s %s\n" "$display_name" "$branch_display" "$lock_indicator" "$dirty_indicator"
 
           worktree=""
         fi

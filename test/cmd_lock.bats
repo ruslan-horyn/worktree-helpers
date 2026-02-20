@@ -61,3 +61,34 @@ teardown() {
   run _cmd_unlock "nonexistent-unlock"
   assert_failure
 }
+
+@test "_cmd_lock confirmation message shows worktree name not full path" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+
+  local wt_path="$TEST_TEMP_DIR/test-project_worktrees/lock-name-test"
+  mkdir -p "$TEST_TEMP_DIR/test-project_worktrees"
+  git worktree add -b lock-name-test "$wt_path" HEAD >/dev/null 2>&1
+
+  run _cmd_lock "lock-name-test"
+  assert_success
+  assert_output --partial "Locked lock-name-test"
+  refute_output --partial "Locked $wt_path"
+}
+
+@test "_cmd_unlock confirmation message shows worktree name not full path" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+
+  local wt_path="$TEST_TEMP_DIR/test-project_worktrees/unlock-name-test"
+  mkdir -p "$TEST_TEMP_DIR/test-project_worktrees"
+  git worktree add -b unlock-name-test "$wt_path" HEAD >/dev/null 2>&1
+  git worktree lock "$wt_path" >/dev/null 2>&1
+
+  run _cmd_unlock "unlock-name-test"
+  assert_success
+  assert_output --partial "Unlocked unlock-name-test"
+  refute_output --partial "Unlocked $wt_path"
+}

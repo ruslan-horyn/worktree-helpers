@@ -151,3 +151,32 @@ teardown() {
   assert_output --partial "missing-wt"
   assert_output --partial "[?]"
 }
+
+@test "_cmd_list labels main worktree as [root] not full path" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+
+  run _cmd_list
+  assert_success
+  assert_output --partial "[root]"
+  # Full path of repo should NOT appear as the worktree display column
+  refute_output --partial "$repo_dir  "
+}
+
+@test "_cmd_list shows worktree name not full path for non-main worktrees" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+
+  local wt_path="$TEST_TEMP_DIR/test-project_worktrees/display-name-wt"
+  mkdir -p "$TEST_TEMP_DIR/test-project_worktrees"
+  git worktree add -b display-name-wt "$wt_path" HEAD >/dev/null 2>&1
+
+  run _cmd_list
+  assert_success
+  # Should show the name only
+  assert_output --partial "display-name-wt"
+  # Should NOT show the full path as the display column
+  refute_output --partial "$wt_path  "
+}

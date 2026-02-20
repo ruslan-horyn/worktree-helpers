@@ -42,3 +42,30 @@ teardown() {
   assert_failure
   assert_output --partial "No worktree for"
 }
+
+@test "_cmd_remove prompt shows worktree name not full path" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+
+  # Create a worktree
+  local wt_path="$TEST_TEMP_DIR/test-project_worktrees/prompt-name-test"
+  mkdir -p "$TEST_TEMP_DIR/test-project_worktrees"
+  git worktree add -b prompt-name-test "$wt_path" HEAD >/dev/null 2>&1
+
+  # Run _cmd_remove with force=0 (prompts user); pipe 'n' to abort removal
+  # Capture both stdout and stderr to check the prompt text
+  run bash -c "
+    cd '$repo_dir'
+    source '$PROJECT_ROOT/lib/utils.sh'
+    source '$PROJECT_ROOT/lib/config.sh'
+    source '$PROJECT_ROOT/lib/worktree.sh'
+    source '$PROJECT_ROOT/lib/commands.sh'
+    echo 'n' | _cmd_remove 'prompt-name-test' 0 2>&1
+  "
+
+  # Prompt should show name not full path
+  assert_output --partial "Remove 'prompt-name-test'?"
+  refute_output --partial "Remove '$wt_path'?"
+}
