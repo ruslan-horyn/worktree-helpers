@@ -702,3 +702,171 @@ Flags:
   --reflog               Show reflog (with --log)
 HELP
 }
+
+_help_new() {
+  cat <<'HELP'
+
+  wt -n, --new <branch>
+
+  Create a new worktree from the main branch (or a custom ref).
+
+  Usage:
+    wt -n <branch>                 Create worktree from main branch
+    wt -n <branch> --from <ref>    Create worktree from specific branch/tag/commit
+    wt -n <branch> -d              Create worktree from dev branch
+
+  Examples:
+    wt -n feature-login
+    wt -n bugfix-CORE-615 --from develop
+    wt -n hotfix-v2 --from v2.0.0
+
+  Options:
+    --from, -b <ref>    Base branch or ref to create from (default: main branch)
+    -d, --dev           Use dev branch as base instead of main
+HELP
+}
+
+_help_switch() {
+  cat <<'HELP'
+
+  wt -s, --switch [<worktree>]
+
+  Switch to a different worktree (opens fzf picker if no argument given).
+
+  Usage:
+    wt -s                  Pick worktree interactively with fzf
+    wt -s <worktree>       Switch directly to named worktree
+
+  Examples:
+    wt -s
+    wt -s feature-login
+    wt -s bugfix-CORE-615
+
+HELP
+}
+
+_help_open() {
+  cat <<'HELP'
+
+  wt -o, --open [<branch>]
+
+  Open an existing branch as a worktree (creates the worktree directory if needed).
+  Opens fzf picker if no argument is given.
+
+  Usage:
+    wt -o                  Pick branch interactively with fzf
+    wt -o <branch>         Open specific existing branch as a worktree
+
+  Examples:
+    wt -o
+    wt -o feature-login
+    wt -o origin/release-2.0
+
+HELP
+}
+
+_help_remove() {
+  cat <<'HELP'
+
+  wt -r, --remove [<worktree>]
+
+  Remove a worktree and delete its branch. Prompts for confirmation unless
+  --force is given.
+
+  Usage:
+    wt -r                  Pick worktree to remove with fzf
+    wt -r <worktree>       Remove named worktree and its branch
+    wt -r <worktree> -f    Remove without confirmation prompt
+
+  Examples:
+    wt -r feature-login
+    wt -r bugfix-CORE-615 --force
+
+  Options:
+    -f, --force    Skip confirmation prompt
+HELP
+}
+
+_help_list() {
+  cat <<'HELP'
+
+  wt -l, --list
+
+  List all worktrees with their branch name, lock status, and dirty state.
+
+  Usage:
+    wt -l
+
+  Examples:
+    wt -l
+    wt --list
+
+HELP
+}
+
+_help_clear() {
+  cat <<'HELP'
+
+  wt -c, --clear [<days>]
+
+  Remove multiple worktrees at once. At least one filter must be specified:
+  age in days, --merged, or --pattern.
+
+  Usage:
+    wt -c <days>                        Remove worktrees older than <days> days
+    wt -c <days> --merged               Also filter by merged-into-main branches
+    wt -c --merged                      Remove worktrees with branches merged into main
+    wt -c --pattern <pattern>           Remove worktrees matching branch glob pattern
+    wt -c <days> --dry-run              Preview what would be removed
+
+  Examples:
+    wt -c 30
+    wt -c 14 --merged
+    wt -c --pattern "feat-*"
+
+  Options:
+    --merged              Filter to branches merged into main
+    --pattern <pattern>   Filter by branch name glob pattern
+    --dry-run             Preview removals without deleting
+    --dev-only            Limit to dev-based worktrees
+    --main-only           Limit to main-based worktrees
+    -f, --force           Skip confirmation prompt
+HELP
+}
+
+_help_init() {
+  cat <<'HELP'
+
+  wt --init
+
+  Initialize worktree-helpers configuration for the current repository.
+  Creates .worktrees/config.json and default hook scripts.
+
+  Usage:
+    wt --init
+
+  Examples:
+    wt --init
+
+HELP
+}
+
+_help_update() {
+  cat <<'HELP'
+
+  wt --update
+
+  Update worktree-helpers to the latest version.
+
+  Usage:
+    wt --update              Install the latest version
+    wt --update --check      Check for updates without installing
+
+  Examples:
+    wt --update
+    wt --update --check
+
+  Options:
+    --check    Check for a new version without installing it
+HELP
+}
