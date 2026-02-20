@@ -451,3 +451,97 @@ SH
   # Should print warning about failed FF
   assert_output --partial "could not fast-forward"
 }
+
+# --- STORY-031: _wt_dir_name ---
+
+@test "_wt_dir_name replaces slash with dash" {
+  run _wt_dir_name "bugfix/CORE-615-foo"
+  assert_success
+  assert_output "bugfix-CORE-615-foo"
+}
+
+@test "_wt_dir_name replaces slash in feature prefix" {
+  run _wt_dir_name "feature/my-feature"
+  assert_success
+  assert_output "feature-my-feature"
+}
+
+@test "_wt_dir_name is identity for branch with no slash" {
+  run _wt_dir_name "no-slash"
+  assert_success
+  assert_output "no-slash"
+}
+
+@test "_wt_dir_name replaces multiple consecutive slashes individually" {
+  run _wt_dir_name "a//b"
+  assert_success
+  assert_output "a--b"
+}
+
+# --- STORY-031: _wt_create with slash branch name ---
+
+@test "_wt_create creates flat directory for slash branch name" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+  run _wt_create "bugfix/CORE-615-foo" "origin/main" "$GWT_WORKTREES_DIR"
+  assert_success
+
+  # Flat directory should exist
+  assert [ -d "$GWT_WORKTREES_DIR/bugfix-CORE-615-foo" ]
+
+  # Nested directory must NOT exist
+  assert [ ! -d "$GWT_WORKTREES_DIR/bugfix" ]
+}
+
+@test "_wt_create preserves git branch name with slash" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+  run _wt_create "feature/my-feature" "origin/main" "$GWT_WORKTREES_DIR"
+  assert_success
+
+  # Git branch should have original slash name
+  run _branch_exists "feature/my-feature"
+  assert_success
+
+  # Directory is flat
+  assert [ -d "$GWT_WORKTREES_DIR/feature-my-feature" ]
+}
+
+# --- STORY-031: _wt_open with slash branch name ---
+
+@test "_wt_open creates flat directory for slash branch name" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  # Create a slash-named branch and push it to origin
+  git checkout -b "bugfix/CORE-615-foo" >/dev/null 2>&1
+  echo "content" > bugfix.txt
+  git add bugfix.txt
+  git commit -m "bugfix commit" >/dev/null 2>&1
+  git push origin "bugfix/CORE-615-foo" >/dev/null 2>&1
+  git checkout main >/dev/null 2>&1
+  git branch -D "bugfix/CORE-615-foo" >/dev/null 2>&1
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+  run _wt_open "bugfix/CORE-615-foo" "$GWT_WORKTREES_DIR"
+  assert_success
+
+  # Flat directory should exist
+  assert [ -d "$GWT_WORKTREES_DIR/bugfix-CORE-615-foo" ]
+
+  # Nested directory must NOT exist
+  assert [ ! -d "$GWT_WORKTREES_DIR/bugfix" ]
+}

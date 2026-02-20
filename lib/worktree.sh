@@ -1,5 +1,11 @@
 # Worktree operations
 
+# Sanitise a branch name for use as a filesystem directory name.
+# Replaces every '/' with '-'.
+_wt_dir_name() {
+  printf '%s' "$1" | tr '/' '-'
+}
+
 # Symlink hooks from main repo to worktree
 _symlink_hooks() {
   local src
@@ -104,7 +110,7 @@ _git_config_retry() {
 
 _wt_create() {
   local branch="$1" ref="$2" dir="$3"
-  local wt_path="$dir/$branch"
+  local wt_path; wt_path="$dir/$(_wt_dir_name "$branch")"
   [ -e "$wt_path" ] && { _err "Path exists: $wt_path"; return 1; }
 
   _info "Creating worktree '$branch' from '$ref'"
@@ -152,7 +158,7 @@ _wt_open() {
   _info "Fetching from origin..."
   git fetch origin --prune 2>/dev/null || true
 
-  local wt_path="$dir/$branch"
+  local wt_path; wt_path="$dir/$(_wt_dir_name "$branch")"
   _info "Opening worktree for '$branch'"
   git worktree add "$wt_path" "$branch" || { _err "Failed to create worktree for '$branch'"; return 1; }
   _symlink_hooks "$wt_path"

@@ -119,10 +119,10 @@ teardown() {
   assert_success
   assert_output --partial "Creating worktree 'feature/child' from 'feature/base'"
 
-  # Worktree should exist
-  assert [ -d "$TEST_TEMP_DIR/test-project_worktrees/feature/child" ]
+  # Worktree should exist as a flat directory (slash → dash)
+  assert [ -d "$TEST_TEMP_DIR/test-project_worktrees/feature-child" ]
 
-  # Branch should exist
+  # Branch should exist with original slash name
   run _branch_exists "feature/child"
   assert_success
 }

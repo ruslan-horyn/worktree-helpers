@@ -265,7 +265,7 @@ sprints:
     capacity_points: 17
     committed_points: 17
     completed_points: 2
-    status: "not_started"
+    status: "active"
     goal: "Fix critical bugs from real-world usage and overhaul completions"
     stories:
       - story_id: "STORY-029"
@@ -278,7 +278,8 @@ sprints:
       - story_id: "STORY-031"
         title: "Replace slashes with dashes in worktree directory names"
         points: 2
-        status: "not_started"
+        status: "completed"
+        completion_date: "2026-02-19"
         assigned_to: null
         priority: "must_have"
         story_doc: "docs/stories/STORY-031.md"
