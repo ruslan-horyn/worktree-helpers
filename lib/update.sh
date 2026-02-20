@@ -162,7 +162,13 @@ _update_install() {
   _update_cache_write "$latest"
 
   _info "Updated wt to $latest"
-  _info "Restart your shell or run: source $_WT_DIR/wt.sh"
+  if [ -n "$_WT_DIR" ]; then
+    printf '\nTo activate the new version in this shell, run:\n'
+    printf '  source %s/wt.sh\n' "$_WT_DIR"
+    printf '\nOr open a new terminal.\n'
+  else
+    _info "Re-source wt.sh from your shell config to activate the update"
+  fi
 }
 
 # Check-only mode

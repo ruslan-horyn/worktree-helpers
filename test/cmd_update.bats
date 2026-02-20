@@ -259,6 +259,40 @@ teardown() {
   assert_output --partial "Updated wt to 1.2.0"
 }
 
+@test "_update_install shows re-source prompt after successful update" {
+  echo "1.1.0" > "$TEST_TEMP_DIR/wt_install/VERSION"
+  _WT_DIR="$TEST_TEMP_DIR/wt_install"
+
+  _fetch_latest() { printf '1.2.0\n- feat: new feature'; }
+
+  git() {
+    if [ "$1" = "clone" ]; then
+      local target_dir="${*: -1}"
+      mkdir -p "$target_dir/lib"
+      echo "1.2.0" > "$target_dir/VERSION"
+      echo "# updated wt.sh" > "$target_dir/wt.sh"
+      echo "# updated lib" > "$target_dir/lib/utils.sh"
+      return 0
+    fi
+    command git "$@"
+  }
+
+  run _update_install
+  assert_success
+  assert_output --partial "source $TEST_TEMP_DIR/wt_install/wt.sh"
+  assert_output --partial "Or open a new terminal"
+}
+
+@test "_update_install does not show re-source prompt when already up to date" {
+  echo "1.2.0" > "$TEST_TEMP_DIR/wt_install/VERSION"
+  _fetch_latest() { printf '1.2.0\nsome changelog'; }
+
+  run _update_install
+  assert_success
+  refute_output --partial "source"
+  refute_output --partial "Or open a new terminal"
+}
+
 @test "_update_install creates backup before updating" {
   echo "1.1.0" > "$TEST_TEMP_DIR/wt_install/VERSION"
   echo "original" > "$TEST_TEMP_DIR/wt_install/wt.sh"
