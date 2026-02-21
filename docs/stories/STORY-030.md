@@ -215,52 +215,72 @@ mechanism, research time increases. The 5-point estimate accounts for this risk.
 **Status History:**
 
 - 2026-02-19: Story created — Warp incompatibility identified after v1.3.1 release
-- 2026-02-20: Implementation started
-- 2026-02-20: Implementation complete, all tests passing, shellcheck clean
+- 2026-02-20: Investigation started — incorrect hypothesis (precmd_functions) committed
+- 2026-02-21: Deep diagnostic session — root cause confirmed via systematic testing
+- 2026-02-21: Story closed — Warp primary shell limitation documented; workaround identified
 
-**Actual Effort:** 2 points (investigation + implementation; manual Warp verification pending)
+**Actual Effort:** 5 points (extensive investigation across 3 sessions)
 
 **Files Changed:**
 
-- `wt.sh` (modified): Removed deferred `precmd_functions` completion registration path.
-  The `_wt_register_compdef` function and `precmd_functions` deferral have been removed.
-  The completion block now relies on the `#compdef wt` header in `completions/_wt` as the
-  primary registration mechanism (fpath-based discovery, same as system `_git`). A runtime
-  `compdef _wt wt` call is kept as a belt-and-braces fallback only for terminals where
-  `compinit` has already run before `wt.sh` is sourced.
+- `wt.sh` (modified): Removed dead compdump rebuild code that targeted `~/.zcompdump`
+  (wrong path for z4h users) and incorrect comments about Warp's fpath-scanning engine.
+  The completion block is now minimal and accurate: `fpath` + `autoload` + immediate
+  `compdef` fallback (for terminals where compinit runs before `.zshrc`).
 
-- `completions/_wt` (modified): Added SC2128 to the global shellcheck disable comment to
-  suppress a false-positive warning about zsh array expansion syntax at line 124
-  (`all_options=($commands $flags)`). This was a pre-existing shellcheck warning unrelated
-  to the Warp fix.
+- `completions/_wt` (no changes): The completion function is correct and works in all
+  non-Warp zsh terminals.
 
-**Root Cause Identified:**
+**Root Cause — CONFIRMED:**
 
-The deferred `precmd_functions` registration (from STORY-028) was the Warp incompatibility.
-Warp's completion engine initializes at shell startup and snapshots available completions
-before `precmd_functions` fires. Since `_wt_register_compdef` ran on first prompt (after
-Warp's snapshot), `wt` never appeared in Warp's completion registry.
+Warp has its own proprietary completion engine that **intercepts Tab at the terminal UI
+level**, before zsh's compdef/compsys dispatch is consulted. This is an officially
+documented incompatibility — Warp's known issues page explicitly lists `compdef` and
+`compinit` as incompatible with Warp's architecture.
 
-The fix uses the same mechanism as `_git`: the `#compdef wt` header in `completions/_wt`
-combined with `fpath=("$_WT_DIR/completions" $fpath)` enables zsh's compsys (and Warp's
-fpath-scanning engine) to discover and register `_wt` automatically during initialization,
-without needing any runtime `compdef` call.
+**Evidence from systematic testing (2026-02-21):**
 
-**Decisions Made:**
+| Test | Expected | Actual | Conclusion |
+|------|----------|--------|------------|
+| Modify `functions[_wt]` body → Tab | custom completions | files | zsh compdef never called |
+| `unset -f wt` + bin/wt in PATH → Tab | compdef completions | files | not a function-vs-command issue |
+| `bindkey '^I' expand-or-complete` → Tab | compdef completions | files | Warp intercepts before keybinding |
+| Inner `zsh` subprocess → Tab | — | **completions work** ✓ | only primary shell is affected |
 
-- Chose Approach A (pure fpath) as the primary mechanism, plus keeping immediate `compdef`
-  fallback (Approach D pattern) for terminals where compinit runs before `.zshrc` finishes.
-- Dropped the deferred `precmd_functions` path entirely — it is not needed when the
-  `#compdef` header mechanism is in place, and it was the source of the Warp bug.
-- Did not add `compctl -K _wt wt` (Approach B) as the `#compdef`/fpath approach is cleaner
-  and consistent with how all modern zsh completions work.
+Warp intercepts Tab before it reaches zsh's keybinding system entirely. The `bindkey` test
+is the definitive proof: even replacing z4h's `z4h-fzf-complete` with zsh's standard
+`expand-or-complete` had no effect — Warp's UI layer fires before any zsh widget runs.
+
+**Acceptance Criteria — Final Status:**
+
+- [ ] `wt <TAB>` shows all flags in Warp + zsh — **NOT ACHIEVABLE** (Warp architecture)
+- [ ] `wt -s <TAB>` completes worktree names in Warp + zsh — **NOT ACHIEVABLE**
+- [ ] `wt -o <TAB>` completes branch names in Warp + zsh — **NOT ACHIEVABLE**
+- [ ] `wt -r <TAB>` completes worktree names in Warp + zsh — **NOT ACHIEVABLE**
+- [ ] `wt --from <TAB>` completes git refs in Warp + zsh — **NOT ACHIEVABLE**
+- [x] All existing completion behaviour preserved in standard zsh (iTerm2, Terminal.app) ✓
+- [x] Bash completions unaffected ✓
+- [x] `shellcheck` passes on all modified files ✓
+
+**Workaround for Warp users:**
+
+Run `zsh` in Warp to open an inner zsh subprocess. Warp does not inject its shell
+integration into subprocesses — Tab passes directly to zsh's compdef system, and all
+`wt` completions work correctly. The downside is losing some Warp UI features (blocks,
+AI) in the subprocess session.
+
+**Why `git <Tab>` works in Warp but `wt <Tab>` doesn't:**
+
+Warp has a built-in completion spec for `git` (one of 400+ bundled specs). It does NOT
+use zsh's compdef for git — it uses its own spec. For unknown commands like `wt`, Warp
+falls back to `_files`. There is no public API for users to add custom specs to Warp.
 
 **Tests:**
 
 - BATS suite: 264/264 tests pass (no regressions)
-- shellcheck -x wt.sh: clean
-- shellcheck -x completions/_wt: clean
-- Manual Warp verification: pending (requires Warp GUI terminal — CI not possible)
+- shellcheck wt.sh: clean (only pre-existing SC1091 info-level notices)
+- shellcheck completions/_wt: clean
+- Manual verification: completions work in VS Code, iTerm2, Terminal.app, inner zsh in Warp
 
 ---
 
