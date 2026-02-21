@@ -145,6 +145,25 @@ _wt_is_dirty() {
   return 1
 }
 
+# Check if a branch name is protected (should never be deleted by wt -c)
+# Returns 0 if protected, 1 otherwise
+# Usage: _is_protected_branch <branch>
+_is_protected_branch() {
+  local branch="$1"
+  [ -z "$branch" ] && return 1
+  # Detached HEAD is never protected
+  [ "$branch" = "(detached)" ] && return 1
+  # Strip remote prefix for comparison (e.g. origin/main -> main)
+  local local_main="${GWT_MAIN_REF#*/}"
+  local local_dev="${GWT_DEV_REF#*/}"
+  case "$branch" in
+    main|master|dev|develop) return 0 ;;
+    "$local_main"|"$GWT_MAIN_REF") return 0 ;;
+    "$local_dev"|"$GWT_DEV_REF") return 0 ;;
+  esac
+  return 1
+}
+
 # Warn if worktree count exceeds threshold
 # Usage: _wt_warn_count (call after worktree creation)
 _wt_warn_count() {

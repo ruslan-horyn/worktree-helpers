@@ -134,7 +134,7 @@ _cmd_clear() {
 
   # Collect worktrees to delete (newline-delimited strings)
   local output worktree branch locked wt_age
-  local to_delete="" locked_skipped="" to_delete_count=0
+  local to_delete="" locked_skipped="" protected_skipped="" to_delete_count=0
   output=$(git worktree list --porcelain)
 
   worktree="" branch="" locked=""
@@ -220,7 +220,15 @@ MERGED
             fi
           fi
 
-          # 6. Check locked status
+          # 6. Check protected branch status
+          if _is_protected_branch "$branch"; then
+            protected_skipped="${protected_skipped}${worktree}|${branch}
+"
+            worktree=""
+            continue
+          fi
+
+          # 7. Check locked status
           if [ -n "$locked" ]; then
             locked_skipped="${locked_skipped}${worktree}|${branch}
 "
@@ -238,6 +246,19 @@ MERGED
 $output
 
 EOF
+
+  # Warn about protected worktrees
+  if [ -n "$protected_skipped" ]; then
+    while IFS= read -r item; do
+      [ -z "$item" ] && continue
+      local wt_path="${item%%|*}"
+      local br="${item#*|}"
+      echo "${C_YELLOW}Skipping $br: protected branch${C_RESET}" >&2
+    done <<EOF
+$protected_skipped
+EOF
+    echo "" >&2
+  fi
 
   # Warn about locked worktrees
   if [ -n "$locked_skipped" ]; then
@@ -257,6 +278,17 @@ EOF
   if [ "$to_delete_count" -eq 0 ]; then
     if [ "$dry_run" -eq 1 ]; then
       echo "[dry-run] No worktrees would be removed"
+      if [ -n "$protected_skipped" ]; then
+        echo "[dry-run] Protected worktrees (skipped):"
+        while IFS= read -r item; do
+          [ -z "$item" ] && continue
+          local wt_path="${item%%|*}"
+          local br="${item#*|}"
+          echo "  $(_wt_display_name "$wt_path") ($br) [protected — skipped]"
+        done <<EOF
+$protected_skipped
+EOF
+      fi
     else
       _info "No worktrees to clear"
     fi
@@ -300,6 +332,17 @@ EOF
     done <<EOF
 $to_delete
 EOF
+    if [ -n "$protected_skipped" ]; then
+      echo "[dry-run] Protected worktrees (skipped):"
+      while IFS= read -r item; do
+        [ -z "$item" ] && continue
+        local wt_path="${item%%|*}"
+        local br="${item#*|}"
+        echo "  $(_wt_display_name "$wt_path") ($br) [protected — skipped]"
+      done <<EOF
+$protected_skipped
+EOF
+    fi
     echo "[dry-run] $to_delete_count worktree(s) would be removed"
     return 0
   fi
