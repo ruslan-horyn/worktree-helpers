@@ -612,3 +612,240 @@ teardown() {
   assert [ ! -d "$dev_match" ]
   assert [ -d "$main_match" ]
 }
+
+# --- Protected branch tests (STORY-029) ---
+
+@test "_cmd_clear age-based: skips worktree whose branch is 'main'" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+
+  # Create a worktree on a branch literally named 'main'
+  # (simulate by creating a branch called main-protected; use a branch
+  # named exactly 'main' via a secondary worktree on that branch)
+  git checkout -b main-wt >/dev/null 2>&1
+  git checkout main >/dev/null 2>&1
+  local wt_path="$GWT_WORKTREES_DIR/main-wt"
+  git worktree add -b main "$wt_path" HEAD >/dev/null 2>&1 || true
+
+  # Actually create a branch literally named 'protected-main' but set GWT_MAIN_REF
+  # to origin/main, which means local_main = 'main'. We need a worktree on 'main'.
+  # The test repo already has an 'origin/main' branch. Let's verify protection
+  # via the local equivalent of GWT_MAIN_REF (origin/main -> main).
+  # Create a second worktree using the 'main' branch itself is tricky because
+  # git won't allow two worktrees on the same branch. Instead, create a branch
+  # with a hardcoded protected name.
+  local wt2_path="$GWT_WORKTREES_DIR/master-wt"
+  git worktree add -b master "$wt2_path" HEAD >/dev/null 2>&1
+
+  # Backdate both worktrees to appear old
+  touch -t 202001010000 "$wt2_path/.git"
+
+  # Create a non-protected old worktree to ensure something is deleted
+  local old_wt="$GWT_WORKTREES_DIR/old-feature"
+  git worktree add -b "old-feature" "$old_wt" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$old_wt/.git"
+
+  # age-based clear: force=1
+  run _cmd_clear "1" "1" "0" "0"
+  assert_success
+
+  # master branch worktree should be skipped (protected)
+  assert [ -d "$wt2_path" ]
+  # old-feature should be removed
+  assert [ ! -d "$old_wt" ]
+  # Warning message should mention the protected branch
+  assert_output --partial "protected branch"
+}
+
+@test "_cmd_clear age-based: skips worktree matching GWT_DEV_REF local equivalent" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+
+  # Create config with devBranch set to origin/release-next
+  # so GWT_DEV_REF=origin/release-next and local_dev=release-next
+  mkdir -p "$repo_dir/.worktrees/hooks"
+  cat > "$repo_dir/.worktrees/config.json" <<JSON
+{
+  "projectName": "test-project",
+  "mainBranch": "origin/main",
+  "devBranch": "origin/release-next",
+  "devSuffix": "_RN",
+  "openCmd": ".worktrees/hooks/created.sh",
+  "switchCmd": ".worktrees/hooks/switched.sh",
+  "worktreeWarningThreshold": 20
+}
+JSON
+  cat > "$repo_dir/.worktrees/hooks/created.sh" <<'SH'
+#!/usr/bin/env bash
+cd "$1" || exit 1
+SH
+  cat > "$repo_dir/.worktrees/hooks/switched.sh" <<'SH'
+#!/usr/bin/env bash
+cd "$1" || exit 1
+SH
+  chmod +x "$repo_dir/.worktrees/hooks"/*.sh
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+  local wt_path="$GWT_WORKTREES_DIR/release-next-wt"
+
+  # Create a worktree on branch 'release-next' (local equiv of GWT_DEV_REF)
+  git worktree add -b "release-next" "$wt_path" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$wt_path/.git"
+
+  # Create a non-protected old worktree
+  local old_wt="$GWT_WORKTREES_DIR/feat-old"
+  git worktree add -b "feat-old" "$old_wt" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$old_wt/.git"
+
+  run _cmd_clear "1" "1" "0" "0"
+  assert_success
+
+  # release-next is the local equiv of GWT_DEV_REF — should be protected
+  assert [ -d "$wt_path" ]
+  # feat-old should be removed
+  assert [ ! -d "$old_wt" ]
+  assert_output --partial "protected branch"
+}
+
+@test "_cmd_clear --merged: skips protected branch" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+
+  # Create a branch named 'develop' (hardcoded protected name)
+  # merge it into main so it would normally be cleared by --merged
+  git checkout -b develop >/dev/null 2>&1
+  echo "dev" > dev.txt
+  git add dev.txt
+  git commit -m "dev work" >/dev/null 2>&1
+  git checkout main >/dev/null 2>&1
+  git merge develop >/dev/null 2>&1
+  git push origin main >/dev/null 2>&1
+
+  # Create a worktree for 'develop'
+  local wt_path="$GWT_WORKTREES_DIR/develop-wt"
+  git worktree add "$wt_path" develop >/dev/null 2>&1
+
+  # --merged clear
+  run _cmd_clear "" "1" "0" "0" "1" "" "0"
+  assert_success
+
+  # 'develop' is protected — should not be removed
+  assert [ -d "$wt_path" ]
+  assert_output --partial "protected branch"
+}
+
+@test "_cmd_clear --pattern: skips protected branch even when it matches pattern" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+
+  # Create a worktree for 'dev' (hardcoded protected name)
+  local dev_wt="$GWT_WORKTREES_DIR/dev-wt"
+  git worktree add -b "dev" "$dev_wt" HEAD >/dev/null 2>&1
+
+  # Create a non-protected worktree also matching the pattern
+  local feat_wt="$GWT_WORKTREES_DIR/dev-feature"
+  git worktree add -b "dev-feature" "$feat_wt" HEAD >/dev/null 2>&1
+
+  # --pattern "dev*" should match both but only remove non-protected
+  run _cmd_clear "" "1" "0" "0" "0" "dev*" "0"
+  assert_success
+
+  # 'dev' is protected — should stay
+  assert [ -d "$dev_wt" ]
+  # 'dev-feature' is not protected — should be removed
+  assert [ ! -d "$feat_wt" ]
+  assert_output --partial "protected branch"
+}
+
+@test "_cmd_clear: non-protected branch is still removed normally" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+
+  local wt_path="$GWT_WORKTREES_DIR/feature-xyz"
+  git worktree add -b "feature-xyz" "$wt_path" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$wt_path/.git"
+
+  run _cmd_clear "1" "1" "0" "0"
+  assert_success
+
+  # Non-protected branch should be removed
+  assert [ ! -d "$wt_path" ]
+  assert_output --partial "Removed"
+}
+
+@test "_cmd_clear --dry-run: shows [protected — skipped] for protected branches" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+
+  # Create a worktree for 'master' (hardcoded protected name)
+  local prot_wt="$GWT_WORKTREES_DIR/master-wt"
+  git worktree add -b "master" "$prot_wt" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$prot_wt/.git"
+
+  # Create a regular old worktree
+  local old_wt="$GWT_WORKTREES_DIR/old-feat"
+  git worktree add -b "old-feat" "$old_wt" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$old_wt/.git"
+
+  # dry-run age-based clear
+  run _cmd_clear "1" "1" "0" "0" "0" "" "1"
+  assert_success
+
+  # Nothing should be deleted
+  assert [ -d "$prot_wt" ]
+  assert [ -d "$old_wt" ]
+
+  # Dry-run output should mark protected as skipped
+  assert_output --partial "[protected — skipped]"
+  # old-feat should appear in the would-be-removed list
+  assert_output --partial "old-feat"
+}
+
+@test "_cmd_clear --dry-run: shows protected even when no other worktrees to delete" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+
+  # Only a protected worktree — nothing else to delete
+  local prot_wt="$GWT_WORKTREES_DIR/dev-wt"
+  git worktree add -b "dev" "$prot_wt" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$prot_wt/.git"
+
+  run _cmd_clear "1" "1" "0" "0" "0" "" "1"
+  assert_success
+
+  assert [ -d "$prot_wt" ]
+  assert_output --partial "[protected — skipped]"
+  assert_output --partial "[dry-run] No worktrees would be removed"
+}

@@ -35,7 +35,7 @@ stashes, no more broken context.
 - Automated hooks on create and switch (install deps, open editor, copy env files)
 - Hook symlinking — all worktrees share the same hook scripts
 - Interactive selection with fzf integration
-- Flexible worktree cleanup with filters (`--merged`, `--pattern`, `--dry-run`, `--dev-only`, `--main-only`)
+- Flexible worktree cleanup with filters (`--merged`, `--pattern`, `--dry-run`, `--dev-only`, `--main-only`) — main/dev branches are always protected
 - Lock/unlock worktree protection
 - Branch rename without recreating worktree (`--rename`)
 - Shell completions for bash and zsh (flags, branch names, context-sensitive arguments)
@@ -147,6 +147,7 @@ wt -r my-feature
 wt -r -f my-feature
 
 # Clear worktrees older than 14 days
+# (main, master, dev, develop and configured main/dev branches are always skipped)
 wt -c 14
 
 # Clear old worktrees (force, no confirmation)
