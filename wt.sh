@@ -113,23 +113,13 @@ wt() {
 
 # Load shell completions
 if [ -n "${ZSH_VERSION:-}" ]; then
-  # Zsh: add completions dir to fpath, autoload
+  # Zsh: add completions dir to fpath so compinit can discover _wt.
   # shellcheck disable=SC2206
   fpath=("$_WT_DIR/completions" $fpath)
   autoload -Uz _wt
   # shellcheck disable=SC2154
   if (( $+functions[compdef] )); then
-    # compinit has already run — register immediately
     compdef _wt wt 2>/dev/null
-  else
-    # compinit hasn't run yet — defer until first prompt
-    _wt_register_compdef() {
-      compdef _wt wt 2>/dev/null
-      # shellcheck disable=SC2206
-      precmd_functions=(${precmd_functions:#_wt_register_compdef})
-    }
-    typeset -ag precmd_functions
-    precmd_functions+=(_wt_register_compdef)
   fi
 elif [ -n "${BASH_VERSION:-}" ]; then
   # Bash: source completion file

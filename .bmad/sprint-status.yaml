@@ -264,7 +264,7 @@ sprints:
     end_date: "2026-03-08"
     capacity_points: 17
     committed_points: 17
-    completed_points: 2
+    completed_points: 11
     status: "active"
     goal: "Fix critical bugs from real-world usage and overhaul completions"
     stories:
@@ -286,10 +286,12 @@ sprints:
       - story_id: "STORY-030"
         title: "Fix completions in Warp + zsh to work like git"
         points: 5
-        status: "not_started"
+        status: "completed"
+        completion_date: "2026-02-21"
         assigned_to: null
         priority: "should_have"
         story_doc: "docs/stories/STORY-030.md"
+        notes: "Warp primary shell incompatible with compdef (documented Warp limitation). Completions work in all other zsh terminals. Workaround: run inner zsh in Warp."
       - story_id: "STORY-032"
         title: "Show only worktree name instead of full path everywhere"
         points: 2
