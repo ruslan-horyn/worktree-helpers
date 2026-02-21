@@ -40,6 +40,7 @@ stashes, no more broken context.
 - Branch rename without recreating worktree (`--rename`)
 - Shell completions for bash and zsh (flags, branch names, context-sensitive arguments)
 - Shell-aware prompts — `wt --init` supports tab completion in bash and zsh
+- Per-command help — `wt <cmd> --help` shows focused help for any command
 - Project-specific configuration per repository
 
 ## Requirements
@@ -113,7 +114,8 @@ curl -fsSL https://raw.githubusercontent.com/ruslan-horyn/worktree-helpers/main/
 | `wt --update --check` | Check for updates without installing |
 | `wt --uninstall` | Uninstall worktree-helpers |
 | `wt -v` / `wt --version` | Show version |
-| `wt -h` | Show help |
+| `wt -h` | Show full help |
+| `wt <cmd> --help` | Show help for a specific command |
 
 ### Examples
 

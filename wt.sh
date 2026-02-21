@@ -34,7 +34,7 @@ source "$_WT_DIR/lib/update.sh"
 wt() {
   local action="" arg="" force=0 dev=0 reflog=0 since="" author=""
   local dev_only=0 main_only=0 clear_days="" from_ref=""
-  local merged=0 pattern="" dry_run=0 check_only=0
+  local merged=0 pattern="" dry_run=0 check_only=0 help=0
 
   _update_notify
 
@@ -64,7 +64,8 @@ wt() {
       --update)     action="update"; shift ;;
       --check)     check_only=1; shift ;;
       -v|--version) action="version"; shift ;;
-      -h|--help)   action="help"; shift ;;
+      -h)          action="help"; shift ;;
+      --help)      help=1; shift ;;
       -f|--force)  force=1; shift ;;
       -d|--dev)    dev=1; shift ;;
       --dev-only)  dev_only=1; shift ;;
@@ -81,26 +82,37 @@ wt() {
     esac
   done
 
+  # Standalone --help with no command: show full help
+  if [ "$help" -eq 1 ] && [ -z "$action" ]; then _cmd_help; return 0; fi
+
   local _wt_rc=0
   case "${action:-help}" in
-    new)    if [ "$dev" -eq 1 ] && [ -n "$from_ref" ]; then
+    new)    if [ "$help" -eq 1 ]; then _help_new; return 0; fi
+            if [ "$dev" -eq 1 ] && [ -n "$from_ref" ]; then
               _err "--from and --dev are mutually exclusive"; return 1
             fi
             if [ "$dev" -eq 1 ]; then _cmd_dev "$arg"
             else _cmd_new "$arg" "$from_ref"; fi
             ;;
-    switch) _cmd_switch "$arg" ;;
-    remove) _cmd_remove "$arg" "$force" ;;
-    open)   _cmd_open "$arg" ;;
+    switch) if [ "$help" -eq 1 ]; then _help_switch; return 0; fi
+            _cmd_switch "$arg" ;;
+    remove) if [ "$help" -eq 1 ]; then _help_remove; return 0; fi
+            _cmd_remove "$arg" "$force" ;;
+    open)   if [ "$help" -eq 1 ]; then _help_open; return 0; fi
+            _cmd_open "$arg" ;;
     lock)   _cmd_lock "$arg" ;;
     unlock) _cmd_unlock "$arg" ;;
-    list)   _cmd_list ;;
-    clear)  _cmd_clear "$clear_days" "$force" "$dev_only" "$main_only" "$merged" "$pattern" "$dry_run" ;;
-    init)   _cmd_init ;;
+    list)   if [ "$help" -eq 1 ]; then _help_list; return 0; fi
+            _cmd_list ;;
+    clear)  if [ "$help" -eq 1 ]; then _help_clear; return 0; fi
+            _cmd_clear "$clear_days" "$force" "$dev_only" "$main_only" "$merged" "$pattern" "$dry_run" ;;
+    init)   if [ "$help" -eq 1 ]; then _help_init; return 0; fi
+            _cmd_init ;;
     log)    _cmd_log "$arg" "$reflog" "$since" "$author" ;;
     rename) _cmd_rename "$arg" "$force" ;;
     uninstall) _cmd_uninstall "$force" ;;
-    update)  _cmd_update "$check_only" ;;
+    update)  if [ "$help" -eq 1 ]; then _help_update; return 0; fi
+             _cmd_update "$check_only" ;;
     version) _cmd_version ;;
     help)   _cmd_help ;;
   esac

@@ -3,7 +3,7 @@
 **Epic:** Developer Experience
 **Priority:** Should Have
 **Story Points:** 3
-**Status:** Not Started
+**Status:** Completed
 **Assigned To:** Unassigned
 **Created:** 2026-02-19
 **Sprint:** 6
@@ -266,9 +266,106 @@ each command and writing the corresponding BATS assertions.
 **Status History:**
 
 - 2026-02-19: Created by Scrum Master (BMAD workflow)
+- 2026-02-20: Implementation started
+- 2026-02-20: All implementation complete, tests passing, shellcheck clean
 
-**Actual Effort:** TBD (will be filled during/after implementation)
+**Actual Effort:** 3 points (matched estimate)
+
+**Files Changed:**
+
+- `wt.sh` (modified) — Added `local help=0` variable; separated `-h` from `--help` in arg-parsing case; added `--help)` case that sets `help=1`; added standalone `--help` pre-dispatch check to call `_cmd_help`; added `if [ "$help" -eq 1 ]` guards before each of the 8 main commands to call the corresponding `_help_*` function.
+- `lib/commands.sh` (modified) — Added 8 `_help_*` functions (`_help_new`, `_help_switch`, `_help_open`, `_help_remove`, `_help_list`, `_help_clear`, `_help_init`, `_help_update`) after `_cmd_help`, each using heredoc with description, usage with placeholders, 2–3 examples, and relevant options.
+- `test/cmd_help.bats` (modified) — Replaced stub file with 47 tests covering: all 8 `_help_*` functions individually (description, usage, examples, options), 8 short-form router tests (`wt -n/s/o/r/l/c --help`), 8 long-form router tests (`wt --new/switch/open/remove/list/clear/init/update --help`), and 3 edge-case tests (standalone `--help`, reversed order `wt --help -n`, extra args ignored).
+
+**Tests Added:**
+
+- 46 new tests in `test/cmd_help.bats` (file grew from 1 test to 47 tests)
+
+**Test Results:**
+
+- `test/cmd_help.bats`: 47/47 pass
+- Full suite: 310/310 pass (no regressions)
+
+**Decisions Made:**
+
+- Split `-h|--help` case into `-h)` (sets `action="help"` for full help) and `--help)` (sets `help=1` for per-command help). This ensures `wt -n --help` correctly shows per-command help while `wt -h` still shows full help.
+- Added a pre-dispatch guard: `if [ "$help" -eq 1 ] && [ -z "$action" ]; then _cmd_help; return 0; fi` to handle `wt --help` standalone (no preceding command) showing full help.
+- Flag order is commutative: `wt --help -n` and `wt -n --help` both work because both `action` and `help` are parsed before dispatch.
+- `lib/commands.sh` is the canonical home for `_help_*` functions (immediately after `_cmd_help`), keeping all help-related code together.
+- Shellcheck: only pre-existing SC1091 info warnings (dynamic `source` paths), no new warnings introduced.
 
 ---
 
 **This story was created using BMAD Method v6 - Phase 4 (Implementation Planning)**
+
+---
+
+## QA Review
+
+### Files Reviewed
+
+| File | Status | Notes |
+|------|--------|-------|
+| `wt.sh` | Pass | `local help=0` added; `-h` and `--help` cases correctly split; standalone `--help` pre-dispatch guard present; all 8 command branches include `if [ "$help" -eq 1 ]` guard; POSIX-compliant `[ ... -eq ... ]` arithmetic throughout |
+| `lib/commands.sh` | Pass | 8 `_help_*` functions added after `_cmd_help`; all use `cat <<'HELP' ... HELP` heredoc; description, usage with placeholders, 2-3 examples, and options/flags present in each; placeholder style (`<branch>`, `<worktree>`, `<ref>`, `<days>`, `<pattern>`) matches STORY-036 spec |
+| `test/cmd_help.bats` | Pass | 47 tests (1 pre-existing + 46 new); covers all 8 `_help_*` functions (description, usage, examples, options), 8 short-form router tests, 8 long-form router tests, and 3 edge cases (standalone `--help`, reversed flag order `wt --help -n`, extra args ignored) |
+
+### Issues Found
+
+None
+
+### AC Verification
+
+- [x] AC 1 — `wt -n --help` prints help for `-n`/`--new` — verified: `wt.sh` line 90 (`if [ "$help" -eq 1 ]; then _help_new; return 0; fi`), test: `wt -n --help shows new command help without executing`
+- [x] AC 2 — `wt -s --help` prints help for `-s`/`--switch` — verified: `wt.sh` line 97, test: `wt -s --help shows switch command help without executing`
+- [x] AC 3 — `wt -o --help` prints help for `-o`/`--open` — verified: `wt.sh` line 101, test: `wt -o --help shows open command help without executing`
+- [x] AC 4 — `wt -r --help` prints help for `-r`/`--remove` — verified: `wt.sh` line 99, test: `wt -r --help shows remove command help without executing`
+- [x] AC 5 — `wt -l --help` prints help for `-l`/`--list` — verified: `wt.sh` line 105, test: `wt -l --help shows list command help without executing`
+- [x] AC 6 — `wt -c --help` prints help for `-c`/`--clear` — verified: `wt.sh` line 107, test: `wt -c --help shows clear command help without executing`
+- [x] AC 7 — `wt --init --help` prints help for `--init` — verified: `wt.sh` line 109, test: `wt --init --help shows init command help without executing`
+- [x] AC 8 — `wt --update --help` prints help for `--update` — verified: `wt.sh` line 114, test: `wt --update --help shows update command help without executing`
+- [x] AC 9 — Each help block includes description, usage with placeholders, 2-3 examples — verified: all 8 `_help_*` functions in `lib/commands.sh` lines 663-829; tests assert `--partial` for each element
+- [x] AC 10 — `--help` after a command flag takes priority, no side effects — verified: guards return before `_cmd_*` calls; router tests assert `refute_output --partial "Creating worktree"` etc.
+- [x] AC 11 — Long forms also work (`wt --new --help`, etc.) — verified: long-form aliases share the same `action` variable; 8 long-form router tests pass
+- [x] AC 12 — `shellcheck` passes on all modified files — verified: `shellcheck -x wt.sh lib/*.sh` exits 0 with no output
+
+### Test Results
+
+- Total: 310 / Passed: 310 / Failed: 0
+
+### Shellcheck
+
+- Clean: yes
+
+---
+
+## Manual Testing
+
+### Test Scenarios
+
+| # | Scenario | Expected | Actual | Pass/Fail |
+|---|----------|----------|--------|-----------|
+| 1 | `bash -c 'source wt.sh; wt -n --help'` | Shows `_help_new` output with description, usage, examples | Output contains "Create a new worktree", `<branch>`, `<ref>`, `wt -n feature-login` | Pass |
+| 2 | `bash -c 'source wt.sh; wt --new --help'` | Long-form alias shows same `_help_new` output | Output identical to short-form — "Create a new worktree", `<branch>`, `<ref>` | Pass |
+| 3 | `bash -c 'source wt.sh; wt -s --help'` | Shows `_help_switch` output | Output contains "Switch", `<worktree>`, `wt -s feature-login` | Pass |
+| 4 | `bash -c 'source wt.sh; wt --switch --help'` | Long-form shows same switch help | Correct per-command help output | Pass |
+| 5 | `bash -c 'source wt.sh; wt -o --help'` | Shows `_help_open` output | Output contains "Open", `<branch>`, `wt -o feature-login` | Pass |
+| 6 | `bash -c 'source wt.sh; wt --open --help'` | Long-form shows same open help | Correct per-command help output | Pass |
+| 7 | `bash -c 'source wt.sh; wt -r --help'` | Shows `_help_remove` output | Output contains "Remove", `<worktree>`, `--force` | Pass |
+| 8 | `bash -c 'source wt.sh; wt --remove --help'` | Long-form shows same remove help | Correct per-command help output | Pass |
+| 9 | `bash -c 'source wt.sh; wt -l --help'` | Shows `_help_list` output | Output contains "List", `wt -l` | Pass |
+| 10 | `bash -c 'source wt.sh; wt --list --help'` | Long-form shows same list help | Correct per-command help output | Pass |
+| 11 | `bash -c 'source wt.sh; wt -c --help'` | Shows `_help_clear` output | Output contains `<days>`, `--merged`, `--pattern`, `wt -c 30` | Pass |
+| 12 | `bash -c 'source wt.sh; wt --clear --help'` | Long-form shows same clear help | Correct per-command help output | Pass |
+| 13 | `bash -c 'source wt.sh; wt --init --help'` | Shows `_help_init` output, no interactive prompts | Output contains "Initialize", `wt --init`; no "Project [" prompt | Pass |
+| 14 | `bash -c 'source wt.sh; wt --update --help'` | Shows `_help_update` output, no update attempt | Output contains "Update", `--check`; no "Updating" output | Pass |
+| 15 | `bash -c 'source wt.sh; wt --help'` (standalone) | Shows full `_cmd_help` output (existing behavior preserved) | Output contains "wt - Git Worktree Helpers", full command list | Pass |
+| 16 | `bash -c 'source wt.sh; wt --help -n'` (reversed order) | Flag order is commutative — shows `_help_new` | Output contains "Create a new worktree" | Pass |
+| 17 | `bash -c 'source wt.sh; wt -n --help extra-arg'` (extra args) | `--help` takes priority, extra arg ignored, no worktree created | Shows new help, no "Creating worktree" output | Pass |
+| 18 | `bash -c 'source wt.sh; wt -h'` (full help regression) | `wt -h` still shows full help (not per-command) | Output contains "wt - Git Worktree Helpers", unchanged | Pass |
+| 19 | `shellcheck -x wt.sh lib/*.sh` | No errors or warnings | No output, exit 0 | Pass |
+| 20 | `npm test` (full BATS suite) | 310/310 tests pass | 310/310 passed, 0 failed | Pass |
+
+### Issues Found
+
+None
