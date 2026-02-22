@@ -127,6 +127,18 @@ _wt_display_name() {
   basename "$1"
 }
 
+# Return formatted entry "name (branch)" or just "name" when they match.
+# Avoids redundant repetition when the worktree directory name equals the branch.
+# Usage: _wt_format_entry <worktree_path> <branch>
+_wt_format_entry() {
+  local display; display=$(_wt_display_name "$1")
+  if [ "$display" = "$2" ]; then
+    echo "$display"
+  else
+    echo "$display ($2)"
+  fi
+}
+
 # Count total worktrees
 # Usage: _wt_count
 _wt_count() {

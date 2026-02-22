@@ -92,6 +92,29 @@ Sprint 6 był zaplanowany na 2026-02-23 → 2026-03-08, ale faktycznie trwał 2-
 - Warto rozważyć krótsze, częstsze sprinty zamiast 2-tygodniowych dla single-developer
 - STORY-039 (notes były gotowe) mogła wejść do Sprint 6, ale nie była sformalizowana na czas
 
+## Pomysły do przemyślenia (backlog ideas)
+
+Zaobserwowane podczas testowania STORY-039 (`wt -c --dry-run`):
+
+### Rozmiar katalogu roboczego w dry-run output
+
+Wyświetlanie rozmiaru katalogu obok informacji o wieku worktree:
+
+```
+CORE-667-... - 3 days ago (1.2 GB)
+test-ai-mlm-assistant (NO_TASK/...) - 12 days ago (847 MB)
+```
+
+**Warianty implementacji:**
+- **Opt-in flag** `--sizes` — uruchamia `du -sh` tylko na żądanie (unika spowolnienia dry-run)
+- **Dwa przebiegi** — lista pojawia się od razu, rozmiary doliczone i wyświetlone na dole po kalkulacji
+- **Równoległe `du`** — background jobs dla każdego katalogu, szybsze zbieranie wyników
+
+**Do przemyślenia:**
+- `du` na node_modules/dużych repozytoriach może być wolne przy 30+ worktrees
+- Czy rozmiar katalogu to wystarczający powód do usunięcia (vs wiek)?
+- Może połączyć z opcją `--sort-by-size`?
+
 ---
 
 **This retrospective was created using BMAD Method v6**
