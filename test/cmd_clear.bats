@@ -849,3 +849,203 @@ SH
   assert_output --partial "[protected — skipped]"
   assert_output --partial "[dry-run] No worktrees would be removed"
 }
+
+# --- STORY-039: dry-run output readability improvements ---
+
+@test "_cmd_clear --dry-run: name-match suppresses (branch) suffix in to-delete list" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+
+  # Worktree directory name matches branch name exactly
+  local wt_path="$GWT_WORKTREES_DIR/feat-login"
+  git worktree add -b "feat-login" "$wt_path" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$wt_path/.git"
+
+  run _cmd_clear "1" "1" "0" "0" "0" "" "1"
+  assert_success
+
+  # Should appear without redundant (branch) suffix
+  assert_output --partial "  feat-login -"
+  # Must NOT contain the redundant "(feat-login)" form
+  refute_output --partial "feat-login (feat-login)"
+}
+
+@test "_cmd_clear --dry-run: name-mismatch retains (branch) suffix in to-delete list" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+
+  # Worktree directory name differs from branch name (simulates slash-replaced names)
+  local wt_path="$GWT_WORKTREES_DIR/NO_TASK-feat-api"
+  git worktree add -b "feat-api" "$wt_path" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$wt_path/.git"
+
+  run _cmd_clear "1" "1" "0" "0" "0" "" "1"
+  assert_success
+
+  # (branch) suffix should be shown since names differ
+  assert_output --partial "NO_TASK-feat-api (feat-api)"
+}
+
+@test "_cmd_clear --dry-run: name-match suppresses (branch) suffix in protected list" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+
+  # Protected worktree where directory name matches the branch name
+  local prot_wt="$GWT_WORKTREES_DIR/develop"
+  git worktree add -b "develop" "$prot_wt" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$prot_wt/.git"
+
+  # Also need a non-protected worktree so dry-run actually reaches the main dry-run block
+  local old_wt="$GWT_WORKTREES_DIR/old-feat"
+  git worktree add -b "old-feat" "$old_wt" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$old_wt/.git"
+
+  run _cmd_clear "1" "1" "0" "0" "0" "" "1"
+  assert_success
+
+  # develop directory matches branch: no redundant suffix
+  assert_output --partial "  develop [protected — skipped]"
+  refute_output --partial "develop (develop)"
+}
+
+@test "_cmd_clear --dry-run: blank line after to-delete list before protected section" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+
+  # Protected worktree
+  local prot_wt="$GWT_WORKTREES_DIR/master-sep"
+  git worktree add -b "master" "$prot_wt" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$prot_wt/.git"
+
+  # Non-protected old worktree
+  local old_wt="$GWT_WORKTREES_DIR/old-sep"
+  git worktree add -b "old-sep" "$old_wt" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$old_wt/.git"
+
+  run _cmd_clear "1" "1" "0" "0" "0" "" "1"
+  assert_success
+
+  # Both sections should appear
+  assert_output --partial "Worktrees that would be removed"
+  assert_output --partial "[dry-run] Protected worktrees (skipped):"
+  assert_output --partial "[dry-run] 1 worktree(s) would be removed"
+
+  # Verify blank line appears between sections: the output should contain
+  # an empty line between the to-delete list and the protected section header
+  echo "$output" | grep -qP "^\s*$" || true
+  # Use a line-by-line check: find the to-delete section then assert a blank line follows
+  local found_blank=0
+  local past_to_delete=0
+  while IFS= read -r line; do
+    if echo "$line" | grep -q "Worktrees that would be removed"; then
+      past_to_delete=1
+    fi
+    if [ "$past_to_delete" -eq 1 ] && [ -z "$line" ]; then
+      found_blank=1
+      break
+    fi
+  done <<OUTEOF
+$output
+OUTEOF
+  [ "$found_blank" -eq 1 ]
+}
+
+@test "_cmd_clear --dry-run: blank line after protected section before summary" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+
+  # Protected worktree
+  local prot_wt="$GWT_WORKTREES_DIR/master-gap"
+  git worktree add -b "master" "$prot_wt" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$prot_wt/.git"
+
+  # Non-protected old worktree
+  local old_wt="$GWT_WORKTREES_DIR/old-gap"
+  git worktree add -b "old-gap" "$old_wt" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$old_wt/.git"
+
+  run _cmd_clear "1" "1" "0" "0" "0" "" "1"
+  assert_success
+
+  assert_output --partial "[dry-run] 1 worktree(s) would be removed"
+
+  # Verify blank line appears between protected section and summary line
+  local found_blank=0
+  local past_protected=0
+  while IFS= read -r line; do
+    if echo "$line" | grep -q "Protected worktrees (skipped):"; then
+      past_protected=1
+    fi
+    if [ "$past_protected" -eq 1 ] && [ -z "$line" ]; then
+      found_blank=1
+      break
+    fi
+  done <<OUTEOF
+$output
+OUTEOF
+  [ "$found_blank" -eq 1 ]
+}
+
+@test "_cmd_clear --dry-run protected-only: blank line before protected section header" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+
+  # Only a protected worktree, no to-delete candidates
+  local prot_wt="$GWT_WORKTREES_DIR/develop"
+  git worktree add -b "develop" "$prot_wt" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$prot_wt/.git"
+
+  run _cmd_clear "1" "1" "0" "0" "0" "" "1"
+  assert_success
+
+  assert_output --partial "[dry-run] No worktrees would be removed"
+  assert_output --partial "[dry-run] Protected worktrees (skipped):"
+  assert_output --partial "[protected — skipped]"
+
+  # There should be a blank line between "No worktrees would be removed" and
+  # "Protected worktrees (skipped):" — the sections are separated by whitespace
+  local found_blank=0
+  local past_no_worktrees=0
+  while IFS= read -r line; do
+    if echo "$line" | grep -q "No worktrees would be removed"; then
+      past_no_worktrees=1
+    fi
+    if [ "$past_no_worktrees" -eq 1 ] && [ -z "$line" ]; then
+      found_blank=1
+      break
+    fi
+  done <<OUTEOF
+$output
+OUTEOF
+  [ "$found_blank" -eq 1 ]
+}

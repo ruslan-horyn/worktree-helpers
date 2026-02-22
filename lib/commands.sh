@@ -279,15 +279,17 @@ EOF
     if [ "$dry_run" -eq 1 ]; then
       echo "[dry-run] No worktrees would be removed"
       if [ -n "$protected_skipped" ]; then
+        echo ""
         echo "[dry-run] Protected worktrees (skipped):"
         while IFS= read -r item; do
           [ -z "$item" ] && continue
           local wt_path="${item%%|*}"
           local br="${item#*|}"
-          echo "  $(_wt_display_name "$wt_path") ($br) [protected — skipped]"
+          echo "  $(_wt_format_entry "$wt_path" "$br") [protected — skipped]"
         done <<EOF
 $protected_skipped
 EOF
+        echo ""
       fi
     else
       _info "No worktrees to clear"
@@ -325,23 +327,25 @@ EOF
       local br="${rest%%|*}"
       local ts="${rest#*|}"
       if [ -n "$ts" ] && [ "$ts" != "0" ]; then
-        echo "  $(_wt_display_name "$wt_path") ($br) - $(_age_display "$ts")"
+        echo "  $(_wt_format_entry "$wt_path" "$br") - $(_age_display "$ts")"
       else
-        echo "  $(_wt_display_name "$wt_path") ($br)"
+        echo "  $(_wt_format_entry "$wt_path" "$br")"
       fi
     done <<EOF
 $to_delete
 EOF
+    echo ""
     if [ -n "$protected_skipped" ]; then
       echo "[dry-run] Protected worktrees (skipped):"
       while IFS= read -r item; do
         [ -z "$item" ] && continue
         local wt_path="${item%%|*}"
         local br="${item#*|}"
-        echo "  $(_wt_display_name "$wt_path") ($br) [protected — skipped]"
+        echo "  $(_wt_format_entry "$wt_path" "$br") [protected — skipped]"
       done <<EOF
 $protected_skipped
 EOF
+      echo ""
     fi
     echo "[dry-run] $to_delete_count worktree(s) would be removed"
     return 0
