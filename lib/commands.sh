@@ -700,6 +700,9 @@ Flags:
   --pattern <glob>       Filter to worktrees matching branch name glob (with -c)
   --dry-run              Preview what would be cleared without deleting (with -c)
   --reflog               Show reflog (with --log)
+  --since <date>         Limit log to commits after date (with --log)
+  --author <pattern>     Limit log to commits by author (with --log)
+  --check                Check for update without installing (with --update)
 HELP
 }
 
@@ -784,6 +787,9 @@ _help_remove() {
 
   Options:
     -f, --force    Skip confirmation prompt
+
+  Note:
+    Main and dev branches are always protected — they cannot be removed.
 HELP
 }
 
@@ -793,6 +799,7 @@ _help_list() {
   wt -l, --list
 
   List all worktrees with their branch name, lock status, and dirty state.
+  The main (root) worktree is shown as [root] with its branch name.
 
   Usage:
     wt -l
@@ -823,6 +830,7 @@ _help_clear() {
     wt -c 30
     wt -c 14 --merged
     wt -c --pattern "feat-*"
+    wt -c --merged --pattern "fix-*" --dry-run
 
   Options:
     --merged              Filter to branches merged into main
@@ -831,6 +839,10 @@ _help_clear() {
     --dev-only            Limit to dev-based worktrees
     --main-only           Limit to main-based worktrees
     -f, --force           Skip confirmation prompt
+
+  Note:
+    Main and dev branches are always protected — they are never removed
+    regardless of filters.
 HELP
 }
 

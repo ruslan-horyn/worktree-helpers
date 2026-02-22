@@ -324,7 +324,7 @@ sprints:
     end_date: "2026-03-07"
     capacity_points: 17
     committed_points: 17
-    completed_points: 0
+    completed_points: 3
     status: "active"
     goal: "Docs audit, CLI output polish, init UX overhaul"
     notes: "Rebalanced 2026-02-22: added STORY-047+039, deferred STORY-016 to Sprint 8"
@@ -332,7 +332,8 @@ sprints:
       - story_id: "STORY-047"
         title: "Documentation audit — align README and --help with current state"
         points: 3
-        status: "not_started"
+        status: "completed"
+        completion_date: "2026-02-22"
         assigned_to: null
         priority: "should_have"
         story_doc: "docs/stories/STORY-047.md"
