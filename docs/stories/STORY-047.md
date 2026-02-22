@@ -3,7 +3,7 @@
 **Epic:** Developer Experience
 **Priority:** Should Have
 **Story Points:** 3
-**Status:** Not Started
+**Status:** In Progress
 **Assigned To:** Unassigned
 **Created:** 2026-02-21
 **Sprint:** 7
@@ -96,61 +96,61 @@ New features must always update the relevant `_help_*` first; README follows.
 
 ### AC-1: `_help_*` audit — all 8 functions verified
 
-- [ ] `_help_new` — lists `--from`/`-b <ref>`, `-d`/`--dev`; examples match actual syntax
-- [ ] `_help_switch` — confirms fzf fallback when no arg; no stale references
-- [ ] `_help_open` — confirms fzf fallback, `origin/` prefix stripping, local + remote branches
-- [ ] `_help_remove` — lists `-f`/`--force`; protection note: main/dev branches are always protected
-- [ ] `_help_list` — confirms dirty/clean indicator, lock status, root worktree display
-- [ ] `_help_clear` — lists ALL filter flags: `--merged`, `--pattern <glob>`, `--dry-run`,
+- [x] `_help_new` — lists `--from`/`-b <ref>`, `-d`/`--dev`; examples match actual syntax
+- [x] `_help_switch` — confirms fzf fallback when no arg; no stale references
+- [x] `_help_open` — confirms fzf fallback, `origin/` prefix stripping, local + remote branches
+- [x] `_help_remove` — lists `-f`/`--force`; protection note added: main/dev branches are always protected
+- [x] `_help_list` — confirms dirty/clean indicator, lock status, root worktree display (note added)
+- [x] `_help_clear` — lists ALL filter flags: `--merged`, `--pattern <glob>`, `--dry-run`,
       `--dev-only`, `--main-only`, `-f`/`--force`; clarifies that `<days>` is optional when
       `--merged` or `--pattern` is supplied; notes that main/dev branches are always protected
-- [ ] `_help_init` — confirms what files are created (config.json + hook templates)
-- [ ] `_help_update` — lists `--check` flag; confirms no install occurs with `--check`
+- [x] `_help_init` — confirms what files are created (config.json + hook templates)
+- [x] `_help_update` — lists `--check` flag; confirms no install occurs with `--check`
 
 ### AC-2: `_cmd_help` (`wt -h`) matches actual command set
 
-- [ ] Full help output includes `--rename`, `--uninstall`, `--log`, `-L`/`-U` lock/unlock,
+- [x] Full help output includes `--rename`, `--uninstall`, `--log`, `-L`/`-U` lock/unlock,
       `-v`/`--version`, `-h`/`wt <cmd> --help`
-- [ ] Flags block in `_cmd_help` includes all modifier flags:
+- [x] Flags block in `_cmd_help` includes all modifier flags:
       `--dev-only`, `--main-only`, `--merged`, `--pattern`, `--dry-run`, `--reflog`,
       `--since`, `--author`, `--check`
-- [ ] No flag or command present in `wt.sh` arg-parsing loop is missing from `_cmd_help`
+- [x] No flag or command present in `wt.sh` arg-parsing loop is missing from `_cmd_help`
 
 ### AC-3: README "Commands" section — complete and accurate
 
-- [ ] Every user-facing command has a row with: syntax, one-line description
-- [ ] At minimum these commands and variants are present:
+- [x] Every user-facing command has a row with: syntax, one-line description
+- [x] At minimum these commands and variants are present:
       `wt -n`, `wt -n --from`, `wt -n -d`, `wt -s`, `wt -r`, `wt -o`, `wt -l`, `wt -c`,
       `wt -c --merged`, `wt -c --pattern`, `wt -c --dry-run`, `wt -L`, `wt -U`,
       `wt --init`, `wt --log`, `wt --rename`, `wt --update`, `wt --update --check`,
       `wt --uninstall`, `wt -v`, `wt -h`, `wt <cmd> --help`
-- [ ] Examples block in README illustrates key flags that users commonly miss
+- [x] Examples block in README illustrates key flags that users commonly miss
       (`--dry-run`, `--merged`, `--check`, `--from`, `-f`)
-- [ ] README "Commands" section is self-consistent with `_cmd_help` output (no contradictions)
+- [x] README "Commands" section is self-consistent with `_cmd_help` output (no contradictions)
 
 ### AC-4: README "Shell Completions" — Warp known limitation documented
 
-- [ ] A "Known Limitations" subsection exists under "Shell Completions"
-- [ ] Limitation is described: Warp intercepts Tab at the terminal UI level before
+- [x] A "Known Limitations" subsection exists under "Shell Completions"
+- [x] Limitation is described: Warp intercepts Tab at the terminal UI level before
       zsh `compdef`/`compsys` dispatch; this is an officially documented Warp incompatibility
-- [ ] Workaround is documented: run `zsh` inside Warp (inner subprocess), then Tab completion works
-- [ ] Standard terminals (iTerm2, Terminal.app, Kitty, etc.) are confirmed unaffected
+- [x] Workaround is documented: run `zsh` inside Warp (inner subprocess), then Tab completion works
+- [x] Standard terminals (iTerm2, Terminal.app, Kitty, etc.) are confirmed unaffected
 
 ### AC-5: `docs/hooks.md` argument reference — consistent and complete
 
-- [ ] Arguments table (`$1–$4`) is present and matches the README inline hooks table exactly
+- [x] Arguments table (`$1–$4`) is present and matches the README inline hooks table exactly
       (same descriptions, same phrasing)
-- [ ] `$3` (base ref) table shows the correct value for each command scenario:
+- [x] `$3` (base ref) table shows the correct value for each command scenario:
       `wt -n` → `GWT_MAIN_REF`, `wt -n --from <ref>` → user ref, `wt -n -d` → `GWT_DEV_REF`,
       `wt -o` (new) → branch name, `wt -o` (existing) → empty, `wt -s` → empty
-- [ ] No content removed from `docs/hooks.md`; additions only where gaps exist
+- [x] No content removed from `docs/hooks.md`; additions only where gaps exist
 
 ### AC-6: Definition of Done updated for all future stories
 
-- [ ] The DoD template (or a clearly referenced canonical DoD section) includes:
+- [x] The DoD template (or a clearly referenced canonical DoD section) includes:
       "If the story adds or changes a user-visible feature: update the relevant `_help_*`
       function in `lib/commands.sh`; add 1–3 lines to README"
-- [ ] The canonical DoD location is agreed and noted (e.g., a comment in the STORY template
+- [x] The canonical DoD location is agreed and noted (e.g., a comment in the STORY template
       file or a section in `CLAUDE.md` that future Scrum Master prompts reference)
 
 ---
@@ -253,14 +253,14 @@ Every story that adds or changes a user-visible feature must also:
 
 ## Definition of Done
 
-- [ ] All 8 `_help_*` functions audited and any gaps corrected
-- [ ] `_cmd_help` full-help output verified against actual `wt.sh` flag set
-- [ ] README "Commands" section covers all user-facing commands with descriptions
-- [ ] README "Shell Completions" has a "Known Limitations" subsection with Warp workaround
-- [ ] `docs/hooks.md` argument table (`$1–$4`) is consistent with README hooks table
-- [ ] `CLAUDE.md` updated with DoD requirement for user-visible changes
-- [ ] `shellcheck` passes on any modified `.sh` files (no new warnings)
-- [ ] No BATS tests broken (docs-only story; no functional code changes expected)
+- [x] All 8 `_help_*` functions audited and any gaps corrected
+- [x] `_cmd_help` full-help output verified against actual `wt.sh` flag set
+- [x] README "Commands" section covers all user-facing commands with descriptions
+- [x] README "Shell Completions" has a "Known Limitations" subsection with Warp workaround
+- [x] `docs/hooks.md` argument table (`$1–$4`) is consistent with README hooks table
+- [x] `CLAUDE.md` updated with DoD requirement for user-visible changes
+- [x] `shellcheck` passes on any modified `.sh` files (no new warnings)
+- [x] No BATS tests broken (docs-only story; no functional code changes expected) — 317/317 pass
 - [ ] All changes committed with conventional commit format, lowercase subjects
 
 ---
@@ -289,15 +289,149 @@ added after STORY-036) and the README prose update. All other tasks are small, t
 
 - 2026-02-21: Story created by Scrum Master — Sprint 6 retrospective action item
   (retro action: "Stworzyc STORY-047: Dokumentacja — audit aktualnych --help tekstow vs stan kodu")
+- 2026-02-22: Implementation complete by Developer
 
-**Actual Effort:** TBD
+**Actual Effort:** 3 points (matched estimate)
 
-**Files Changed:** TBD
+**Files Changed:**
 
-**Tests Added:** None expected (documentation-only story)
+| File | Change type | Description |
+|------|-------------|-------------|
+| `lib/commands.sh` | Updated | `_help_remove`: added protection note (main/dev branches cannot be removed) |
+| `lib/commands.sh` | Updated | `_help_list`: added note that root worktree is shown as `[root]` |
+| `lib/commands.sh` | Updated | `_help_clear`: added protection note; added combined-filters example |
+| `lib/commands.sh` | Updated | `_cmd_help`: added `--since`, `--author`, `--check` to Flags block |
+| `README.md` | Updated | Commands table: added rows for `wt -c --merged`, `wt -c --pattern <glob>`, `wt -c <days> --dry-run`; improved descriptions for several rows |
+| `README.md` | Updated | Examples: added `wt --update --check` example |
+| `README.md` | Added | "Known Limitations" subsection under "Shell Completions" — Warp terminal incompatibility and workaround |
+| `CLAUDE.md` | Pre-existing | DoD section already present (added before this story ran); confirmed correct |
+| `docs/hooks.md` | No change needed | `$1–$4` argument table already consistent and complete; `$3` per-command table already covers all AC-5 scenarios |
 
-**Decisions Made:** TBD
+**Tests Added:** None (documentation-only story)
+
+**Test Results:** 317/317 BATS tests pass, 0 failures; `shellcheck lib/commands.sh` clean
+
+**Decisions Made:**
+
+- `docs/hooks.md` required no changes: the `$1–$4` argument table already matched README phrasing exactly, and the per-command `$3` table already covered all scenarios listed in AC-5. Adding duplicate content would reduce signal-to-noise — decision: no change.
+- CLAUDE.md DoD section was already present (added as part of story setup by the Scrum Master). Confirmed correct; no change needed.
+- `_cmd_help` Flags block was missing `--since`, `--author`, `--check` — all three added (AC-2).
+- README Commands table was missing three `wt -c` variant rows required by AC-3 — rows added.
+- `_help_remove` and `_help_list` gaps were smaller than anticipated; added concise one-line notes rather than restructuring.
 
 ---
 
 **This story was created using BMAD Method v6 — Sprint 6 Retrospective action item**
+
+---
+
+## QA Review
+
+**Date:** 2026-02-22
+**Reviewer:** QA Engineer
+
+### Files Reviewed
+
+| File | Status | Notes |
+|------|--------|-------|
+| `lib/commands.sh` | Pass | Four targeted additions: `_cmd_help` Flags block (`--since`, `--author`, `--check`); `_help_remove` protection note; `_help_list` root worktree note; `_help_clear` combined-filter example and protection note. POSIX-compliant heredocs; no style issues. |
+| `README.md` | Pass | Three new `wt -c` variant rows; improved descriptions on several existing rows; new `wt --update --check` example; "Known Limitations" subsection added under "Shell Completions". All markdown renders correctly. |
+| `docs/hooks.md` | Pass (no change) | `$1–$4` argument table verified against README inline hooks table — phrasing identical. Per-command `$3` table covers all AC-5 scenarios. No changes needed; decision documented in Progress Tracking. |
+| `CLAUDE.md` | Pass (no change) | DoD section ("Definition of Done (user-facing changes)") pre-existed and matches AC-6 requirement exactly. |
+
+### Issues Found
+
+None
+
+### AC Verification
+
+- [x] AC-1: All 8 `_help_*` functions audited against `wt.sh` router case-block and `_cmd_*` bodies.
+  - `_help_new` — `--from`/`-b`, `-d`/`--dev` documented; examples match actual syntax (`lib/commands.sh:709–730`)
+  - `_help_switch` — fzf fallback confirmed; no stale text (`lib/commands.sh:732–749`)
+  - `_help_open` — fzf fallback, `origin/` prefix stripping, local/remote branches documented (`lib/commands.sh:751–769`)
+  - `_help_remove` — `-f`/`--force` listed; protection note added: "Main and dev branches are always protected — they cannot be removed." (`lib/commands.sh:771–794`)
+  - `_help_list` — dirty/clean indicator, lock status, root worktree note added: "The main (root) worktree is shown as [root] with its branch name." (`lib/commands.sh:796–812`)
+  - `_help_clear` — all filter flags listed (`--merged`, `--pattern`, `--dry-run`, `--dev-only`, `--main-only`, `-f`/`--force`); `<days>` noted optional; protection note added (`lib/commands.sh:814–847`)
+  - `_help_init` — config.json and hook templates creation confirmed (`lib/commands.sh:849–864`)
+  - `_help_update` — `--check` flag documented; no-install confirmation present (`lib/commands.sh:866–884`)
+
+- [x] AC-2: `_cmd_help` full-help output verified against `wt.sh` router (`wt.sh:41–83`).
+  - Commands block includes `--rename`, `--uninstall`, `--log`, `-L`/`-U`, `-v`/`--version`, `-h`, `wt <cmd> --help` (shown as `--update --check` pattern)
+  - Flags block now includes `--since`, `--author`, `--check` (added in this story, `lib/commands.sh:703–705`)
+  - Every flag in `wt.sh` case-block has a matching entry in Flags or Commands block of `_cmd_help`
+
+- [x] AC-3: README "Commands" table complete and accurate (`README.md:98–121`).
+  - All required commands from AC-3 list present: `wt -n`, `wt -n --from`, `wt -n -d`, `wt -s`, `wt -r`, `wt -o`, `wt -l`, `wt -c`, `wt -c --merged`, `wt -c --pattern`, `wt -c <days> --dry-run`, `wt -L`, `wt -U`, `wt --init`, `wt --log`, `wt --rename`, `wt --update`, `wt --update --check`, `wt --uninstall`, `wt -v`, `wt -h`, `wt <cmd> --help`
+  - Examples block illustrates `--dry-run`, `--merged`, `--check` (added), `--from`, `-f` (`README.md:123–187`)
+  - No contradictions with `_cmd_help` output
+
+- [x] AC-4: README "Shell Completions" has "Known Limitations" subsection (`README.md:292–307`).
+  - Warp terminal Tab interception described with technically accurate explanation (compdef/compsys dispatch)
+  - Workaround documented: run `zsh` inner subprocess
+  - Standard terminals (iTerm2, Terminal.app, Kitty, Alacritty) confirmed unaffected
+
+- [x] AC-5: `docs/hooks.md` argument table (`$1–$4`) consistent with README inline hooks table.
+  - `docs/hooks.md:98–103` argument table phrasing matches `README.md:232–237` exactly
+  - `$3` per-command table (`docs/hooks.md:109–116`) covers all six AC-5 scenarios: `wt -n` → `GWT_MAIN_REF`, `wt -n --from <ref>` → user ref, `wt -n -d` → `GWT_DEV_REF`, `wt -o` (new) → branch name, `wt -o` (existing) → empty, `wt -s` → empty
+  - No content removed; no change needed
+
+- [x] AC-6: DoD template updated for future stories.
+  - `CLAUDE.md:51–58` — "Definition of Done (user-facing changes)" section present, correctly states requirement to update `_help_*` and README for every user-visible change
+  - Section is referenced in Commit Guidelines context ensuring future Claude sessions pick it up
+
+### Test Results
+
+- Total: 317 / Passed: 317 / Failed: 0
+- Test suite: `npm test` (`test/libs/bats-core/bin/bats test/`)
+- No tests broken; story is documentation-only with no functional code changes
+
+### Shellcheck
+
+- Clean: yes — `shellcheck -x wt.sh lib/*.sh` produced no warnings or errors
+
+---
+
+## Manual Testing
+
+**Date:** 2026-02-22
+**Tester:** QA Engineer
+**Environment:** macOS Darwin 24.6.0, zsh, bash (POSIX-compatible sourcing via `bash -c 'source ./wt.sh'`)
+
+### Test Scenarios
+
+| # | Scenario | Expected | Actual | Pass/Fail |
+|---|----------|----------|--------|-----------|
+| 1 | `wt --help` includes `--since` in Flags block | Line `--since <date>   Limit log to commits after date (with --log)` present | Line present at position matching `--reflog` group | Pass |
+| 2 | `wt --help` includes `--author` in Flags block | Line `--author <pattern>   Limit log to commits by author (with --log)` present | Line present | Pass |
+| 3 | `wt --help` includes `--check` in Flags block | Line `--check   Check for update without installing (with --update)` present | Line present | Pass |
+| 4 | `wt --help` Commands block includes `--update --check` | Entry `--update --check   Check for updates without installing` present | Present | Pass |
+| 5 | `wt -r --help` shows protection note | Note "Main and dev branches are always protected — they cannot be removed." present | Note present under `Note:` heading | Pass |
+| 6 | `wt -l --help` shows `[root]` note | Description line "The main (root) worktree is shown as [root] with its branch name." present | Present in second line of description | Pass |
+| 7 | `wt -c --help` includes combined-filters example | Example line `wt -c --merged --pattern "fix-*" --dry-run` present | Present in Examples block | Pass |
+| 8 | `wt -c --help` shows protection note | Note "Main and dev branches are always protected — they are never removed regardless of filters." present | Present under `Note:` heading | Pass |
+| 9 | `wt -c --help` lists all filter flags | `--merged`, `--pattern`, `--dry-run`, `--dev-only`, `--main-only`, `-f`/`--force` all listed under Options | All six present | Pass |
+| 10 | `wt -n --help` lists `--from`/`-b` and `-d`/`--dev` | Options block contains `--from, -b <ref>` and `-d, --dev` | Both present | Pass |
+| 11 | `wt -s --help` mentions fzf fallback | Description mentions "opens fzf picker if no argument given" | Present in description | Pass |
+| 12 | `wt -o --help` mentions fzf, `origin/` prefix, local/remote | Description mentions fzf; example shows `origin/release-2.0` | Both present | Pass |
+| 13 | `wt --init --help` confirms config.json + hook templates | Description "Creates .worktrees/config.json and default hook scripts." | Present | Pass |
+| 14 | `wt --update --help` lists `--check`; confirms no-install | Usage row `wt --update --check   Check for updates without installing`; Options `--check   Check for a new version without installing it` | Both present | Pass |
+| 15 | `wt -h` and `wt --help` produce identical output | Diff empty | Diff empty | Pass |
+| 16 | `wt --help` Commands block includes `--rename`, `--uninstall`, `--log`, `-L`/`-U`, `-v`/`--version`, `-h` | All listed | All listed in Commands block | Pass |
+| 17 | README Commands table has `wt -c --merged` row | Row present | Present at line 108 | Pass |
+| 18 | README Commands table has `wt -c --pattern <glob>` row | Row present | Present at line 109 | Pass |
+| 19 | README Commands table has `wt -c <days> --dry-run` row | Row present | Present at line 110 | Pass |
+| 20 | README Commands table has `wt --update --check` row | Row present | Present at line 117 | Pass |
+| 21 | README Commands table has `wt <cmd> --help` row | Row present | Present at line 121 | Pass |
+| 22 | README Examples block includes `wt --update --check` | Example present | Present at line 186 | Pass |
+| 23 | README "Shell Completions" has "Known Limitations" subsection | `### Known Limitations` heading present | Present at line 292 | Pass |
+| 24 | README "Known Limitations" describes Warp Tab interception | Text references `compdef`/`compsys` and officially documented Warp incompatibility | Text present at lines 294–297 | Pass |
+| 25 | README "Known Limitations" documents `zsh` subprocess workaround | `zsh` code block with explanation present | Present at lines 299–307 | Pass |
+| 26 | README "Known Limitations" confirms standard terminals unaffected | iTerm2, Terminal.app, Kitty, Alacritty listed | Listed at line 306 | Pass |
+| 27 | CLAUDE.md has DoD section for user-visible changes | Section "Definition of Done (user-facing changes)" present with `_help_*` + README requirement | Present at line 51; correct content | Pass |
+| 28 | Unknown flag produces error and exits non-zero | `wt --unknown-flag` outputs "Unknown: --unknown-flag" and exits 1 | Correct error message; exit code 1 | Pass |
+| 29 | `shellcheck -x lib/commands.sh` clean | No warnings or errors | Exit 0; no output | Pass |
+| 30 | Full BATS test suite: 317/317 pass, 0 failures | All tests green | `ok 317 _wt_open creates flat directory for slash branch name`; 0 `not ok` lines | Pass |
+
+### Issues Found
+
+None

@@ -98,18 +98,21 @@ curl -fsSL https://raw.githubusercontent.com/ruslan-horyn/worktree-helpers/main/
 | Command | Description |
 |---------|-------------|
 | `wt -n <branch>` | Create worktree from main branch |
-| `wt -n <branch> --from <ref>` | Create worktree from custom ref |
+| `wt -n <branch> --from <ref>` | Create worktree from custom ref (branch, tag, or commit) |
 | `wt -n -d [name]` | Create worktree from dev branch |
 | `wt -s [branch]` | Switch to worktree (fzf picker if no arg) |
-| `wt -r [branch]` | Remove worktree and delete branch |
-| `wt -o [branch]` | Open existing branch as worktree |
-| `wt -l` | List all worktrees (with dirty/clean status) |
-| `wt -c [days]` | Clear worktrees (days optional with `--merged`/`--pattern`) |
+| `wt -r [branch]` | Remove worktree and delete branch (prompts unless `-f`) |
+| `wt -o [branch]` | Open existing branch as worktree (fzf picker if no arg) |
+| `wt -l` | List all worktrees with dirty/clean and lock status |
+| `wt -c <days>` | Clear worktrees older than `<days>` days |
+| `wt -c --merged` | Clear worktrees whose branches are merged into main |
+| `wt -c --pattern <glob>` | Clear worktrees matching a branch name glob pattern |
+| `wt -c <days> --dry-run` | Preview what would be cleared without deleting |
 | `wt -L [branch]` | Lock worktree |
 | `wt -U [branch]` | Unlock worktree |
 | `wt --init` | Initialize project configuration |
 | `wt --log [branch]` | Show commits vs main branch |
-| `wt --rename <new-branch>` | Rename current worktree's branch |
+| `wt --rename <new-branch>` | Rename current worktree's branch and directory |
 | `wt --update` | Update to latest version |
 | `wt --update --check` | Check for updates without installing |
 | `wt --uninstall` | Uninstall worktree-helpers |
@@ -178,6 +181,9 @@ wt --log
 
 # View commits with filters
 wt --log feature-branch --since="2 weeks ago"
+
+# Check if an update is available without installing
+wt --update --check
 ```
 
 ## Configuration
@@ -282,6 +288,23 @@ compdef _wt wt
 ```bash
 source "$HOME/.worktree-helpers/completions/wt.bash"
 ```
+
+### Known Limitations
+
+**Warp terminal (primary shell):** Tab completion does not work when Warp is the primary
+zsh shell. Warp intercepts the Tab key at the terminal UI level before zsh's `compdef`/
+`compsys` dispatch is consulted — this is an officially documented Warp incompatibility
+with `compdef` and `compinit`.
+
+**Workaround:** Start an inner `zsh` subprocess inside Warp:
+
+```bash
+zsh
+```
+
+Once inside the inner shell, source `wt.sh` (or it will be sourced automatically via
+`.zshrc`) and Tab completion will work normally. Standard terminals (iTerm2, Terminal.app,
+Kitty, Alacritty) are unaffected.
 
 ## Troubleshooting
 
