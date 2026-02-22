@@ -9,10 +9,10 @@ workflows:
   architecture: "not_needed"
   sprint-planning: "docs/sprint-plan-worktree-helpers-2026-02-19.md"
 
-last_updated: "2026-02-19"
-last_workflow: "sprint-5-retrospective"
+last_updated: "2026-02-22"
+last_workflow: "sprint-planning"
 
 next_recommended:
-  workflow: "dev-story"
-  reason: "Sprint 5 complete (18/18 pts). Sprint 6 not started. STORY-029 (protect branches) and STORY-031 (slash→dash dirs) are critical must-have fixes — start there."
-  command: "/dev-story STORY-029"
+  workflow: "launch-sprint"
+  reason: "Sprint 7 planned and rebalanced (17pts, start 2026-02-22). All backlog stories (040-047) formalized and allocated across Sprints 7-10. Ready to launch Sprint 7 worktrees."
+  command: "/launch-sprint"

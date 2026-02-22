@@ -1,30 +1,31 @@
 # Sprint Plan: worktree-helpers v1.4+
 
-**Date:** 2026-02-19
+**Date:** 2026-02-19 (updated 2026-02-22)
 **Scrum Master:** Ruslan Horyn
 **Project Level:** 1
-**Total Stories:** 14
-**Total Points:** 39
-**Planned Sprints:** 3 (Sprints 6–8)
+**Total Stories:** 22
+**Total Points:** 77
+**Planned Sprints:** 5 (Sprints 6–10)
 
 ---
 
 ## Executive Summary
 
 This sprint plan covers the v1.4+ development cycle for worktree-helpers. Building on
-the solid foundation from Sprints 1–5 (53 pts delivered), this cycle focuses on three
-themes: **critical bug fixes** from real-world usage (branch protection, slash-in-name
-directory issues), **completions overhaul** (Warp + zsh compatibility, per-command help,
-usage hints), and **UX polish** (verbose output, init improvements, metadata tracking).
+the solid foundation from Sprints 1–5 (84 pts delivered), this cycle focuses on:
+
+- **Sprint 6** (COMPLETE — 17pts): Critical bug fixes from real-world usage and completions overhaul
+- **Sprint 7** (ACTIVE — 17pts): Docs audit, CLI polish, init UX, dry-run readability
+- **Sprint 8** (PLANNED — 16pts): Metadata tracking, new commands (run/repair/skip-hook), Homebrew
+- **Sprint 9** (PLANNED — 13pts): Distribution plugin, detach mode, smart hooks, multi-select
+- **Sprint 10** (PLANNED — 8pts): Major codebase refactor
 
 **Key Metrics:**
 
-- Total Stories: 14
-- Total Points: 39
-- Sprints: 3
-- Team Capacity: 17 points per sprint
-- Historical Velocity: 16.8 pts/sprint (rolling average, 5 sprints)
-- Sprints 1–5 completed: 84 pts delivered
+- Total Stories Remaining: 16 (Sprint 7–10)
+- Total Points Remaining: 54
+- Historical Velocity: 16.8 pts/sprint (Sprints 1–6 average)
+- Sprints 1–6 completed: 101 pts delivered
 
 ---
 
@@ -37,148 +38,46 @@ usage hints), and **UX polish** (verbose output, init improvements, metadata tra
 | Productive Hours/Day | 5 hours |
 | Total Hours/Sprint | 50 hours |
 | Points per Sprint | ~17 points |
-| Historical Velocity | S1: 14, S2: 17, S3: 17, S4: 18, S5: 18 (avg: 16.8) |
+| Historical Velocity | S1: 14, S2: 17, S3: 17, S4: 18, S5: 18, S6: 17 (avg: 16.8) |
 
 ---
 
 ## Story Inventory
 
-### STORY-029: Protect main/dev branches from `wt -c` deletion
+### Completed Sprints (reference only)
 
-**Epic:** Core Reliability
-**Priority:** Must Have
-**Points:** 3
-
-**User Story:**
-As a developer using `wt -c`
-I want the clear command to never delete protected branches (main, dev)
-So that I don't accidentally lose my primary development branch
-
-**Acceptance Criteria:**
-
-- [ ] `wt -c` never deletes worktrees whose branch matches `GWT_MAIN_REF` or `GWT_DEV_REF`
-- [ ] `wt -c` never deletes worktrees whose branch is any of: `main`, `master`, `dev`, `develop`
-- [ ] Skipped protected worktrees print: `Skipping <branch>: protected branch`
-- [ ] `--dry-run` marks protected worktrees as `[protected — skipped]`
-- [ ] Protection applies to all clear variants (`--merged`, `--pattern`, age-based)
-
-**Dependencies:** None
+Sprints 1–6 complete. See sprint-status.yaml for full history.
 
 ---
 
-### STORY-031: Replace slashes with dashes in worktree directory names
+### Sprint 7 Stories
 
-**Epic:** Core Reliability
-**Priority:** Must Have
-**Points:** 2
-
-**User Story:**
-As a developer working with Jira-style branch names like `bugfix/CORE-615-foo`
-I want `wt -n bugfix/CORE-615-foo` to create a flat directory `bugfix-CORE-615-foo`
-So that worktrees don't accidentally create nested subdirectories
-
-**Acceptance Criteria:**
-
-- [ ] `wt -n bugfix/CORE-615-foo` creates `<worktreesDir>/bugfix-CORE-615-foo`
-- [ ] `wt -n feature/my-feature` creates `<worktreesDir>/feature-my-feature`
-- [ ] Branch name preserved exactly; only the directory name uses dashes
-- [ ] Same sanitisation applies to `wt -o`
-
-**Dependencies:** None
-
----
-
-### STORY-030: Fix completions in Warp + zsh to work like git
-
-**Epic:** Developer Experience
-**Priority:** Should Have
-**Points:** 5
-
-**User Story:**
-As a developer using Warp terminal with zsh
-I want `wt` tab completions to work the same way `git` completions do
-So that I can complete branch names, worktree names, and flags without leaving the keyboard
-
-**Acceptance Criteria:**
-
-- [ ] `wt <TAB>` shows all flags in Warp + zsh
-- [ ] `wt -s <TAB>` completes existing worktree names in Warp + zsh
-- [ ] `wt -o <TAB>` completes local branch names in Warp + zsh
-- [ ] `wt -r <TAB>` completes existing worktree names in Warp + zsh
-- [ ] `wt --from <TAB>` completes git refs in Warp + zsh
-- [ ] All existing completion behaviour preserved in standard zsh
-
-**Dependencies:** STORY-014 (source), STORY-028 (context)
-
----
-
-### STORY-032: Show only worktree name instead of full path everywhere
-
-**Epic:** UX Polish
-**Priority:** Should Have
-**Points:** 2
-
-**User Story:**
-As a developer with a long worktrees path
-I want every `wt` command to show just the worktree name, not the full absolute path
-So that all output is readable and not cluttered with irrelevant path prefixes
-
-**Acceptance Criteria:**
-
-- [ ] `wt -l` displays only the worktree name, not the full path
-- [ ] `wt -n` success message shows worktree name, not full path
-- [ ] `wt -r` / `wt -s` fzf picker entries show only worktree name
-- [ ] `wt -c` output shows worktree name, not full path
-- [ ] All other commands that print paths updated consistently
-- [ ] Shared `_wt_display_name` helper used across all commands
-
-**Dependencies:** None
-
----
-
-### STORY-033: Prompt to re-source after `wt --update`
-
-**Epic:** Developer Experience
-**Priority:** Should Have
-**Points:** 2
-
-**User Story:**
-As a developer who just ran `wt --update`
-I want a clear prompt telling me how to activate the new version
-So that I don't have to open a new terminal or figure out re-sourcing on my own
-
-**Acceptance Criteria:**
-
-- [ ] After a successful update, prints the install path and `source` command
-- [ ] If already on latest: `Already up to date` (no re-source prompt)
-- [ ] If update fails: no re-source prompt shown
-
-**Dependencies:** STORY-013
-
----
-
-### STORY-036: Per-command help (`wt <cmd> --help`)
+#### STORY-047: Documentation audit — align README and per-command `--help` with current state
 
 **Epic:** Developer Experience
 **Priority:** Should Have
 **Points:** 3
 
 **User Story:**
-As a developer who can't remember exact flag syntax
-I want to run `wt -n --help` and see detailed help for just that command
-So that I get focused, actionable information without reading the full help screen
+As a developer discovering `wt` for the first time (or returning after a gap)
+I want the README and per-command `--help` to accurately reflect all current features
+So that I can understand the tool without reading source code
 
 **Acceptance Criteria:**
+- [ ] All 8 `_help_*` functions audited and gaps corrected
+- [ ] `_cmd_help` (wt -h) matches actual command set including `--rename`, `-L`/`-U`, `--log`
+- [ ] README "Commands" section covers all user-facing commands with descriptions
+- [ ] README "Shell Completions" has "Known Limitations" subsection (Warp workaround)
+- [ ] `docs/hooks.md` arg table (`$1–$4`) consistent with README
+- [ ] `CLAUDE.md` updated with DoD requirement for user-visible changes
 
-- [ ] `wt <cmd> --help` works for all main commands (`-n`, `-s`, `-o`, `-r`, `-l`, `-c`, `--init`, `--update`)
-- [ ] Each shows: description, usage with placeholders, 2-3 concrete examples
-- [ ] `--help` takes priority over running the command
+**Dependencies:** STORY-036 (completed)
 
-**Dependencies:** STORY-038 (share placeholder style)
+**Story doc:** docs/stories/STORY-047.md
 
 ---
 
-### STORY-034: Add verbose feedback to `wt -c` and `wt --init`
+#### STORY-034: Add verbose feedback to `wt -c` and `wt --init`
 
 **Epic:** Developer Experience
 **Priority:** Should Have
@@ -190,7 +89,6 @@ I want to see step-by-step output of what the command is doing
 So that I understand what happened and can diagnose failures
 
 **Acceptance Criteria:**
-
 - [ ] `wt -c`: prints decision per worktree + summary `Cleared X worktree(s)`
 - [ ] `wt -c`: `No worktrees to clear` if nothing matches
 - [ ] `wt --init`: prints each step (creating config, setting up hooks, etc.)
@@ -198,9 +96,11 @@ So that I understand what happened and can diagnose failures
 
 **Dependencies:** None
 
+**Story doc:** docs/stories/STORY-034.md
+
 ---
 
-### STORY-035: `wt --init` — offer to copy/backup existing hooks
+#### STORY-035: `wt --init` — offer to copy/backup existing hooks
 
 **Epic:** Developer Experience
 **Priority:** Should Have
@@ -212,7 +112,6 @@ I want to be asked whether to preserve my existing hooks
 So that I don't accidentally lose custom hook scripts
 
 **Acceptance Criteria:**
-
 - [ ] Detects if hooks directory already contains files
 - [ ] Prompts: keep / backup / overwrite (default: keep)
 - [ ] Backup moves hooks to `<hooksDir>.bak/`
@@ -220,9 +119,11 @@ So that I don't accidentally lose custom hook scripts
 
 **Dependencies:** STORY-034
 
+**Story doc:** docs/stories/STORY-035.md
+
 ---
 
-### STORY-037: Completions — show example usage hint when nothing to suggest
+#### STORY-037: Completions — show example usage hint when nothing to suggest
 
 **Epic:** Developer Experience
 **Priority:** Should Have
@@ -234,7 +135,6 @@ I want to see an example placeholder rather than nothing
 So that I know what to type without consulting the docs
 
 **Acceptance Criteria:**
-
 - [ ] `wt -n <TAB>` shows `<branch>` with description `new branch name`
 - [ ] `wt --from <TAB>` shows `<ref>` with description `branch, tag, or commit`
 - [ ] Works in both zsh and bash
@@ -242,9 +142,11 @@ So that I know what to type without consulting the docs
 
 **Dependencies:** STORY-030
 
+**Story doc:** docs/stories/STORY-037.md
+
 ---
 
-### STORY-038: Descriptive usage with placeholders in command output
+#### STORY-038: Descriptive usage with placeholders in command output
 
 **Epic:** Developer Experience
 **Priority:** Should Have
@@ -256,7 +158,6 @@ I want to see concrete usage examples with real placeholders alongside flag desc
 So that I immediately understand how to use each command without guessing
 
 **Acceptance Criteria:**
-
 - [ ] `wt -h` shows `<argument>` placeholder next to each flag that takes an argument
 - [ ] Each flag entry includes 1-2 concrete example lines
 - [ ] Consistent placeholder naming: `<branch>`, `<worktree>`, `<ref>`, `<days>`, `<pattern>`
@@ -264,9 +165,33 @@ So that I immediately understand how to use each command without guessing
 
 **Dependencies:** STORY-036
 
+**Story doc:** docs/stories/STORY-038.md
+
 ---
 
-### STORY-021: Improve `wt --init` UX
+#### STORY-039: Improve `wt -c` dry-run output readability
+
+**Epic:** Developer Experience
+**Priority:** Should Have
+**Points:** 2
+
+**User Story:**
+As a developer running `wt -c --dry-run`
+I want the output to be clearly formatted and easy to scan
+So that I can confidently decide whether to run the actual clear
+
+**Acceptance Criteria:**
+- [ ] Dry-run output uses distinct visual style (e.g., `[DRY RUN]` prefix or color)
+- [ ] Protected worktrees clearly labeled
+- [ ] Summary line shows count of what would be removed
+
+**Dependencies:** None
+
+**Story doc:** docs/stories/STORY-039.md
+
+---
+
+#### STORY-021: Improve `wt --init` UX
 
 **Epic:** Developer Experience
 **Priority:** Should Have
@@ -278,7 +203,6 @@ I want `wt --init` to be colorized, suggest hook templates, and auto-update `.gi
 So that the initial setup is fast, clear, and complete
 
 **Acceptance Criteria:**
-
 - [ ] Colorized output for success/warning/error messages
 - [ ] Suggests hook templates based on detected project type
 - [ ] Auto-adds `.worktrees/` to `.gitignore` if not present
@@ -286,9 +210,13 @@ So that the initial setup is fast, clear, and complete
 
 **Dependencies:** STORY-034, STORY-035
 
+**Story doc:** (existing)
+
 ---
 
-### STORY-016: Add worktree metadata tracking
+### Sprint 8 Stories
+
+#### STORY-016: Add worktree metadata tracking
 
 **Epic:** UX Polish
 **Priority:** Could Have
@@ -300,7 +228,6 @@ I want to annotate worktrees with a purpose/description and see creation dates
 So that I remember why each worktree exists
 
 **Acceptance Criteria:**
-
 - [ ] `wt -n <branch> --note "description"` — attach note at creation
 - [ ] `wt -l` shows notes and creation dates
 - [ ] Metadata stored in `.worktrees/metadata.json`
@@ -308,9 +235,80 @@ So that I remember why each worktree exists
 
 **Dependencies:** None
 
+**Story doc:** docs/stories/STORY-016.md
+
 ---
 
-### STORY-017: Create Homebrew formula
+#### STORY-040: Run command in another worktree without switching (`wt --run`)
+
+**Epic:** Developer Experience
+**Priority:** Should Have
+**Points:** 4
+
+**User Story:**
+As a developer working in one worktree
+I want to run a command in a different worktree without switching to it
+So that I can execute quick tasks (tests, linting, builds) without losing my current context
+
+**Acceptance Criteria:**
+- [ ] `wt --run <worktree> <cmd>` runs `<cmd>` in the target worktree's directory
+- [ ] Exit code of `<cmd>` is preserved
+- [ ] If no args: fzf picker for worktree, then prompt for command
+- [ ] Hooks NOT triggered
+- [ ] `wt --run --help` prints usage
+
+**Dependencies:** None
+
+**Story doc:** docs/stories/STORY-040.md
+
+---
+
+#### STORY-041: Repair corrupted worktree refs (`wt --repair`, `wt --prune`)
+
+**Epic:** Core Reliability
+**Priority:** Should Have
+**Points:** 2
+
+**User Story:**
+As a developer who manually moved or deleted a worktree directory
+I want `wt` to fix orphaned or corrupted `.git/worktrees` entries
+So that `git worktree list` stays clean without manual intervention
+
+**Acceptance Criteria:**
+- [ ] `wt --prune` runs `git worktree prune` and reports what was cleaned
+- [ ] `wt --prune --dry-run` shows what would be pruned without doing it
+- [ ] `wt --repair [<path>]` runs `git worktree repair`
+
+**Dependencies:** None
+
+**Story doc:** docs/stories/STORY-041.md
+
+---
+
+#### STORY-043: Skip hooks flag (`--skip-hook`)
+
+**Epic:** Developer Experience
+**Priority:** Should Have
+**Points:** 2
+
+**User Story:**
+As a developer creating or switching worktrees in a scripted or CI context
+I want to pass `--skip-hook` to suppress hook execution
+So that I can use `wt` without triggering side effects (IDE opens, installs, etc.)
+
+**Acceptance Criteria:**
+- [ ] `--skip-hook` flag accepted by `wt -n`, `wt -s`, `wt -o`
+- [ ] Hook script is still symlinked (just not executed)
+- [ ] Info message: `[info] Hooks skipped (--skip-hook)`
+- [ ] Silently ignored by commands that don't use hooks
+
+**Dependencies:** None
+
+**Story doc:** docs/stories/STORY-043.md
+
+---
+
+#### STORY-017: Create Homebrew formula
 
 **Epic:** Distribution
 **Priority:** Could Have
@@ -322,7 +320,6 @@ I want to install `wt` via Homebrew
 So that I can use a familiar package manager and get updates easily
 
 **Acceptance Criteria:**
-
 - [ ] Homebrew formula created and published to a tap
 - [ ] `brew install` places files correctly with caveats
 - [ ] Dependencies declared: git, jq
@@ -330,9 +327,13 @@ So that I can use a familiar package manager and get updates easily
 
 **Dependencies:** None
 
+**Story doc:** docs/stories/STORY-017.md
+
 ---
 
-### STORY-018: Create oh-my-zsh / zinit plugin
+### Sprint 9 Stories
+
+#### STORY-018: Create oh-my-zsh / zinit plugin
 
 **Epic:** Distribution
 **Priority:** Could Have
@@ -344,138 +345,301 @@ I want to install `wt` as a zsh plugin
 So that it integrates with my existing plugin manager
 
 **Acceptance Criteria:**
-
 - [ ] Works with oh-my-zsh custom plugins
 - [ ] zinit one-liner installation works
 - [ ] Plugin auto-sources `wt.sh` and completions
 
 **Dependencies:** None
 
+**Story doc:** docs/stories/STORY-018.md
+
+---
+
+#### STORY-042: Throwaway worktree without branch (`wt -n --detach`)
+
+**Epic:** Developer Experience
+**Priority:** Could Have
+**Points:** 3
+
+**User Story:**
+As a developer who wants to quickly test an older version or run a spike
+I want to create a worktree in detached HEAD mode without creating a branch
+So that I can experiment freely without polluting branch history
+
+**Acceptance Criteria:**
+- [ ] `wt -n --detach <ref>` creates a worktree with detached HEAD at `<ref>`
+- [ ] `wt -l` shows `[detached @ <short-sha>]` for detached worktrees
+- [ ] `wt -r` removes detached worktree normally
+- [ ] `wt -n --detach -d` exits with error (mutually exclusive)
+
+**Dependencies:** None
+
+**Story doc:** docs/stories/STORY-042.md
+
+---
+
+#### STORY-044: Improve default hooks (smart templates, restore command, arg docs)
+
+**Epic:** Developer Experience
+**Priority:** Should Have
+**Points:** 5
+
+**User Story:**
+As a developer setting up `wt` for the first time
+I want the default hooks to contain useful, commented examples based on my project type
+So that I can quickly configure my workflow without consulting external docs
+
+**Acceptance Criteria:**
+- [ ] `wt --init` detects project type (package.json, Makefile, go.mod, etc.)
+- [ ] Generated hooks contain stack-relevant commented examples
+- [ ] `wt --restore-hooks` restores both hooks using smart templates
+- [ ] Every hook file includes `# Hook args: $1–$4` comment block
+
+**Dependencies:** STORY-034, STORY-035
+
+**Story doc:** docs/stories/STORY-044.md
+
+---
+
+#### STORY-045: Multi-select for `wt -r` and other commands
+
+**Epic:** Developer Experience
+**Priority:** Could Have
+**Points:** 3
+
+**User Story:**
+As a developer who wants to remove or act on multiple worktrees at once
+I want fzf multi-select in `wt -r`, `wt -L`, and `wt -U`
+So that I can handle batch operations without repeating the same command
+
+**Acceptance Criteria:**
+- [ ] `wt -r` (no args) opens fzf with `--multi` enabled (Tab to select multiple)
+- [ ] Confirmation prompt shows count: `Remove N worktrees? [y/N]`
+- [ ] `wt -L` and `wt -U` also support multi-select
+- [ ] Empty selection (Esc) exits cleanly
+
+**Dependencies:** None
+
+**Story doc:** docs/stories/STORY-045.md
+
+---
+
+### Sprint 10 Stories
+
+#### STORY-046: Code refactoring — SOLID, DRY, KISS, one file per command
+
+**Epic:** Technical Debt
+**Priority:** Should Have
+**Points:** 8
+
+**User Story:**
+As a developer maintaining and extending the `wt` codebase
+I want the code organized with one file per command and no duplicated logic
+So that each module is independently understandable, testable, and editable
+
+**Acceptance Criteria:**
+- [ ] `lib/` restructured into `lib/core/` and `lib/cmd/` (one file per command)
+- [ ] All existing BATS tests pass unchanged
+- [ ] `shellcheck` passes on all files
+- [ ] No function duplicated across files (DRY)
+- [ ] `_cmd_clear` decomposed into sub-functions (none >40 lines)
+
+**Dependencies:** Ideally after STORY-040–045 (but can go independently)
+
+**Story doc:** docs/stories/STORY-046.md
+
 ---
 
 ## Sprint Allocation
 
-### Sprint 6 (2026-02-23 → 2026-03-08) — 17/17 points
+### Sprint 6 (2026-02-19 → 2026-02-21) — 17/17 points ✅ COMPLETE
 
 **Goal:** Fix critical bugs from real-world usage and overhaul completions
 
-| Story ID | Title | Points | Priority |
-|----------|-------|--------|----------|
-| STORY-029 | Protect main/dev branches from `wt -c` deletion | 3 | Must Have |
-| STORY-031 | Replace slashes with dashes in worktree directory names | 2 | Must Have |
-| STORY-030 | Fix completions in Warp + zsh to work like git | 5 | Should Have |
-| STORY-032 | Show only worktree name instead of full path everywhere | 2 | Should Have |
-| STORY-033 | Prompt to re-source after `wt --update` | 2 | Should Have |
-| STORY-036 | Per-command help (`wt <cmd> --help`) | 3 | Should Have |
-
-**Implementation Order:**
-
-1. STORY-029 (3pts — Days 1-2, critical safety)
-2. STORY-031 (2pts — Days 2-3, critical safety)
-3. STORY-032 (2pts — Day 3, quick UX fix)
-4. STORY-033 (2pts — Day 4, quick DX fix)
-5. STORY-030 (5pts — Days 4-8, completions investigation + fix)
-6. STORY-036 (3pts — Days 8-10, per-command help)
+| Story ID | Title | Points | Status |
+|----------|-------|--------|--------|
+| STORY-029 | Protect main/dev branches from `wt -c` deletion | 3 | ✅ Done |
+| STORY-031 | Replace slashes with dashes in worktree directory names | 2 | ✅ Done |
+| STORY-030 | Fix completions in Warp + zsh to work like git | 5 | ✅ Done |
+| STORY-032 | Show only worktree name instead of full path everywhere | 2 | ✅ Done |
+| STORY-033 | Prompt to re-source after `wt --update` | 2 | ✅ Done |
+| STORY-036 | Per-command help (`wt <cmd> --help`) | 3 | ✅ Done |
 
 ---
 
-### Sprint 7 (2026-03-09 → 2026-03-22) — 17/17 points
+### Sprint 7 (2026-02-22 → 2026-03-07) — 17/17 points 🔄 ACTIVE
 
-**Goal:** Polish CLI output, init experience, and add worktree metadata
+**Goal:** Docs audit, CLI output polish, init UX overhaul
+
+**Rebalanced from original plan:**
+- ➕ Added STORY-047 (3pts — Sprint 6 retro action item)
+- ➕ Added STORY-039 (2pts — dry-run readability)
+- ➖ Deferred STORY-016 (5pts, could_have) → Sprint 8
 
 | Story ID | Title | Points | Priority |
 |----------|-------|--------|----------|
+| STORY-047 | Documentation audit — align README and --help | 3 | Should Have |
 | STORY-034 | Add verbose feedback to `wt -c` and `wt --init` | 3 | Should Have |
 | STORY-035 | `wt --init` — offer to copy/backup existing hooks | 2 | Should Have |
-| STORY-037 | Completions: show example usage hint when nothing to suggest | 2 | Should Have |
 | STORY-038 | Descriptive usage with placeholders in command output | 2 | Should Have |
-| STORY-021 | Improve `wt --init` UX (colorized, hook suggestions, .gitignore) | 3 | Should Have |
-| STORY-016 | Add worktree metadata tracking | 5 | Could Have |
+| STORY-037 | Completions: show example usage hint when nothing to suggest | 2 | Should Have |
+| STORY-039 | Improve `wt -c` dry-run output readability | 2 | Should Have |
+| STORY-021 | Improve `wt --init` UX (colorized, auto .gitignore) | 3 | Should Have |
 
 **Implementation Order:**
 
-1. STORY-034 (3pts — Days 1-3)
-2. STORY-035 (2pts — Days 3-4)
-3. STORY-021 (3pts — Days 4-6)
-4. STORY-038 (2pts — Days 6-7)
-5. STORY-037 (2pts — Days 7-8)
-6. STORY-016 (5pts — Days 8-10)
+1. STORY-047 (3pts — Days 1-2, docs audit; unblocks clear DoD for rest of sprint)
+2. STORY-034 (3pts — Days 2-4, verbose feedback foundation)
+3. STORY-035 (2pts — Days 4-5, init hook backup; unblocks STORY-021)
+4. STORY-039 (2pts — Days 5-6, dry-run polish)
+5. STORY-021 (3pts — Days 6-8, init UX; requires STORY-034+035)
+6. STORY-038 (2pts — Days 8-9, placeholder usage)
+7. STORY-037 (2pts — Days 9-10, completion hints)
 
 ---
 
-### Sprint 8 (2026-03-23 → 2026-04-05) — 5/17 points
+### Sprint 8 (2026-03-09 → 2026-03-22) — 16/17 points
 
-**Goal:** Expand distribution channels
+**Goal:** Metadata tracking, new execution/repair commands, distribution start
 
 | Story ID | Title | Points | Priority |
 |----------|-------|--------|----------|
+| STORY-016 | Add worktree metadata tracking | 5 | Could Have |
+| STORY-040 | Run command in another worktree (`wt --run`) | 4 | Should Have |
+| STORY-041 | Repair corrupted worktree refs (`wt --repair`, `wt --prune`) | 2 | Should Have |
+| STORY-043 | Skip hooks flag (`--skip-hook`) | 2 | Should Have |
 | STORY-017 | Create Homebrew formula | 3 | Could Have |
-| STORY-018 | Create oh-my-zsh / zinit plugin | 2 | Could Have |
 
-**Buffer:** 12 points — room for stories discovered in Sprints 6-7
+**Total:** 16 points (1pt buffer)
+
+**Implementation Order:**
+
+1. STORY-041 (2pts — Days 1-2, thin wrappers; quick win)
+2. STORY-043 (2pts — Days 2-3, skip-hook flag)
+3. STORY-040 (4pts — Days 3-6, wt --run)
+4. STORY-016 (5pts — Days 6-9, metadata tracking)
+5. STORY-017 (3pts — Days 9-10, Homebrew formula)
+
+---
+
+### Sprint 9 (2026-03-23 → 2026-04-05) — 13/17 points
+
+**Goal:** Plugin distribution, detached HEAD mode, smart hooks, multi-select
+
+**Note:** 4pt buffer for stories discovered during Sprint 8.
+
+| Story ID | Title | Points | Priority |
+|----------|-------|--------|----------|
+| STORY-018 | Create oh-my-zsh / zinit plugin | 2 | Could Have |
+| STORY-042 | Throwaway worktree without branch (`wt -n --detach`) | 3 | Could Have |
+| STORY-044 | Improve default hooks (smart templates, restore command) | 5 | Should Have |
+| STORY-045 | Multi-select for `wt -r` and other commands | 3 | Could Have |
+
+**Total:** 13 points (4pt buffer)
+
+**Implementation Order:**
+
+1. STORY-018 (2pts — Days 1-2, plugin distribution)
+2. STORY-042 (3pts — Days 2-4, detach mode)
+3. STORY-044 (5pts — Days 4-8, smart hooks; requires S7 STORY-034+035 done)
+4. STORY-045 (3pts — Days 8-10, multi-select)
+
+---
+
+### Sprint 10 (2026-04-06 → 2026-04-19) — 8/17 points
+
+**Goal:** Structural refactor for long-term maintainability
+
+**Note:** 9pt buffer — groom new backlog items to fill. This sprint is intentionally
+smaller to allow the refactor to land cleanly without time pressure.
+
+| Story ID | Title | Points | Priority |
+|----------|-------|--------|----------|
+| STORY-046 | Code refactoring — SOLID, DRY, KISS, one file per command | 8 | Should Have |
+
+**Total:** 8 points (9pt buffer)
+
+**Implementation Order:**
+
+1. STORY-046 (8pts — Full sprint, work in dedicated worktree `wt -n story-046-refactor`)
 
 ---
 
 ## Dependency Graph
 
 ```
-STORY-029 (protect branches)     ── independent
-STORY-031 (slash→dash dirs)      ── independent
-STORY-030 (Warp completions)     ── independent
-  └── STORY-037 (completion hints) ── after STORY-030
-STORY-032 (display names)        ── independent
-STORY-033 (re-source prompt)     ── independent
+STORY-047 (docs audit)           ── independent (use in Sprint 7)
 STORY-034 (verbose feedback)     ── independent
-  └── STORY-035 (init hooks)    ── after STORY-034
-  └── STORY-021 (init UX)       ── after STORY-034, STORY-035
-STORY-036 (per-cmd help)         ── independent
-  └── STORY-038 (placeholders)  ── after STORY-036
+  └── STORY-035 (init hooks)     ── after STORY-034
+      └── STORY-021 (init UX)    ── after STORY-034, STORY-035
+      └── STORY-044 (smart hooks)── after STORY-034, STORY-035 (Sprint 9)
+STORY-036 (per-cmd help) ✅      ── COMPLETE
+  └── STORY-038 (placeholders)   ── after STORY-036
+STORY-030 (completions)  ✅      ── COMPLETE
+  └── STORY-037 (hints)          ── after STORY-030
+STORY-039 (dry-run UX)           ── independent
+STORY-040 (wt --run)             ── independent
+STORY-041 (wt --repair/prune)    ── independent
+STORY-042 (wt --detach)          ── independent
+STORY-043 (--skip-hook)          ── independent
+STORY-045 (multi-select)         ── independent
 STORY-016 (metadata)             ── independent
 STORY-017 (Homebrew)             ── independent
 STORY-018 (zsh plugin)           ── independent
+STORY-046 (refactor)             ── ideally after STORY-040–045
 ```
 
 ---
 
 ## Definition of Done
 
-For a story to be considered complete:
+For a story to be considered complete (Sprint 6 retro standard):
 
 - [ ] Code implemented and tested manually
 - [ ] BATS tests written for new functionality
-- [ ] Shellcheck passes
-- [ ] Works on both macOS and Linux (or documented limitation)
-- [ ] Works in both zsh and bash
-- [ ] Help text updated (if applicable)
+- [ ] shellcheck passes (no new warnings)
+- [ ] Works in both zsh and bash (POSIX-compatible)
+- [ ] **If user-visible change:** relevant `_help_*` function updated in `lib/commands.sh`
+- [ ] **If user-visible change:** 1–3 lines added to README (Commands section)
 - [ ] No regressions in existing functionality
-- [ ] Code follows existing patterns (`_` prefix, `GWT_*` globals, POSIX-compatible)
+- [ ] Code follows conventions (`_` prefix, `GWT_*` globals, POSIX)
 
 ---
 
 ## Progress Tracking
 
-**Sprint 6 (NEXT — 0/17 pts):**
+**Sprint 6 (COMPLETE — 17/17 pts):**
+- [x] STORY-029 — Protect main/dev branches from `wt -c` deletion (3pts)
+- [x] STORY-031 — Replace slashes with dashes in worktree directory names (2pts)
+- [x] STORY-030 — Fix completions in Warp + zsh to work like git (5pts)
+- [x] STORY-032 — Show only worktree name instead of full path everywhere (2pts)
+- [x] STORY-033 — Prompt to re-source after `wt --update` (2pts)
+- [x] STORY-036 — Per-command help (`wt <cmd> --help`) (3pts)
 
-- [ ] STORY-029 — Protect main/dev branches from `wt -c` deletion (3pts) **MUST HAVE**
-- [ ] STORY-031 — Replace slashes with dashes in worktree directory names (2pts) **MUST HAVE**
-- [ ] STORY-030 — Fix completions in Warp + zsh to work like git (5pts)
-- [ ] STORY-032 — Show only worktree name instead of full path everywhere (2pts)
-- [ ] STORY-033 — Prompt to re-source after `wt --update` (2pts)
-- [ ] STORY-036 — Per-command help (`wt <cmd> --help`) (3pts)
-
-**Sprint 7:**
-
+**Sprint 7 (ACTIVE — 0/17 pts):**
+- [ ] STORY-047 — Documentation audit — align README and --help (3pts) **retro action item**
 - [ ] STORY-034 — Verbose feedback to `wt -c` and `wt --init` (3pts)
 - [ ] STORY-035 — `wt --init` offer to copy/backup existing hooks (2pts)
-- [ ] STORY-037 — Completions: example usage hints (2pts)
-- [ ] STORY-038 — Descriptive usage with placeholders (2pts)
+- [ ] STORY-039 — Improve `wt -c` dry-run output readability (2pts)
 - [ ] STORY-021 — Improve `wt --init` UX (3pts)
-- [ ] STORY-016 — Add worktree metadata tracking (5pts)
+- [ ] STORY-038 — Descriptive usage with placeholders (2pts)
+- [ ] STORY-037 — Completions: example usage hints (2pts)
 
 **Sprint 8:**
-
+- [ ] STORY-016 — Add worktree metadata tracking (5pts)
+- [ ] STORY-040 — Run command in another worktree (4pts)
+- [ ] STORY-041 — Repair corrupted worktree refs (2pts)
+- [ ] STORY-043 — Skip hooks flag `--skip-hook` (2pts)
 - [ ] STORY-017 — Create Homebrew formula (3pts)
+
+**Sprint 9:**
 - [ ] STORY-018 — Create oh-my-zsh / zinit plugin (2pts)
+- [ ] STORY-042 — Throwaway worktree without branch `--detach` (3pts)
+- [ ] STORY-044 — Improve default hooks (smart templates, restore) (5pts)
+- [ ] STORY-045 — Multi-select for `wt -r` and other commands (3pts)
+
+**Sprint 10:**
+- [ ] STORY-046 — Code refactoring — SOLID, DRY, KISS (8pts)
 
 ---
 

@@ -16,7 +16,8 @@ lib/
   utils.sh                # Core utilities: _err, _info, _require, _repo_root, _branch_exists, _read_input
   config.sh               # _config_load - parses .worktrees/config.json, sets GWT_* globals
   worktree.sh             # Worktree operations: _wt_create, _wt_open, _wt_resolve, _run_hook
-  commands.sh             # Command handlers: _cmd_new, _cmd_switch, _cmd_remove, etc.
+  commands.sh             # Command handlers: _cmd_new, _cmd_switch, _cmd_remove, etc. + all _help_* functions
+  update.sh               # Self-update logic: GitHub API check, version comparison, install
 git-worktrees.zsh         # Legacy single-file version (deprecated)
 ```
 
@@ -24,17 +25,19 @@ git-worktrees.zsh         # Legacy single-file version (deprecated)
 
 **Configuration:** `.worktrees/config.json` in repo root defines project name, worktrees directory, main/dev branches, and hook paths.
 
+**Tests:** BATS test suite in `test/`. Each file maps to a command (e.g., `test/cmd_new.bats`). Helpers in `test/test_helper.bash` provide `setup_test_repo` (creates isolated git repo + config + sources lib files) and `create_marker_hook` for hook invocation testing.
+
 ## Commands
 
 ```bash
-# No build step - shell scripts
+# Run all tests
+npm test
+
+# Run a single test file
+./test/libs/bats-core/bin/bats test/cmd_new.bats
 
 # Lint commits (husky pre-commit)
 npm run commitlint
-
-# Test manually by sourcing
-source wt.sh
-wt -h
 ```
 
 ## Code Conventions
@@ -43,6 +46,16 @@ wt -h
 - Global config vars: `GWT_*` prefix (e.g., `GWT_MAIN_REF`, `GWT_WORKTREES_DIR`)
 - Keep functions short; validation at start with early returns
 - POSIX-compatible shell syntax required (no bash/zsh-specific features)
+- Branch names must not contain slashes — use dashes instead (slashes create nested directories under `worktreesDir`)
+
+## Definition of Done (user-facing changes)
+
+Every story that adds or changes a user-visible feature must also:
+
+- Update the relevant `_help_*` function in `lib/commands.sh` (per-command `--help` is the single source of truth)
+- Add 1–3 lines to README (Commands section or appropriate subsection)
+
+*Established in Sprint 6 retrospective (2026-02-21). See STORY-047 for the documentation audit that aligns existing content.*
 
 ## Commit Guidelines
 

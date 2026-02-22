@@ -260,13 +260,14 @@ sprints:
         story_doc: "docs/stories/STORY-028.md"
 
   - sprint_number: 6
-    start_date: "2026-02-23"
-    end_date: "2026-03-08"
+    start_date: "2026-02-19"
+    end_date: "2026-02-21"
     capacity_points: 17
     committed_points: 17
     completed_points: 17
-    status: "active"
+    status: "completed"
     goal: "Fix critical bugs from real-world usage and overhaul completions"
+    retrospective: "docs/retrospectives/sprint-6-retro.md"
     stories:
       - story_id: "STORY-029"
         title: "Protect main/dev branches from wt -c deletion"
@@ -319,14 +320,23 @@ sprints:
         story_doc: "docs/stories/STORY-036.md"
 
   - sprint_number: 7
-    start_date: "2026-03-09"
-    end_date: "2026-03-22"
+    start_date: "2026-02-22"
+    end_date: "2026-03-07"
     capacity_points: 17
     committed_points: 17
     completed_points: 0
     status: "not_started"
-    goal: "Polish CLI output, init experience, and add worktree metadata"
+    goal: "Docs audit, CLI output polish, init UX overhaul"
+    notes: "Rebalanced 2026-02-22: added STORY-047+039, deferred STORY-016 to Sprint 8"
     stories:
+      - story_id: "STORY-047"
+        title: "Documentation audit — align README and --help with current state"
+        points: 3
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+        story_doc: "docs/stories/STORY-047.md"
+        notes: "Sprint 6 retro action item — pulled from backlog"
       - story_id: "STORY-034"
         title: "Add verbose feedback to wt -c and wt --init"
         points: 3
@@ -341,13 +351,21 @@ sprints:
         assigned_to: null
         priority: "should_have"
         story_doc: "docs/stories/STORY-035.md"
-      - story_id: "STORY-037"
-        title: "Completions: show example usage hint when nothing to suggest"
+        blocked_by: ["STORY-034"]
+      - story_id: "STORY-039"
+        title: "Improve wt -c dry-run output readability"
         points: 2
         status: "not_started"
         assigned_to: null
         priority: "should_have"
-        story_doc: "docs/stories/STORY-037.md"
+        story_doc: "docs/stories/STORY-039.md"
+      - story_id: "STORY-021"
+        title: "Improve wt --init UX: colorized output, hook suggestions, auto .gitignore"
+        points: 3
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+        blocked_by: ["STORY-034", "STORY-035"]
       - story_id: "STORY-038"
         title: "Descriptive usage with placeholders in command output"
         points: 2
@@ -355,12 +373,23 @@ sprints:
         assigned_to: null
         priority: "should_have"
         story_doc: "docs/stories/STORY-038.md"
-      - story_id: "STORY-021"
-        title: "Improve wt --init UX: colorized output, hook suggestions, auto .gitignore"
-        points: 3
+      - story_id: "STORY-037"
+        title: "Completions: show example usage hint when nothing to suggest"
+        points: 2
         status: "not_started"
         assigned_to: null
         priority: "should_have"
+        story_doc: "docs/stories/STORY-037.md"
+
+  - sprint_number: 8
+    start_date: "2026-03-09"
+    end_date: "2026-03-22"
+    capacity_points: 17
+    committed_points: 16
+    completed_points: 0
+    status: "not_started"
+    goal: "Metadata tracking, new execution/repair commands, Homebrew distribution"
+    stories:
       - story_id: "STORY-016"
         title: "Add worktree metadata tracking"
         points: 5
@@ -368,16 +397,28 @@ sprints:
         assigned_to: null
         priority: "could_have"
         story_doc: "docs/stories/STORY-016.md"
-
-  - sprint_number: 8
-    start_date: "2026-03-23"
-    end_date: "2026-04-05"
-    capacity_points: 17
-    committed_points: 5
-    completed_points: 0
-    status: "not_started"
-    goal: "Expand distribution channels"
-    stories:
+        notes: "Deferred from Sprint 7 to accommodate STORY-047+039"
+      - story_id: "STORY-040"
+        title: "Run command in another worktree (wt --run)"
+        points: 4
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+        story_doc: "docs/stories/STORY-040.md"
+      - story_id: "STORY-041"
+        title: "Repair corrupted worktree refs (wt --repair, wt --prune)"
+        points: 2
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+        story_doc: "docs/stories/STORY-041.md"
+      - story_id: "STORY-043"
+        title: "Skip hooks flag (--skip-hook)"
+        points: 2
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+        story_doc: "docs/stories/STORY-043.md"
       - story_id: "STORY-017"
         title: "Create Homebrew formula"
         points: 3
@@ -385,6 +426,17 @@ sprints:
         assigned_to: null
         priority: "could_have"
         story_doc: "docs/stories/STORY-017.md"
+
+  - sprint_number: 9
+    start_date: "2026-03-23"
+    end_date: "2026-04-05"
+    capacity_points: 17
+    committed_points: 13
+    completed_points: 0
+    status: "not_started"
+    goal: "Plugin distribution, detached HEAD mode, smart hooks, multi-select"
+    notes: "4pt buffer for stories discovered during Sprint 8"
+    stories:
       - story_id: "STORY-018"
         title: "Create oh-my-zsh / zinit plugin"
         points: 2
@@ -392,6 +444,46 @@ sprints:
         assigned_to: null
         priority: "could_have"
         story_doc: "docs/stories/STORY-018.md"
+      - story_id: "STORY-042"
+        title: "Throwaway worktree without branch (wt -n --detach)"
+        points: 3
+        status: "not_started"
+        assigned_to: null
+        priority: "could_have"
+        story_doc: "docs/stories/STORY-042.md"
+      - story_id: "STORY-044"
+        title: "Improve default hooks (smart templates, restore command, arg docs)"
+        points: 5
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+        story_doc: "docs/stories/STORY-044.md"
+        blocked_by: ["STORY-034", "STORY-035"]
+      - story_id: "STORY-045"
+        title: "Multi-select for wt -r and other commands"
+        points: 3
+        status: "not_started"
+        assigned_to: null
+        priority: "could_have"
+        story_doc: "docs/stories/STORY-045.md"
+
+  - sprint_number: 10
+    start_date: "2026-04-06"
+    end_date: "2026-04-19"
+    capacity_points: 17
+    committed_points: 8
+    completed_points: 0
+    status: "not_started"
+    goal: "Structural refactor for long-term maintainability"
+    notes: "9pt buffer — intentionally lighter sprint for clean refactor landing"
+    stories:
+      - story_id: "STORY-046"
+        title: "Code refactoring — SOLID, DRY, KISS, one file per command"
+        points: 8
+        status: "not_started"
+        assigned_to: null
+        priority: "should_have"
+        story_doc: "docs/stories/STORY-046.md"
 
 backlog: []
 
@@ -401,6 +493,7 @@ velocity:
   sprint_3: 17
   sprint_4: 18
   sprint_5: 18
+  sprint_6: 17
   rolling_average: 16.8
 
 team:
