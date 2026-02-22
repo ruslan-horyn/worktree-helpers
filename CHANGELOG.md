@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0](https://github.com/ruslan-horyn/worktree-helpers/compare/v1.3.1...v1.4.0) (2026-02-22)
+
+
+### Added
+
+* **STORY-029:** protect main/dev branches from wt -c deletion ([#16](https://github.com/ruslan-horyn/worktree-helpers/issues/16)) ([172f4db](https://github.com/ruslan-horyn/worktree-helpers/commit/172f4db79ef588a5c7305322caf2b1e0f5bbdae5))
+* **STORY-031:** replace slashes with dashes in worktree directory names ([#14](https://github.com/ruslan-horyn/worktree-helpers/issues/14)) ([e2e9971](https://github.com/ruslan-horyn/worktree-helpers/commit/e2e99711283f70c72140378a3ce45ac8a964ffcd))
+* **STORY-032:** show only worktree name instead of full path everywhere ([#12](https://github.com/ruslan-horyn/worktree-helpers/issues/12)) ([cf2dbed](https://github.com/ruslan-horyn/worktree-helpers/commit/cf2dbeda9a44fedd3cf8ee6e7046fbab5ce86ff3))
+* **STORY-033:** prompt to re-source after wt --update ([#13](https://github.com/ruslan-horyn/worktree-helpers/issues/13)) ([a560825](https://github.com/ruslan-horyn/worktree-helpers/commit/a5608252657ac211ded1e02ca41229251b50f432))
+* **STORY-036:** add per-command help (wt <cmd> --help) ([#17](https://github.com/ruslan-horyn/worktree-helpers/issues/17)) ([ab42303](https://github.com/ruslan-horyn/worktree-helpers/commit/ab42303d7854b4462e65e212924ed6d13c8981c6))
+
+
+### Fixed
+
+* **STORY-030:** fix completions in warp + zsh to work like git ([#15](https://github.com/ruslan-horyn/worktree-helpers/issues/15)) ([471cf48](https://github.com/ruslan-horyn/worktree-helpers/commit/471cf4867460afc6822e1e79b31455c471ee0fef))
+
 ## [1.3.1](https://github.com/ruslan-horyn/worktree-helpers/compare/v1.3.0...v1.3.1) (2026-02-19)
 
 
