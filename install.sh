@@ -146,7 +146,7 @@ SOURCE_LINE="source \"$INSTALL_DIR/wt.sh\""
 MARKER="# worktree-helpers"
 
 # Check if already installed
-if [ -f "$RC_FILE" ] && grep -qF "$MARKER" "$RC_FILE"; then
+if [ -f "$RC_FILE" ] && grep -qF "$SOURCE_LINE" "$RC_FILE"; then
   info "Already configured in $RC_FILE"
 else
   # Create rc file if it doesn't exist
