@@ -323,11 +323,11 @@ sprints:
     start_date: "2026-02-22"
     end_date: "2026-03-07"
     capacity_points: 17
-    committed_points: 17
+    committed_points: 19
     completed_points: 5
     status: "active"
     goal: "Docs audit, CLI output polish, init UX overhaul"
-    notes: "Rebalanced 2026-02-22: added STORY-047+039, deferred STORY-016 to Sprint 8"
+    notes: "Rebalanced 2026-02-22: added STORY-047+039, deferred STORY-016 to Sprint 8. STORY-048 added 2026-02-23 as critical bug fix (install false-positive)"
     stories:
       - story_id: "STORY-047"
         title: "Documentation audit — align README and --help with current state"
@@ -382,6 +382,14 @@ sprints:
         assigned_to: null
         priority: "should_have"
         story_doc: "docs/stories/STORY-037.md"
+      - story_id: "STORY-048"
+        title: "fix install.sh false-positive Already configured check"
+        points: 2
+        status: "not_started"
+        assigned_to: null
+        priority: "must_have"
+        story_doc: "docs/stories/STORY-048.md"
+        notes: "Critical bug: installer skips source line when unrelated comment matches marker"
 
   - sprint_number: 8
     start_date: "2026-03-09"
