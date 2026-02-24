@@ -188,6 +188,11 @@ _cmd_clear() {
           if [ -n "$cutoff" ]; then
             wt_age=$(_wt_age "$worktree")
             if [ -z "$wt_age" ] || [ "$wt_age" -ge "$cutoff" ]; then
+              if [ "$dry_run" -eq 1 ]; then
+                _info "[dry-run]   $(_wt_display_name "$worktree"): skipping: too recent"
+              else
+                _info "  $(_wt_display_name "$worktree"): skipping: too recent"
+              fi
               worktree=""
               continue
             fi
@@ -222,6 +227,11 @@ MERGED
 
           # 6. Check protected branch status
           if _is_protected_branch "$branch"; then
+            if [ "$dry_run" -eq 1 ]; then
+              _info "[dry-run]   $(_wt_display_name "$worktree"): skipping: protected"
+            else
+              _info "  $(_wt_display_name "$worktree"): skipping: protected"
+            fi
             protected_skipped="${protected_skipped}${worktree}|${branch}
 "
             worktree=""
@@ -230,6 +240,11 @@ MERGED
 
           # 7. Check locked status
           if [ -n "$locked" ]; then
+            if [ "$dry_run" -eq 1 ]; then
+              _info "[dry-run]   $(_wt_display_name "$worktree"): skipping: locked"
+            else
+              _info "  $(_wt_display_name "$worktree"): skipping: locked"
+            fi
             locked_skipped="${locked_skipped}${worktree}|${branch}
 "
           else
@@ -369,6 +384,9 @@ $to_delete
 EOF
   echo ""
 
+  local rm_force_flag=""
+  [ "$force" -eq 1 ] && rm_force_flag="--force"
+
   # Confirmation prompt (unless -f)
   if [ "$force" -ne 1 ]; then
     printf "Remove %d worktree(s)? [y/N] " "$to_delete_count" >&2
@@ -380,6 +398,7 @@ EOF
   fi
 
   # Delete worktrees
+  local deleted_count=0
   while IFS= read -r item; do
     [ -z "$item" ] && continue
     local wt_path="${item%%|*}"
@@ -389,8 +408,11 @@ EOF
     # Change directory if we're in the worktree being removed
     if [ "$PWD" = "$wt_path" ]; then cd "$main_root" || true; fi
 
-    if git worktree remove "$wt_path" 2>/dev/null; then
+    _info "  $(_wt_display_name "$wt_path"): deleting..."
+    # shellcheck disable=SC2086
+    if git worktree remove $rm_force_flag "$wt_path" 2>/dev/null; then
       _info "Removed $(_wt_display_name "$wt_path")"
+      deleted_count=$((deleted_count + 1))
       if [ -n "$br" ] && [ "$br" != "(detached)" ] && _branch_exists "$br"; then
         git branch -D "$br" 2>/dev/null && _info "Deleted branch $br"
       fi
@@ -401,7 +423,7 @@ EOF
 $to_delete
 EOF
 
-  _info "Cleared worktrees"
+  _info "Cleared ${deleted_count} worktree(s)"
 }
 
 _cmd_list() {
@@ -540,7 +562,8 @@ _cmd_init() {
 
   main_ref=$(_normalize_ref "$main_ref")
 
-  mkdir -p "$root/.worktrees/hooks"
+  _info "Setting up hooks directory..."
+  mkdir -p "$root/.worktrees/hooks" || { _err "Failed to create hooks directory: $root/.worktrees/hooks"; return 1; }
 
   # Default hook contents
   # shellcheck disable=SC2016
@@ -555,11 +578,13 @@ cd "$1" || exit 1'
   _backup_hook "$root/.worktrees/hooks/switched.sh" "$switched_hook"
 
   # Write new hooks
-  echo "$created_hook" > "$root/.worktrees/hooks/created.sh"
-  echo "$switched_hook" > "$root/.worktrees/hooks/switched.sh"
+  _info "Writing hook scripts..."
+  echo "$created_hook" > "$root/.worktrees/hooks/created.sh" || { _err "Failed to write created.sh hook"; return 1; }
+  echo "$switched_hook" > "$root/.worktrees/hooks/switched.sh" || { _err "Failed to write switched.sh hook"; return 1; }
   chmod +x "$root/.worktrees/hooks"/*.sh
 
-  cat > "$cfg" <<JSON
+  _info "Creating .worktrees/config.json..."
+  cat > "$cfg" <<JSON || { _err "Failed to create config: $cfg"; return 1; }
 {
   "projectName": "$name",
   "mainBranch": "$main_ref",
@@ -570,7 +595,10 @@ cd "$1" || exit 1'
   "worktreeWarningThreshold": $warn_threshold
 }
 JSON
-  _info "Created $cfg"
+  _info "Done. Created:"
+  _info "  $cfg"
+  _info "  $root/.worktrees/hooks/created.sh"
+  _info "  $root/.worktrees/hooks/switched.sh"
 }
 
 _cmd_rename() {
@@ -823,6 +851,11 @@ _help_clear() {
   Remove multiple worktrees at once. At least one filter must be specified:
   age in days, --merged, or --pattern.
 
+  For each worktree evaluated, prints the decision (deleting... / skipping: protected /
+  skipping: locked / skipping: too recent). Prints a summary "Cleared N worktree(s)" on
+  completion, or "No worktrees to clear" when nothing matches. With --dry-run each line
+  is prefixed with [dry-run].
+
   Usage:
     wt -c <days>                        Remove worktrees older than <days> days
     wt -c <days> --merged               Also filter by merged-into-main branches
@@ -857,6 +890,10 @@ _help_init() {
 
   Initialize worktree-helpers configuration for the current repository.
   Creates .worktrees/config.json and default hook scripts.
+
+  Prints step-by-step progress: "Setting up hooks directory...", "Writing hook scripts...",
+  "Creating .worktrees/config.json...". On success prints "Done. Created:" with a list of
+  all created files. On failure prints which step failed and why.
 
   Usage:
     wt --init

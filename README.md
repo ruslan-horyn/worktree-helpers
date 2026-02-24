@@ -36,6 +36,7 @@ stashes, no more broken context.
 - Hook symlinking — all worktrees share the same hook scripts
 - Interactive selection with fzf integration
 - Flexible worktree cleanup with filters (`--merged`, `--pattern`, `--dry-run`, `--dev-only`, `--main-only`) — main/dev branches are always protected
+- Verbose step-by-step output for `wt -c` (per-worktree decision + summary) and `wt --init` (progress + created files list)
 - Lock/unlock worktree protection
 - Branch rename without recreating worktree (`--rename`)
 - Shell completions for bash and zsh (flags, branch names, context-sensitive arguments)

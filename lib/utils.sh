@@ -97,11 +97,15 @@ _age_display() {
 _read_input() {
   local prompt="$1" default="$2" reply=""
   if [ -n "${ZSH_VERSION:-}" ]; then
-    # zsh: use vared for readline/tab completion
     reply="$default"
     printf "%s" "$prompt" >&2
     # shellcheck disable=SC2296
-    vared reply
+    # vared provides readline editing but can fail even when ZLE appears enabled
+    # (e.g. VS Code integrated terminal). Fall back to plain read -r on any error.
+    if ! vared reply 2>/dev/null; then
+      IFS= read -r reply
+      [ -z "$reply" ] && reply="$default"
+    fi
   elif [ -n "${BASH_VERSION:-}" ]; then
     # bash: use read -e for readline/tab completion
     # bash 4.0+ supports -i (initial text); older bash falls back to -e only
