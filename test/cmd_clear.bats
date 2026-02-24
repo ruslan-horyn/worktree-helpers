@@ -1049,3 +1049,151 @@ $output
 OUTEOF
   [ "$found_blank" -eq 1 ]
 }
+
+
+# --- STORY-034: verbose feedback tests ---
+
+@test "_cmd_clear prints 'deleting...' for each worktree being removed" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+  local wt_path="$GWT_WORKTREES_DIR/old-verbose"
+  git worktree add -b old-verbose "$wt_path" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$wt_path/.git"
+
+  run _cmd_clear "1" "1" "0" "0"
+  assert_success
+  assert_output --partial "old-verbose: deleting..."
+}
+
+@test "_cmd_clear prints 'skipping: too recent' for recent worktrees" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+  # Create a fresh (recent) worktree — not backdated
+  local wt_path="$GWT_WORKTREES_DIR/recent-branch"
+  git worktree add -b recent-branch "$wt_path" HEAD >/dev/null 2>&1
+
+  run _cmd_clear "1" "1" "0" "0"
+  assert_success
+  assert_output --partial "recent-branch: skipping: too recent"
+}
+
+@test "_cmd_clear prints 'skipping: protected' for protected branches" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+  local prot_wt="$GWT_WORKTREES_DIR/master-verbose"
+  git worktree add -b master "$prot_wt" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$prot_wt/.git"
+
+  # Also create a deletable worktree so we have something to actually process
+  local old_wt="$GWT_WORKTREES_DIR/old-branch-verbose"
+  git worktree add -b old-branch-verbose "$old_wt" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$old_wt/.git"
+
+  run _cmd_clear "1" "1" "0" "0"
+  assert_success
+  # The display name is the worktree directory basename (master-verbose), not the branch name
+  assert_output --partial "master-verbose: skipping: protected"
+}
+
+@test "_cmd_clear prints 'skipping: locked' for locked worktrees" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+  local locked_wt="$GWT_WORKTREES_DIR/locked-verbose"
+  git worktree add -b locked-verbose "$locked_wt" HEAD >/dev/null 2>&1
+  git worktree lock "$locked_wt" >/dev/null 2>&1
+  touch -t 202001010000 "$locked_wt/.git"
+
+  run _cmd_clear "1" "1" "0" "0"
+  assert_success
+  assert_output --partial "locked-verbose: skipping: locked"
+}
+
+@test "_cmd_clear prints 'Cleared X worktree(s)' summary after deletion" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+
+  local wt1="$GWT_WORKTREES_DIR/summary-one"
+  git worktree add -b summary-one "$wt1" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$wt1/.git"
+
+  local wt2="$GWT_WORKTREES_DIR/summary-two"
+  git worktree add -b summary-two "$wt2" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$wt2/.git"
+
+  run _cmd_clear "1" "1" "0" "0"
+  assert_success
+  assert_output --partial "Cleared 2 worktree(s)"
+}
+
+@test "_cmd_clear prints 'No worktrees to clear' when nothing matches" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+
+  run _cmd_clear "1" "1" "0" "0"
+  assert_success
+  assert_output --partial "No worktrees to clear"
+}
+
+@test "_cmd_clear --dry-run prefixes skip messages with [dry-run]" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+  # Recent worktree (should be skipped with "too recent")
+  local recent_wt="$GWT_WORKTREES_DIR/recent-dry"
+  git worktree add -b recent-dry "$recent_wt" HEAD >/dev/null 2>&1
+
+  run _cmd_clear "1" "1" "0" "0" "0" "" "1"
+  assert_success
+  assert_output --partial "[dry-run]"
+  assert_output --partial "recent-dry: skipping: too recent"
+}
+
+@test "_cmd_clear --dry-run prefixes protected skip with [dry-run]" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+  create_test_config "$repo_dir"
+  _config_load
+
+  mkdir -p "$GWT_WORKTREES_DIR"
+  local prot_wt="$GWT_WORKTREES_DIR/master-dry"
+  git worktree add -b master "$prot_wt" HEAD >/dev/null 2>&1
+  touch -t 202001010000 "$prot_wt/.git"
+
+  run _cmd_clear "1" "1" "0" "0" "0" "" "1"
+  assert_success
+  assert_output --partial "[dry-run]"
+  # The display name is the worktree directory basename (master-dry), not the branch name
+  assert_output --partial "master-dry: skipping: protected"
+}
