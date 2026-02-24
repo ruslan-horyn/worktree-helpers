@@ -496,7 +496,23 @@ sprints:
         priority: "should_have"
         story_doc: "docs/stories/STORY-046.md"
 
-backlog: []
+backlog:
+  - story_id: "STORY-049"
+    title: "Install wt as executable binary for non-interactive shell support"
+    points: 3
+    status: "not_started"
+    assigned_to: null
+    priority: "should_have"
+    story_doc: "docs/stories/STORY-049.md"
+    notes: "Dual-mode wt.sh (sourceable + executable), symlink in ~/.local/bin, fix _cmd_remove/_cmd_clear inside-worktree checks"
+  - story_id: "STORY-050"
+    title: "Fix wt --check showing help instead of update status"
+    points: 1
+    status: "backlog"
+    assigned_to: null
+    priority: "must_have"
+    story_doc: "docs/stories/STORY-050.md"
+    notes: "One-line fix in wt(): set action=update when check_only=1 and action is empty"
 
 velocity:
   sprint_1: 14
