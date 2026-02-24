@@ -42,13 +42,41 @@
 
 ## What to Improve
 
-- TODO
+- Instrukcje do manualnego testowania były niedokładne (błędne ścieżki, etykiety wklejone jako komendy)
+- Za szybkie twierdzenia bez weryfikacji (causa błędu `vared` w VS Code)
+- Testowanie na lokalnym repo bez remote ujawniło kilka problemów UX wcześniej niewidocznych
 
 ---
 
 ## Action Items
 
 - [ ] TODO
+
+---
+
+## Bugs odkryte podczas testowania STORY-034
+
+### 1. `vared: ZLE not enabled` w VS Code terminal
+**Objaw:** `_read_input` wywołuje `vared`, który failuje mimo że `[[ -o zle ]]` zwraca `true` i stdin jest tty.
+**Przyczyna:** Nieznana — VS Code terminal (`$TERM_PROGRAM=vscode`) ma specyficzne zachowanie dla `vared` mimo aktywnego ZLE.
+**Fix zastosowany:** `vared 2>/dev/null || { read -r fallback }` — catch błędu zamiast pre-check.
+**Fix w commicie:** `fix: catch vared failure and fall back to read -r in zsh`
+
+### 2. `wt -c -f` nie usuwa dirty worktree
+**Objaw:** `git worktree remove` failuje z "Failed to remove" gdy worktree ma untracked files.
+**Przyczyna:** `_cmd_clear` przekazywało `force` tylko do pominięcia pytania o potwierdzenie, ale **nie** do `git worktree remove --force`. `_cmd_remove` robił to poprawnie — różnica między komendami była niezamierzona.
+**Fix zastosowany:** `local rm_force_flag=""; [ "$force" -eq 1 ] && rm_force_flag="--force"` + `git worktree remove $rm_force_flag "$wt_path"`.
+**Fix w commicie:** `fix(clear): pass --force to git worktree remove when -f flag is set`
+
+### 3. `wt --init` zapisuje pusty `mainBranch`
+**Objaw:** Pressing Enter na "Main branch []:" zapisuje pusty string → `wt -n` failuje z `fatal: not a valid object name: 'origin/'`.
+**Przyczyna:** Brak walidacji i auto-detekcji gałęzi domyślnej.
+**Rozwiązanie:** Draft STORY-048 dodany do backlogu.
+
+### 4. Hardcoded `devBranch: "origin/release-next"` / `devSuffix: "_RN"`
+**Objaw:** Wygenerowany `config.json` zawiera wartości specyficzne dla jednego projektu.
+**Przyczyna:** Prompty dla `devBranch`/`devSuffix` zgubione podczas refaktoryzacji STORY-001 (potwierdzone w historii git — commit `48fb469`).
+**Rozwiązanie:** Draft STORY-049 dodany do backlogu.
 
 ---
 

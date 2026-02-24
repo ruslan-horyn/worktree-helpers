@@ -324,7 +324,7 @@ sprints:
     end_date: "2026-03-07"
     capacity_points: 17
     committed_points: 19
-    completed_points: 7
+    completed_points: 10
     status: "active"
     goal: "Docs audit, CLI output polish, init UX overhaul"
     notes: "Rebalanced 2026-02-22: added STORY-047+039, deferred STORY-016 to Sprint 8. STORY-048 added 2026-02-23 as critical bug fix (install false-positive)"
@@ -341,7 +341,8 @@ sprints:
       - story_id: "STORY-034"
         title: "Add verbose feedback to wt -c and wt --init"
         points: 3
-        status: "not_started"
+        status: "completed"
+        completion_date: "2026-02-22"
         assigned_to: null
         priority: "should_have"
         story_doc: "docs/stories/STORY-034.md"
