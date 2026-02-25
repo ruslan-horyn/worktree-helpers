@@ -80,6 +80,35 @@
 
 ---
 
+## Problemy techniczne odkryte podczas STORY-037
+
+### 1. `_message` niewidoczny w większości konfiguracji zsh
+**Objaw:** Pierwsza implementacja używała `_message 'new branch name'`. Wiadomość pojawia się tylko w pasku statusu completion, ale wyłącznie gdy użytkownik ma skonfigurowane `zstyle ':completion:*:messages' format`. Użytkownik (z4h) nie widział nic.
+**Fix:** Zamiana na `_describe`, które renderuje pozycje bezpośrednio w menu completion.
+
+### 2. `_describe` cytuje wielowyrazowe wstawki
+**Objaw:** `_describe` z pozycjami takimi jak `'<branch> --from <ref>:opis'` wstawiał `'<branch> --from <ref>'` (z cudzysłowami), ponieważ zsh widzi spację i stosuje cytowanie. Feature był niepoprawnie działający dla wielowyrazowych wzorców.
+**Próba Fix:** Zamiana na `compadd -Q -S ' ' -d displays -a comps` — wstawia bez cytowania.
+
+### 3. Problem wspólnego prefiksu w menu zsh — nierozwiązany
+**Objaw:** Trzy wzorce dla `-n`/`--new` zaczynają się od `<branch>`, więc zsh automatycznie wstawia `<branch>` przy pierwszym TAB zamiast pokazać menu wyboru. Przy drugim TAB kursor jest już za `<branch>` i zsh pokazuje pliki (domyślny fallback) zamiast menu.
+**Próby Fix:**
+- `compstate[insert]='menu'` — nie zapobiegło auto-wstawianiu prefiksu
+- `compstate[insert]='menu select'` — nie zweryfikowane przez użytkownika, nie rozwiązało problemu
+**Wniosek:** Wspólny prefiks to fundamentalne zachowanie zsh, które nie może być nadpisane z poziomu funkcji completion. Wymaga albo pozycji bez wspólnego prefiksu, albo customowego widgetu `zle`.
+**Decyzja:** Powrót do pojedynczego `_describe` z `<branch>` (zgodne ze spec story). Multi-elementowe menu to potencjalny temat osobnej story.
+
+### 4. Decyzja produktowa: usunięcie podpowiedzi `<branch>` dla `wt -n`
+**Kontekst:** Po implementacji `<branch>` hint dla `wt -n`, użytkownik zauważył, że podpowiedź jest bezużyteczna — deweloper i tak musi ją ręcznie usunąć przed wpisaniem właściwej nazwy gałęzi. Auto-wstawiony placeholder przeszkadza bardziej niż pomaga.
+**Decyzja:** Usunąć hint `<branch>` dla `-n`/`--new`. `wt -n <TAB>` teraz zwraca puste COMPREPLY — bash/zsh nie wstawia nic i użytkownik od razu wpisuje nazwę.
+**Wniosek:** Placeholdery mają sens tylko tam, gdzie użytkownik może wybrać z listy wartości (jak `--from <ref>`, `--since <date>`) — nie tam, gdzie i tak musi pisać od zera.
+
+### 5. Rozbieżność między implementacją a testami (AC-12b, AC-12c)
+**Objaw:** Zamiana `hint_branch` z `_describe` na `compadd` spowodowała, że testy AC-12b i AC-12c zaczęły failować. Testy używają `grep '_describe'` i sprawdzają czy wyniki zawierają "branch"/"ref" — ale `compadd` linie nie spełniały tego warunku.
+**Fix:** Powrót do `_describe -t hints 'branch name' hint` i `_describe -t hints 'ref' hint` z kluczowymi słowami bezpośrednio w wywołaniu `_describe`.
+
+---
+
 ## Notes
 
 ### Pomysły do przemyślenia (backlog ideas)
