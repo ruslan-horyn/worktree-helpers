@@ -380,7 +380,8 @@ sprints:
       - story_id: "STORY-037"
         title: "Completions: show example usage hint when nothing to suggest"
         points: 2
-        status: "not_started"
+        status: "completed"
+        completion_date: "2026-02-25"
         assigned_to: null
         priority: "should_have"
         story_doc: "docs/stories/STORY-037.md"
