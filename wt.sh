@@ -100,16 +100,20 @@ wt() {
             _cmd_remove "$arg" "$force" ;;
     open)   if [ "$help" -eq 1 ]; then _help_open; return 0; fi
             _cmd_open "$arg" ;;
-    lock)   _cmd_lock "$arg" ;;
-    unlock) _cmd_unlock "$arg" ;;
+    lock)   if [ "$help" -eq 1 ]; then _help_lock; return 0; fi
+            _cmd_lock "$arg" ;;
+    unlock) if [ "$help" -eq 1 ]; then _help_unlock; return 0; fi
+            _cmd_unlock "$arg" ;;
     list)   if [ "$help" -eq 1 ]; then _help_list; return 0; fi
             _cmd_list ;;
     clear)  if [ "$help" -eq 1 ]; then _help_clear; return 0; fi
             _cmd_clear "$clear_days" "$force" "$dev_only" "$main_only" "$merged" "$pattern" "$dry_run" ;;
     init)   if [ "$help" -eq 1 ]; then _help_init; return 0; fi
             _cmd_init ;;
-    log)    _cmd_log "$arg" "$reflog" "$since" "$author" ;;
-    rename) _cmd_rename "$arg" "$force" ;;
+    log)    if [ "$help" -eq 1 ]; then _help_log; return 0; fi
+            _cmd_log "$arg" "$reflog" "$since" "$author" ;;
+    rename) if [ "$help" -eq 1 ]; then _help_rename; return 0; fi
+            _cmd_rename "$arg" "$force" ;;
     uninstall) _cmd_uninstall "$force" ;;
     update)  if [ "$help" -eq 1 ]; then _help_update; return 0; fi
              _cmd_update "$check_only" ;;

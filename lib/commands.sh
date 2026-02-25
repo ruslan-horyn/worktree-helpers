@@ -698,43 +698,56 @@ _cmd_version() {
 }
 
 _cmd_help() {
+  # Placeholder naming convention:
+  #   <branch>    new branch name
+  #   <worktree>  existing worktree (by name)
+  #   <ref>       git ref (branch, tag, or commit)
+  #   <days>      age in days
+  #   <pattern>   glob pattern
+  #   <note>      text note
+  #   <date>      date string
+  #   <new-branch> new branch name for rename
   cat <<'HELP'
 wt - Git Worktree Helpers
 
 Usage: wt [flags] [args]
 
 Commands:
-  -n, --new <branch>     Create worktree from main (or --from ref)
-  -n -d [name]           Create worktree from dev branch
-  -s, --switch [branch]  Switch worktree (fzf if no arg)
-  -r, --remove [branch]  Remove worktree and branch
-  -o, --open [branch]    Open existing branch as worktree (fzf if no arg)
-  -l, --list             List worktrees
-  -c, --clear [days]     Clear worktrees (days optional with --merged/--pattern)
-  -L, --lock [branch]    Lock worktree
-  -U, --unlock [branch]  Unlock worktree
-  --init                 Initialize config
-  --log [branch]         Show commits vs main
-  --rename <new-branch>  Rename current worktree's branch
-  --uninstall            Uninstall worktree-helpers
-  --update               Update to latest version
-  --update --check       Check for updates without installing
-  -v, --version          Show version
-  -h, --help             This help
+  -n, --new <branch>          Create worktree from main (or --from <ref>)
+      wt -n feature-foo       Create worktree from main
+      wt -n feature-foo --from develop  Create worktree from specific branch
+  -n -d [name]                Create worktree from dev branch
+  -s, --switch [<worktree>]   Switch worktree (fzf if no arg)
+  -r, --remove [<worktree>]   Remove worktree and branch
+  -o, --open [branch]         Open existing branch as worktree (fzf if no arg)
+  -l, --list                  List worktrees
+  -c, --clear [<days>]        Clear worktrees (days optional with --merged/--pattern)
+      wt -c 30                Remove worktrees older than 30 days
+      wt -c --merged          Remove worktrees with merged branches
+  -L, --lock [<worktree>]     Lock worktree
+  -U, --unlock [<worktree>]   Unlock worktree
+  --init                      Initialize config
+  --log [branch]              Show commits vs main
+  --rename <new-branch>       Rename current worktree's branch
+  --uninstall                 Uninstall worktree-helpers
+  --update                    Update to latest version
+  --update --check            Check for updates without installing
+  -v, --version               Show version
+  -h, --help                  This help
 
 Flags:
-  -f, --force            Force operation
-  -d, --dev              Use dev branch as base
-  -b, --from <ref>       Base branch/ref for -n (default: main branch)
-  --dev-only             Filter to dev-based worktrees only (with -c)
-  --main-only            Filter to main-based worktrees only (with -c)
-  --merged               Filter to worktrees with branches merged into main (with -c)
-  --pattern <glob>       Filter to worktrees matching branch name glob (with -c)
-  --dry-run              Preview what would be cleared without deleting (with -c)
-  --reflog               Show reflog (with --log)
-  --since <date>         Limit log to commits after date (with --log)
-  --author <pattern>     Limit log to commits by author (with --log)
-  --check                Check for update without installing (with --update)
+  -f, --force               Force operation
+  -d, --dev                 Use dev branch as base
+  -b, --from <ref>          Base branch/ref for -n (default: main branch)
+  --dev-only                Filter to dev-based worktrees only (with -c)
+  --main-only               Filter to main-based worktrees only (with -c)
+  --merged                  Filter to worktrees with branches merged into main (with -c)
+  --pattern <pattern>       Filter to worktrees matching branch name glob (with -c)
+  --dry-run                 Preview what would be cleared without deleting (with -c)
+  --reflog                  Show reflog (with --log)
+  --since <date>            Limit log to commits after date (with --log)
+  --author <pattern>        Limit log to commits by author (with --log)
+  --check                   Check for update without installing (with --update)
 HELP
 }
 
@@ -921,5 +934,98 @@ _help_update() {
 
   Options:
     --check    Check for a new version without installing it
+HELP
+}
+
+_help_lock() {
+  cat <<'HELP'
+
+  wt -L, --lock [<worktree>]
+
+  Lock a worktree to prevent it from being removed by wt -c or wt -r.
+  Opens fzf picker if no argument is given.
+
+  Usage:
+    wt -L                  Pick worktree to lock with fzf
+    wt -L <worktree>       Lock the named worktree
+
+  Examples:
+    wt -L feature-login
+    wt -L bugfix-CORE-615
+
+HELP
+}
+
+_help_unlock() {
+  cat <<'HELP'
+
+  wt -U, --unlock [<worktree>]
+
+  Unlock a previously locked worktree so it can be removed again.
+  Opens fzf picker if no argument is given.
+
+  Usage:
+    wt -U                  Pick worktree to unlock with fzf
+    wt -U <worktree>       Unlock the named worktree
+
+  Examples:
+    wt -U feature-login
+    wt -U bugfix-CORE-615
+
+HELP
+}
+
+_help_log() {
+  cat <<'HELP'
+
+  wt --log [<branch>]
+
+  Show commits on the current branch (or <branch>) that are not in main.
+  Displays a compact one-line graph. Uses current branch if no argument given.
+
+  Usage:
+    wt --log                    Show log for current branch vs main
+    wt --log <branch>           Show log for <branch> vs main
+    wt --log --reflog           Show recent reflog (last 50 entries)
+    wt --log --since <date>     Limit to commits after <date>
+    wt --log --author <pattern> Limit to commits by matching author
+
+  Examples:
+    wt --log
+    wt --log feature-login
+    wt --log --since "2 weeks ago"
+    wt --log --author alice
+
+  Options:
+    --reflog              Show reflog instead of branch log
+    --since <date>        Limit to commits after this date
+    --author <pattern>    Limit to commits by this author
+
+HELP
+}
+
+_help_rename() {
+  cat <<'HELP'
+
+  wt --rename <new-branch>
+
+  Rename the current worktree's branch and move its directory to match.
+  Must be run from inside a worktree (not the main repo).
+  Prompts for confirmation unless --force is given.
+
+  Usage:
+    wt --rename <new-branch>        Rename with confirmation
+    wt --rename <new-branch> -f     Rename without confirmation
+
+  Examples:
+    wt --rename feature-login-v2
+    wt --rename bugfix-CORE-999 --force
+
+  Options:
+    -f, --force    Skip confirmation prompt
+
+  Note:
+    Protected branches (main, dev) cannot be renamed.
+    The new branch name must not already exist.
 HELP
 }

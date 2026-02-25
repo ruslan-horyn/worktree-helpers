@@ -109,8 +109,8 @@ curl -fsSL https://raw.githubusercontent.com/ruslan-horyn/worktree-helpers/main/
 | `wt -c --merged` | Clear worktrees whose branches are merged into main |
 | `wt -c --pattern <glob>` | Clear worktrees matching a branch name glob pattern |
 | `wt -c <days> --dry-run` | Preview what would be cleared without deleting |
-| `wt -L [branch]` | Lock worktree |
-| `wt -U [branch]` | Unlock worktree |
+| `wt -L [<worktree>]` | Lock worktree (fzf picker if no arg) |
+| `wt -U [<worktree>]` | Unlock worktree (fzf picker if no arg) |
 | `wt --init` | Initialize project configuration |
 | `wt --log [branch]` | Show commits vs main branch |
 | `wt --rename <new-branch>` | Rename current worktree's branch and directory |
