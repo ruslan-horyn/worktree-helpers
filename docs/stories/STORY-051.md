@@ -196,7 +196,7 @@ export -f fzf
 - [x] All pre-existing BATS tests still pass: `npm test`
 - [x] `_help_switch`, `_help_remove`, `_help_lock`, `_help_unlock`, `_help_open` functions are unchanged (no user-visible help change needed)
 - [x] `README.md` is unchanged (internal bug fix, no user-facing feature)
-- [ ] Commit uses conventional commits format with lowercase subject and no Co-Authored-By line — *handled by orchestrator*
+- [x] Commit uses conventional commits format with lowercase subject and no Co-Authored-By line
 
 ---
 
