@@ -41,20 +41,31 @@ _wt_select() {
   command -v fzf >/dev/null 2>&1 || { _err "Install fzf or pass branch"; return 1; }
   # Display only the worktree name (basename) in fzf, but return the full path to callers
   # Format: "name\tfull_path" — fzf shows only field 1, cut outputs field 2
-  git worktree list --porcelain \
+  # Capture fzf output in a variable first so we can check fzf's exit code before
+  # passing to cut — a direct pipeline would let cut swallow fzf's exit 130 (ESC).
+  local selected
+  if ! selected=$(git worktree list --porcelain \
     | awk '/^worktree /{p=substr($0,10); n=p; sub(/.*\//, "", n); print n "\t" p}' \
-    | fzf --prompt="${1:-wt> }" --with-nth=1 --delimiter='\t' \
-    | cut -f2
+    | fzf --prompt="${1:-wt> }" --with-nth=1 --delimiter="$(printf '\t')"); then
+    return 1
+  fi
+  printf '%s\n' "$selected" | cut -f2
 }
 
 _branch_select() {
   command -v fzf >/dev/null 2>&1 || { _err "Install fzf or pass branch"; return 1; }
   # List branches: remote branches (strip origin/), excluding HEAD
-  git branch -r --format='%(refname:short)' 2>/dev/null | \
-    grep -v 'HEAD' | \
-    sed 's|^origin/||' | \
-    sort -u | \
-    fzf --prompt="${1:-branch> }"
+  # Capture fzf output in a variable so we can check fzf's exit code before
+  # any further processing — prevents ESC (exit 130) from being silently ignored.
+  local selected
+  if ! selected=$(git branch -r --format='%(refname:short)' 2>/dev/null \
+    | grep -v 'HEAD' \
+    | sed 's|^origin/||' \
+    | sort -u \
+    | fzf --prompt="${1:-branch> }"); then
+    return 1
+  fi
+  printf '%s\n' "$selected"
 }
 
 _wt_resolve() {
