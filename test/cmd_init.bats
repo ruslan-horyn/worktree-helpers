@@ -45,17 +45,16 @@ EOF
   repo_dir=$(create_test_repo)
   cd "$repo_dir"
 
-  # Provide custom answers to all 3 prompts
+  # Provide custom answers to the 2 interactive prompts (project name, main branch)
   run bash -c "
     cd '$repo_dir'
     source '$PROJECT_ROOT/lib/utils.sh'
     source '$PROJECT_ROOT/lib/config.sh'
     source '$PROJECT_ROOT/lib/worktree.sh'
     source '$PROJECT_ROOT/lib/commands.sh'
-    _cmd_init <<EOF
+    _cmd_init 0 <<EOF
 my-custom-project
 origin/main
-15
 EOF
   "
   assert_success
@@ -65,9 +64,9 @@ EOF
   run jq -r '.projectName' "$repo_dir/.worktrees/config.json"
   assert_output "my-custom-project"
 
-  # Threshold should be custom value
+  # Threshold defaults to 20 (no longer an interactive prompt)
   run jq -r '.worktreeWarningThreshold' "$repo_dir/.worktrees/config.json"
-  assert_output "15"
+  assert_output "20"
 }
 
 @test "_cmd_init works in non-Node.js repo (no package.json)" {
