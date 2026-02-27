@@ -37,6 +37,7 @@ stashes, no more broken context.
 - Interactive selection with fzf integration
 - Flexible worktree cleanup with filters (`--merged`, `--pattern`, `--dry-run`, `--dev-only`, `--main-only`) — main/dev branches are always protected
 - Verbose step-by-step output for `wt -c` (per-worktree decision + summary) and `wt --init` (progress + created files list)
+- Hooks preservation prompt — `wt --init` detects existing hooks and asks to keep, back up, or overwrite; `--force` skips the prompt and preserves hooks
 - Lock/unlock worktree protection
 - Branch rename without recreating worktree (`--rename`)
 - Shell completions for bash and zsh (flags, branch names, context-sensitive arguments)
@@ -111,7 +112,7 @@ curl -fsSL https://raw.githubusercontent.com/ruslan-horyn/worktree-helpers/main/
 | `wt -c <days> --dry-run` | Preview what would be cleared without deleting |
 | `wt -L [<worktree>]` | Lock worktree (fzf picker if no arg) |
 | `wt -U [<worktree>]` | Unlock worktree (fzf picker if no arg) |
-| `wt --init` | Initialize project configuration |
+| `wt --init` | Initialize project configuration (prompts to keep, back up, or overwrite existing hooks) |
 | `wt --log [branch]` | Show commits vs main branch |
 | `wt --rename <new-branch>` | Rename current worktree's branch and directory |
 | `wt --update` | Update to latest version |

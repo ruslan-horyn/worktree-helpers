@@ -54,37 +54,25 @@ _wt() {
     '--check:Check for updates without installing'
   )
 
-  # Determine what we're completing based on the previous words.
-  # expect_arg=1 means the next word is a value argument — consume it and reset.
-  local prev_action="" expect_arg=0
+  # Determine what we're completing based on the previous word
+  local prev_action=""
   local i
   for ((i = 1; i < CURRENT; i++)); do
-    if (( expect_arg )); then
-      expect_arg=0
-      prev_action=""
-      continue
-    fi
     case "${words[i]}" in
       -s|--switch|-r|--remove|-L|--lock|-U|--unlock)
-        prev_action="worktree_branch"; expect_arg=1 ;;
+        prev_action="worktree_branch" ;;
       -o|--open)
-        prev_action="git_branch"; expect_arg=1 ;;
+        prev_action="git_branch" ;;
       -b|--from)
-        prev_action="hint_ref"; expect_arg=1 ;;
+        prev_action="git_branch" ;;
       --log)
-        prev_action="local_branch"; expect_arg=1 ;;
-      -n|--new)
-        prev_action="hint_branch"; expect_arg=1 ;;
-      --rename)
-        prev_action="hint_new_branch"; expect_arg=1 ;;
+        prev_action="local_branch" ;;
+      -n|--new|--rename)
+        prev_action="no_complete" ;;
       -c|--clear)
         prev_action="clear_context" ;;
-      --pattern)
-        prev_action="hint_pattern"; expect_arg=1 ;;
-      --since)
-        prev_action="hint_date"; expect_arg=1 ;;
-      --author)
-        prev_action="hint_author"; expect_arg=1 ;;
+      --pattern|--since|--author)
+        prev_action="no_complete" ;;
     esac
   done
 
@@ -96,19 +84,13 @@ _wt() {
     -o|--open)
       prev_action="git_branch" ;;
     -b|--from)
-      prev_action="hint_ref" ;;
+      prev_action="git_branch" ;;
     --log)
       prev_action="local_branch" ;;
-    -n|--new)
-      prev_action="hint_branch" ;;
-    --rename)
-      prev_action="hint_new_branch" ;;
-    --pattern)
-      prev_action="hint_pattern" ;;
-    --since)
-      prev_action="hint_date" ;;
-    --author)
-      prev_action="hint_author" ;;
+    -n|--new|--rename)
+      prev_action="no_complete" ;;
+    --pattern|--since|--author)
+      prev_action="no_complete" ;;
   esac
 
   case "$prev_action" in
@@ -134,38 +116,8 @@ _wt() {
     clear_context)
       _describe 'flag' flags
       ;;
-    hint_branch)
-      ;;
-    hint_ref)
-      local -a hint; hint=('<ref>:branch, tag, or commit to base from')
-      _describe -t hints 'ref' hint
-      ;;
-    hint_new_branch)
-      local -a hint; hint=('<new-branch>:new branch name to rename to')
-      _describe -t hints 'hint' hint
-      ;;
-    hint_pattern)
-      local -a pats
-      pats=(
-        'feature/*:clear all feature worktrees'
-        'story-*:clear all story worktrees'
-        'fix/*:clear all fix worktrees'
-        'NO_TASK:clear worktrees without a task association'
-      )
-      _describe -t patterns 'Pattern' pats
-      ;;
-    hint_date)
-      local -a pats
-      pats=(
-        '2 weeks ago:commits from last 2 weeks'
-        'yesterday:commits from yesterday'
-        '1 month ago:commits from last month'
-      )
-      _describe -t dates 'Date' pats
-      ;;
-    hint_author)
-      local -a hint; hint=('<author>:author name or email')
-      _describe -t hints 'hint' hint
+    no_complete)
+      return
       ;;
     *)
       local -a all_options

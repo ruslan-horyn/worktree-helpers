@@ -529,60 +529,49 @@ _cmd_log() {
   git log --oneline --graph --cherry --no-merges ${since_arg:+"$since_arg"} ${author_arg:+"$author_arg"} "${GWT_MAIN_REF}..${feature}"
 }
 
-# Backup hook if exists and differs from new content
-# Usage: _backup_hook <hook_path> <new_content>
-# Returns: 0 if backup was made, 1 if no backup needed
-_backup_hook() {
-  local hook_path="$1" new_content="$2"
-  [ ! -f "$hook_path" ] && return 1
+# Print the hooks-directory detection prompt and return user's choice (1, 2, or 3)
+# Usage: _init_hooks_prompt <hooks_dir>
+# Outputs: 1 (keep), 2 (backup), or 3 (overwrite) to stdout
+# All menu output goes to stderr (user prompts, not data)
+_init_hooks_prompt() {
+  local hooks_dir="$1"
 
-  local existing_content
-  existing_content=$(cat "$hook_path")
-  [ "$existing_content" = "$new_content" ] && return 1
+  printf "Hooks directory already exists: %s\n" "$hooks_dir" >&2
+  local f
+  for f in "$hooks_dir"/*; do
+    [ -e "$f" ] || continue
+    printf "  - %s\n" "$(basename "$f")" >&2
+  done
+  printf "\nWould you like to:\n" >&2
+  printf "  [1] Keep existing hooks (skip) [default]\n" >&2
+  printf "  [2] Back up existing hooks to %s.bak/\n" "$hooks_dir" >&2
+  printf "  [3] Overwrite with defaults\n\n" >&2
 
-  local backup_path="${hook_path}_old"
-  mv "$hook_path" "$backup_path"
-  _info "Backed up existing hook: ${hook_path##*/} -> ${backup_path##*/}"
-  return 0
+  printf "Choice [1]: " >&2
+  local choice
+  choice=$(_read_input "" "1")
+  case "$choice" in
+    2) echo "2" ;;
+    3) echo "3" ;;
+    *) echo "1" ;;
+  esac
 }
 
-_cmd_init() {
-  _repo_root >/dev/null && _require jq || return 1
-  local root; root=$(_main_repo_root) || return 1
-  local cfg="$root/.worktrees/config.json"
-
-  local name main_ref warn_threshold
-  name=$(_project_name); main_ref=$(_main_branch)
-  warn_threshold=20
-
-  local r
-  r=$(_read_input "Project [$name]: " "$name"); [ -n "$r" ] && name="$r"
-  r=$(_read_input "Main branch [$main_ref]: " "$main_ref"); [ -n "$r" ] && main_ref="$r"
-  r=$(_read_input "Worktree warning threshold [$warn_threshold]: " "$warn_threshold"); [ -n "$r" ] && warn_threshold="$r"
-
-  main_ref=$(_normalize_ref "$main_ref")
-
-  _info "Setting up hooks directory..."
-  mkdir -p "$root/.worktrees/hooks" || { _err "Failed to create hooks directory: $root/.worktrees/hooks"; return 1; }
-
-  # Default hook contents
-  # shellcheck disable=SC2016
-  local created_hook='#!/usr/bin/env bash
-cd "$1" || exit 1'
-  # shellcheck disable=SC2016
-  local switched_hook='#!/usr/bin/env bash
-cd "$1" || exit 1'
-
-  # Backup existing hooks if they differ
-  _backup_hook "$root/.worktrees/hooks/created.sh" "$created_hook"
-  _backup_hook "$root/.worktrees/hooks/switched.sh" "$switched_hook"
-
-  # Write new hooks
+# Write default hook scripts to the hooks directory
+# Usage: _init_write_hooks <hooks_dir> <created_hook_content> <switched_hook_content>
+_init_write_hooks() {
+  local hooks_dir="$1" created_hook="$2" switched_hook="$3"
   _info "Writing hook scripts..."
-  echo "$created_hook" > "$root/.worktrees/hooks/created.sh" || { _err "Failed to write created.sh hook"; return 1; }
-  echo "$switched_hook" > "$root/.worktrees/hooks/switched.sh" || { _err "Failed to write switched.sh hook"; return 1; }
-  chmod +x "$root/.worktrees/hooks"/*.sh
+  echo "$created_hook" > "$hooks_dir/created.sh" || { _err "Failed to write created.sh hook"; return 1; }
+  echo "$switched_hook" > "$hooks_dir/switched.sh" || { _err "Failed to write switched.sh hook"; return 1; }
+  chmod +x "$hooks_dir"/*.sh
+}
 
+# Write config.json with supplied values and print what was created
+# Usage: _init_write_config <cfg> <name> <main_ref> <warn_threshold> <hooks_dir> [show_hooks]
+# show_hooks: if non-empty, also prints hooks file lines in the Done output
+_init_write_config() {
+  local cfg="$1" name="$2" main_ref="$3" warn_threshold="$4" hooks_dir="$5" show_hooks="${6:-}"
   _info "Creating .worktrees/config.json..."
   cat > "$cfg" <<JSON || { _err "Failed to create config: $cfg"; return 1; }
 {
@@ -597,8 +586,80 @@ cd "$1" || exit 1'
 JSON
   _info "Done. Created:"
   _info "  $cfg"
-  _info "  $root/.worktrees/hooks/created.sh"
-  _info "  $root/.worktrees/hooks/switched.sh"
+  if [ "$show_hooks" = "keep" ]; then
+    _info "  $hooks_dir/ (kept as-is)"
+  elif [ -n "$show_hooks" ]; then
+    _info "  $hooks_dir/created.sh"
+    _info "  $hooks_dir/switched.sh"
+  fi
+  return 0
+}
+
+_cmd_init() {
+  local force="${1:-0}"
+  _repo_root >/dev/null && _require jq || return 1
+  local root; root=$(_main_repo_root) || return 1
+  local cfg="$root/.worktrees/config.json"
+  local hooks_dir="$root/.worktrees/hooks"
+
+  local name main_ref warn_threshold
+  name=$(_project_name); main_ref=$(_main_branch)
+  warn_threshold=20
+
+  local r
+  r=$(_read_input "Project [$name]: " "$name"); [ -n "$r" ] && name="$r"
+  r=$(_read_input "Main branch [$main_ref]: " "$main_ref"); [ -n "$r" ] && main_ref="$r"
+
+  main_ref=$(_normalize_ref "$main_ref")
+
+  # Default hook contents
+  # shellcheck disable=SC2016
+  local created_hook='#!/usr/bin/env bash
+cd "$1" || exit 1'
+  # shellcheck disable=SC2016
+  local switched_hook='#!/usr/bin/env bash
+cd "$1" || exit 1'
+
+  _info "Setting up hooks directory..."
+
+  # Fresh path: hooks directory absent or empty — create and write defaults
+  if ! { [ -d "$hooks_dir" ] && [ "$(ls -A "$hooks_dir")" ]; }; then
+    mkdir -p "$hooks_dir" || { _err "Failed to create hooks directory: $hooks_dir"; return 1; }
+    _init_write_hooks "$hooks_dir" "$created_hook" "$switched_hook" || return 1
+    _init_write_config "$cfg" "$name" "$main_ref" "$warn_threshold" "$hooks_dir" "1"
+    return
+  fi
+
+  # Non-interactive: --force flag — keep existing hooks silently
+  if [ "$force" = "1" ]; then
+    _init_write_config "$cfg" "$name" "$main_ref" "$warn_threshold" "$hooks_dir"
+    return
+  fi
+
+  # Interactive: show prompt and act on user's choice (empty/EOF defaults to keep)
+  local choice
+  choice=$(_init_hooks_prompt "$hooks_dir")
+
+  case "$choice" in
+    2)
+      # Backup: move hooks dir to hooks.bak (handle pre-existing .bak)
+      [ -d "${hooks_dir}.bak" ] && rm -rf "${hooks_dir}.bak"
+      mv "$hooks_dir" "${hooks_dir}.bak"
+      mkdir -p "$hooks_dir" || { _err "Failed to create hooks directory: $hooks_dir"; return 1; }
+      _init_write_hooks "$hooks_dir" "$created_hook" "$switched_hook" || return 1
+      ;;
+    3)
+      # Overwrite: replace hooks with defaults
+      _init_write_hooks "$hooks_dir" "$created_hook" "$switched_hook" || return 1
+      ;;
+    *)
+      # Option 1 (keep): leave hooks directory untouched
+      _init_write_config "$cfg" "$name" "$main_ref" "$warn_threshold" "$hooks_dir" "keep"
+      return
+      ;;
+  esac
+
+  _init_write_config "$cfg" "$name" "$main_ref" "$warn_threshold" "$hooks_dir" "1"
 }
 
 _cmd_rename() {
@@ -908,11 +969,24 @@ _help_init() {
   "Creating .worktrees/config.json...". On success prints "Done. Created:" with a list of
   all created files. On failure prints which step failed and why.
 
+  If the hooks directory already exists and is non-empty, you will be asked:
+    [1] Keep existing hooks (skip)   — default, leaves hooks untouched
+    [2] Back up existing hooks       — moves hooks to .worktrees/hooks.bak/ before writing defaults
+    [3] Overwrite with defaults      — replaces all hooks with defaults immediately
+
+  In non-interactive mode (--force or piped stdin) the prompt is skipped and
+  existing hooks are preserved (option 1 behaviour).
+
   Usage:
     wt --init
+    wt --init --force
 
   Examples:
     wt --init
+    wt --init --force
+
+  Options:
+    -f, --force    Skip hooks prompt; keep existing hooks and create config.json
 
 HELP
 }

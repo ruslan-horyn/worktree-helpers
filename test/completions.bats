@@ -149,10 +149,15 @@ _simulate_completion() {
   [[ " ${COMPREPLY[*]} " == *"feature-open"* ]]
 }
 
-@test "completion: 'wt -n mybranch -b <Tab>' shows ref placeholder hint" {
+@test "completion: 'wt -n mybranch -b <Tab>' completes with git branches" {
+  local repo_dir
+  repo_dir=$(create_test_repo)
+  cd "$repo_dir"
+
+  git branch base-branch >/dev/null 2>&1
+
   _simulate_completion "wt" "-n" "mybranch" "-b" ""
-  [ ${#COMPREPLY[@]} -eq 1 ]
-  [ "${COMPREPLY[0]}" = "<ref>" ]
+  [[ " ${COMPREPLY[*]} " == *"base-branch"* ]]
 }
 
 @test "completion: 'wt --open <Tab>' completes with git branches" {
@@ -181,7 +186,7 @@ _simulate_completion() {
 
 # --- No completion ---
 
-@test "completion: 'wt -n <Tab>' returns nothing (no hint, no branch names)" {
+@test "completion: 'wt -n <Tab>' does NOT complete branch names" {
   local repo_dir
   repo_dir=$(create_test_repo)
   cd "$repo_dir"
@@ -192,7 +197,7 @@ _simulate_completion() {
   [ ${#COMPREPLY[@]} -eq 0 ]
 }
 
-@test "completion: 'wt --rename <Tab>' shows placeholder hint, not branch names" {
+@test "completion: 'wt --rename <Tab>' does NOT complete branch names" {
   local repo_dir
   repo_dir=$(create_test_repo)
   cd "$repo_dir"
@@ -200,26 +205,22 @@ _simulate_completion() {
   git branch existing-branch >/dev/null 2>&1
 
   _simulate_completion "wt" "--rename" ""
-  [ ${#COMPREPLY[@]} -eq 1 ]
-  [ "${COMPREPLY[0]}" = "<new-branch>" ]
+  [ ${#COMPREPLY[@]} -eq 0 ]
 }
 
-@test "completion: 'wt --pattern <Tab>' shows placeholder hint" {
+@test "completion: 'wt --pattern <Tab>' does NOT complete" {
   _simulate_completion "wt" "-c" "14" "--pattern" ""
-  [ ${#COMPREPLY[@]} -eq 1 ]
-  [ "${COMPREPLY[0]}" = "<pattern>" ]
+  [ ${#COMPREPLY[@]} -eq 0 ]
 }
 
-@test "completion: 'wt --since <Tab>' shows placeholder hint" {
+@test "completion: 'wt --since <Tab>' does NOT complete" {
   _simulate_completion "wt" "--log" "main" "--since" ""
-  [ ${#COMPREPLY[@]} -eq 1 ]
-  [ "${COMPREPLY[0]}" = "<date>" ]
+  [ ${#COMPREPLY[@]} -eq 0 ]
 }
 
-@test "completion: 'wt --author <Tab>' shows placeholder hint" {
+@test "completion: 'wt --author <Tab>' does NOT complete" {
   _simulate_completion "wt" "--log" "main" "--author" ""
-  [ ${#COMPREPLY[@]} -eq 1 ]
-  [ "${COMPREPLY[0]}" = "<author>" ]
+  [ ${#COMPREPLY[@]} -eq 0 ]
 }
 
 # --- Clear context ---
