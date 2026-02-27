@@ -324,7 +324,7 @@ sprints:
     end_date: "2026-03-07"
     capacity_points: 17
     committed_points: 19
-    completed_points: 12
+    completed_points: 14
     status: "active"
     goal: "Docs audit, CLI output polish, init UX overhaul"
     notes: "Rebalanced 2026-02-22: added STORY-047+039, deferred STORY-016 to Sprint 8. STORY-048 added 2026-02-23 as critical bug fix (install false-positive)"
@@ -381,7 +381,8 @@ sprints:
       - story_id: "STORY-037"
         title: "Completions: show example usage hint when nothing to suggest"
         points: 2
-        status: "not_started"
+        status: "completed"
+        completion_date: "2026-02-27"
         assigned_to: null
         priority: "should_have"
         story_doc: "docs/stories/STORY-037.md"
@@ -516,6 +517,14 @@ backlog:
     priority: "must_have"
     story_doc: "docs/stories/STORY-050.md"
     notes: "One-line fix in wt(): set action=update when check_only=1 and action is empty"
+  - story_id: "STORY-051"
+    title: "Fix fzf ESC cancellation silently ignored across all selection commands"
+    points: 3
+    status: "not_started"
+    assigned_to: null
+    priority: "must_have"
+    story_doc: "docs/stories/STORY-051.md"
+    notes: "fzf exit 130 (ESC) swallowed by pipeline in _wt_select and _branch_select; affects wt -s, -r, -L, -U, -o. Fix: break pipeline before cut, check exit code. Add shared _fzf_select helper."
 
 velocity:
   sprint_1: 14
