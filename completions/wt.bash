@@ -29,24 +29,16 @@ _wt_bash_complete() {
     case "${words[i]}" in
       -s|--switch|-r|--remove|-L|--lock|-U|--unlock)
         action="worktree_branch" ;;
-      -o|--open)
+      -o|--open|-b|--from)
         action="git_branch" ;;
-      -b|--from)
-        action="hint_ref" ;;
       --log)
         action="local_branch" ;;
-      -n|--new)
-        action="hint_branch" ;;
-      --rename)
-        action="hint_new_branch" ;;
+      -n|--new|--rename)
+        action="no_complete" ;;
       -c|--clear)
         action="clear_context" ;;
-      --pattern)
-        action="hint_pattern" ;;
-      --since)
-        action="hint_date" ;;
-      --author)
-        action="hint_author" ;;
+      --pattern|--since|--author)
+        action="no_complete" ;;
     esac
   done
 
@@ -54,22 +46,14 @@ _wt_bash_complete() {
   case "$prev" in
     -s|--switch|-r|--remove|-L|--lock|-U|--unlock)
       action="worktree_branch" ;;
-    -o|--open)
+    -o|--open|-b|--from)
       action="git_branch" ;;
-    -b|--from)
-      action="hint_ref" ;;
     --log)
       action="local_branch" ;;
-    -n|--new)
-      action="hint_branch" ;;
-    --rename)
-      action="hint_new_branch" ;;
-    --pattern)
-      action="hint_pattern" ;;
-    --since)
-      action="hint_date" ;;
-    --author)
-      action="hint_author" ;;
+    -n|--new|--rename)
+      action="no_complete" ;;
+    --pattern|--since|--author)
+      action="no_complete" ;;
   esac
 
   case "$action" in
@@ -95,23 +79,8 @@ _wt_bash_complete() {
     clear_context)
       COMPREPLY=($(compgen -W "$all_flags" -- "$cur"))
       ;;
-    hint_branch)
-      COMPREPLY=()
-      ;;
-    hint_ref)
-      COMPREPLY=( '<ref>' )
-      ;;
-    hint_new_branch)
-      COMPREPLY=( '<new-branch>' )
-      ;;
-    hint_pattern)
-      COMPREPLY=( '<pattern>' )
-      ;;
-    hint_date)
-      COMPREPLY=( '<date>' )
-      ;;
-    hint_author)
-      COMPREPLY=( '<author>' )
+    no_complete)
+      return
       ;;
     *)
       COMPREPLY=($(compgen -W "$all_flags" -- "$cur"))

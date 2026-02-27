@@ -109,7 +109,7 @@ wt() {
     clear)  if [ "$help" -eq 1 ]; then _help_clear; return 0; fi
             _cmd_clear "$clear_days" "$force" "$dev_only" "$main_only" "$merged" "$pattern" "$dry_run" ;;
     init)   if [ "$help" -eq 1 ]; then _help_init; return 0; fi
-            _cmd_init ;;
+            _cmd_init "$force" ;;
     log)    if [ "$help" -eq 1 ]; then _help_log; return 0; fi
             _cmd_log "$arg" "$reflog" "$since" "$author" ;;
     rename) if [ "$help" -eq 1 ]; then _help_rename; return 0; fi
