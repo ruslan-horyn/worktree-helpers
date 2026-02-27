@@ -324,7 +324,7 @@ sprints:
     end_date: "2026-03-07"
     capacity_points: 17
     committed_points: 26
-    completed_points: 14
+    completed_points: 17
     status: "active"
     goal: "Docs audit, CLI output polish, init UX overhaul"
     notes: "Rebalanced 2026-02-22: added STORY-047+039, deferred STORY-016 to Sprint 8. STORY-048 added 2026-02-23 as critical bug fix (install false-positive). STORY-049+050+051 pulled from backlog 2026-02-27 (no blockers)."
@@ -366,10 +366,13 @@ sprints:
       - story_id: "STORY-021"
         title: "Improve wt --init UX: colorized output, hook suggestions, auto .gitignore"
         points: 3
-        status: "not_started"
+        status: "completed"
+        completion_date: "2026-02-27"
         assigned_to: null
         priority: "should_have"
         blocked_by: ["STORY-034", "STORY-035"]
+        story_doc: "docs/stories/STORY-021.md"
+        story_doc: "docs/stories/STORY-021.md"
       - story_id: "STORY-038"
         title: "Descriptive usage with placeholders in command output"
         points: 2
