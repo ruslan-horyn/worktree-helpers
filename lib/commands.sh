@@ -572,6 +572,7 @@ _init_write_hooks() {
 # show_hooks: if non-empty, also prints hooks file lines in the Done output
 _init_write_config() {
   local cfg="$1" name="$2" main_ref="$3" warn_threshold="$4" hooks_dir="$5" show_hooks="${6:-}"
+  _init_colors
   _info "Creating .worktrees/config.json..."
   cat > "$cfg" <<JSON || { _err "Failed to create config: $cfg"; return 1; }
 {
@@ -584,10 +585,11 @@ _init_write_config() {
   "worktreeWarningThreshold": $warn_threshold
 }
 JSON
-  _info "Done. Created:"
+  _info ""
+  _info "${C_GREEN}Done.${C_RESET} Created:"
   _info "  $cfg"
   if [ "$show_hooks" = "keep" ]; then
-    _info "  $hooks_dir/ (kept as-is)"
+    _info "  $hooks_dir/ (kept as-is — edit created.sh to customise, e.g. npm install, cp .env)"
   elif [ -n "$show_hooks" ]; then
     _info "  $hooks_dir/created.sh"
     _info "  $hooks_dir/switched.sh"
@@ -595,12 +597,25 @@ JSON
   return 0
 }
 
+# Check whether a .gitignore file already contains a .worktrees entry
+# Usage: _gitignore_has_worktrees <gitignore_path>
+# Returns 0 if present (with or without trailing slash), non-zero otherwise
+_gitignore_has_worktrees() {
+  local gitignore="$1"
+  [ ! -f "$gitignore" ] && return 1
+  grep -qx '\.worktrees/' "$gitignore" 2>/dev/null && return 0
+  grep -qx '\.worktrees'  "$gitignore" 2>/dev/null && return 0
+  return 1
+}
+
 _cmd_init() {
   local force="${1:-0}"
+  _init_colors
   _repo_root >/dev/null && _require jq || return 1
   local root; root=$(_main_repo_root) || return 1
   local cfg="$root/.worktrees/config.json"
   local hooks_dir="$root/.worktrees/hooks"
+  local gitignore="$root/.gitignore"
 
   local name main_ref warn_threshold
   name=$(_project_name); main_ref=$(_main_branch)
@@ -622,16 +637,29 @@ cd "$1" || exit 1'
 
   _info "Setting up hooks directory..."
 
+  # show_hint=1 for fresh/backup/overwrite paths; 0 for keep and --force paths
+  local show_hint=1
+
   # Fresh path: hooks directory absent or empty — create and write defaults
   if ! { [ -d "$hooks_dir" ] && [ "$(ls -A "$hooks_dir")" ]; }; then
     mkdir -p "$hooks_dir" || { _err "Failed to create hooks directory: $hooks_dir"; return 1; }
     _init_write_hooks "$hooks_dir" "$created_hook" "$switched_hook" || return 1
-    _init_write_config "$cfg" "$name" "$main_ref" "$warn_threshold" "$hooks_dir" "1"
+    if ! _gitignore_has_worktrees "$gitignore"; then
+      _info "Updating .gitignore..."
+      printf '\n.worktrees/\n' >> "$gitignore" || { _err "Failed to update .gitignore"; return 1; }
+    fi
+    _init_write_config "$cfg" "$name" "$main_ref" "$warn_threshold" "$hooks_dir" "1" || return 1
+    [ "$show_hint" -eq 1 ] && { _info ""; _info "${C_YELLOW}Hint: Edit .worktrees/hooks/created.sh to customise your workflow (e.g. npm install, cp .env).${C_RESET}"; }
     return
   fi
 
   # Non-interactive: --force flag — keep existing hooks silently
   if [ "$force" = "1" ]; then
+    show_hint=0
+    if ! _gitignore_has_worktrees "$gitignore"; then
+      _info "Updating .gitignore..."
+      printf '\n.worktrees/\n' >> "$gitignore" || { _err "Failed to update .gitignore"; return 1; }
+    fi
     _init_write_config "$cfg" "$name" "$main_ref" "$warn_threshold" "$hooks_dir"
     return
   fi
@@ -653,13 +681,23 @@ cd "$1" || exit 1'
       _init_write_hooks "$hooks_dir" "$created_hook" "$switched_hook" || return 1
       ;;
     *)
-      # Option 1 (keep): leave hooks directory untouched
+      # Option 1 (keep): leave hooks directory untouched, suppress hint
+      show_hint=0
+      if ! _gitignore_has_worktrees "$gitignore"; then
+        _info "Updating .gitignore..."
+        printf '\n.worktrees/\n' >> "$gitignore" || { _err "Failed to update .gitignore"; return 1; }
+      fi
       _init_write_config "$cfg" "$name" "$main_ref" "$warn_threshold" "$hooks_dir" "keep"
       return
       ;;
   esac
 
-  _init_write_config "$cfg" "$name" "$main_ref" "$warn_threshold" "$hooks_dir" "1"
+  if ! _gitignore_has_worktrees "$gitignore"; then
+    _info "Updating .gitignore..."
+    printf '\n.worktrees/\n' >> "$gitignore" || { _err "Failed to update .gitignore"; return 1; }
+  fi
+  _init_write_config "$cfg" "$name" "$main_ref" "$warn_threshold" "$hooks_dir" "1" || return 1
+  [ "$show_hint" -eq 1 ] && { _info ""; _info "${C_YELLOW}Hint: Edit .worktrees/hooks/created.sh to customise your workflow (e.g. npm install, cp .env).${C_RESET}"; }
 }
 
 _cmd_rename() {
@@ -965,9 +1003,19 @@ _help_init() {
   Initialize worktree-helpers configuration for the current repository.
   Creates .worktrees/config.json and default hook scripts.
 
-  Prints step-by-step progress: "Setting up hooks directory...", "Writing hook scripts...",
-  "Creating .worktrees/config.json...". On success prints "Done. Created:" with a list of
-  all created files. On failure prints which step failed and why.
+  Prints step-by-step progress with colorized output (green for Done., yellow
+  for warnings): "Setting up hooks directory...", "Writing hook scripts...",
+  "Updating .gitignore...", "Creating .worktrees/config.json...". On success
+  prints "Done. Created:" with a list of all created files. Color is
+  suppressed when stdout is not a terminal (pipe/redirect).
+
+  If .worktrees/ is not already in .gitignore, it is automatically appended
+  to the repo-root .gitignore file (created if absent). This prevents
+  accidentally committing machine-specific worktree directories.
+
+  After the Done summary, a hint line is printed on fresh init, backup, and
+  overwrite paths, suggesting next steps for hook customisation (e.g.
+  'npm install', 'cp .env'). The hint is not shown when existing hooks are kept.
 
   If the hooks directory already exists and is non-empty, you will be asked:
     [1] Keep existing hooks (skip)   — default, leaves hooks untouched
