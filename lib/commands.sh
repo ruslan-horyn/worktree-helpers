@@ -57,7 +57,6 @@ _cmd_open() {
   # If no branch provided, show fzf picker
   if [ -z "$branch" ]; then
     branch=$(_branch_select "open> ") || return 1
-    [ -z "$branch" ] && { _err "No branch selected"; return 1; }
   fi
 
   # Strip origin/ prefix if present
