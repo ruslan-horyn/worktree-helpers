@@ -95,13 +95,12 @@ _update_notify() {
 _bg_update_check() {
   _update_cache_fresh && return 0
   (
-    local result
-    result=$(_fetch_latest) || exit 0
-    local latest
-    latest=$(printf '%s\n' "$result" | head -1)
-    _update_cache_write "$latest"
-  ) &
-  disown 2>/dev/null
+    (
+      result=$(_fetch_latest) || exit 0
+      latest=$(printf '%s\n' "$result" | head -1)
+      _update_cache_write "$latest"
+    ) &
+  )
 }
 
 # Perform the update
