@@ -147,3 +147,13 @@ elif [ -n "${BASH_VERSION:-}" ]; then
     . "$_WT_DIR/completions/wt.bash"
   fi
 fi
+
+# Dual-mode: allow wt.sh to be sourced (defines wt function) or executed directly.
+# When executed directly (e.g. bash wt.sh -v or via ~/.local/bin/wt symlink),
+# _wt_is_sourced returns 1 and wt "$@" is called with the passed arguments.
+_wt_is_sourced() {
+  [ -n "${ZSH_VERSION:-}" ] && case "${ZSH_EVAL_CONTEXT:-}" in *:file*) return 0 ;; esac
+  [ -n "${BASH_VERSION:-}" ] && [ "${BASH_SOURCE[0]}" != "$0" ] && return 0
+  return 1
+}
+_wt_is_sourced || wt "$@"

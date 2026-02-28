@@ -162,6 +162,30 @@ else
   info "Added to $RC_FILE"
 fi
 
+# Step 4b: Create binary symlink in ~/.local/bin
+LOCAL_BIN="$HOME/.local/bin"
+SYMLINK="$LOCAL_BIN/wt"
+
+chmod +x "$INSTALL_DIR/wt.sh"
+mkdir -p "$LOCAL_BIN"
+
+# Remove stale symlink if present
+[ -L "$SYMLINK" ] && rm "$SYMLINK"
+
+ln -s "$INSTALL_DIR/wt.sh" "$SYMLINK"
+info "Created binary: $SYMLINK -> $INSTALL_DIR/wt.sh"
+
+# Warn if ~/.local/bin is not in PATH
+case ":$PATH:" in
+  *":$LOCAL_BIN:"*) ;;
+  *)
+    # shellcheck disable=SC2088
+    warn "~/.local/bin is not in your PATH."
+    warn "Add this to your shell config to use 'wt' as a binary:"
+    warn "  export PATH=\"\$HOME/.local/bin:\$PATH\""
+    ;;
+esac
+
 # Step 5: Success message
 echo ""
 echo "╭─────────────────────────────────────────╮"

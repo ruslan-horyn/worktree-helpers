@@ -76,6 +76,10 @@ curl -fsSL https://raw.githubusercontent.com/ruslan-horyn/worktree-helpers/main/
 
 3. Restart your terminal or source the config file.
 
+### Binary installation (`~/.local/bin/wt`)
+
+`install.sh` also creates `~/.local/bin/wt` as a symlink to `wt.sh`, so `wt` is available in non-interactive shells (CI scripts, Claude Code subprocesses, `bash -c "..."`) without needing to source `~/.zshrc` first. If `~/.local/bin` is not already in your `PATH`, the installer prints an `export PATH` instruction.
+
 ## Quick Start
 
 1. Navigate to a git repository:
@@ -293,6 +297,8 @@ source "$HOME/.worktree-helpers/completions/wt.bash"
 ```
 
 ### Known Limitations
+
+**Windows (native):** `wt` requires a POSIX-compatible shell (bash or zsh). It works on macOS, Linux, and Windows via WSL — but not in native Windows environments (PowerShell, cmd.exe, Git Bash without a POSIX layer).
 
 **Warp terminal (primary shell):** Tab completion does not work when Warp is the primary
 zsh shell. Warp intercepts the Tab key at the terminal UI level before zsh's `compdef`/

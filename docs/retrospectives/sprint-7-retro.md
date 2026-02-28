@@ -105,6 +105,32 @@ test-ai-mlm-assistant (NO_TASK/...) - 12 days ago (847 MB)
 - Czy rozmiar katalogu to wystarczający powód do usunięcia (vs wiek)?
 - Może połączyć z opcją `--sort-by-size`?
 
+#### Wyświetlanie komendy `cd` po create/switch worktree
+
+Po `wt -n` lub `wt -s` wyświetlić hint z komendą do zmiany katalogu:
+
+```
+[✓] Worktree created: my-feature
+    → cd /path/to/worktrees/my-feature
+```
+
+**Do przemyślenia:**
+- Hooki już teraz obsługują interakcję z worktree (otwarcie nowego terminala, edytora itp.) — czy hint `cd` jest potrzebny skoro hooks to robią lepiej?
+- Hint ma sens głównie w binary mode (nieinteraktywny shell, CI) — tam `cd` i tak nie zmienia katalogu rodzica
+- W trybie sourcowanym (interaktywny terminal) hook np. `created.sh` może już otwierać nowy terminal w odpowiednim katalogu
+- Może zamiast hintu lepiej ulepszyć domyślny hook template żeby pokazywał `cd "$1"`?
+
+#### Konfigurowalne "safe worktree names" (ochrona przed clear/remove)
+
+Obecnie `wt -c` i `wt -r` chronią tylko `main`/`dev` (z configu). Brak możliwości dodania własnych chronionych nazw.
+
+**Propozycja:** Pole `protectedBranches: ["staging", "release-*"]` w `.worktrees/config.json` — wzorce (glob) które `wt -c` i `wt -r` zawsze pomijają, nawet z `-f`.
+
+**Do przemyślenia:**
+- Czy glob pattern wystarczy, czy potrzeba regex?
+- Czy ochrona powinna dotyczyć tylko `wt -c`, czy też `wt -r`?
+- Naming: `protectedBranches` vs `safeBranches` vs `pinnedBranches`?
+
 ---
 
 **This retrospective was created using BMAD Method v6**
