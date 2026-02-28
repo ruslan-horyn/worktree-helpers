@@ -61,7 +61,7 @@ _branch_select() {
   if ! selected=$(git branch -r --format='%(refname:short)' 2>/dev/null \
     | grep -v 'HEAD' \
     | sed 's|^origin/||' \
-    | sort -u \
+    | sort -u 2>/dev/null \
     | fzf --prompt="${1:-branch> }"); then
     return 1
   fi
