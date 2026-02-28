@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.5.0](https://github.com/ruslan-horyn/worktree-helpers/compare/v1.4.0...v1.5.0) (2026-02-28)
+
+
+### Added
+
+* **STORY-021:** improve wt --init ux — colorized output, hook hints, auto .gitignore ([#26](https://github.com/ruslan-horyn/worktree-helpers/issues/26)) ([308f43f](https://github.com/ruslan-horyn/worktree-helpers/commit/308f43ff2da0d2426a3212d7616d65d6aa3e510a))
+* **STORY-034:** add verbose feedback to wt -c and wt --init ([#20](https://github.com/ruslan-horyn/worktree-helpers/issues/20)) ([cd39226](https://github.com/ruslan-horyn/worktree-helpers/commit/cd39226e54b7a2fce8b00c82f682ab96f90b5c7a))
+* **STORY-035:** offer to copy/backup existing hooks on wt --init ([#24](https://github.com/ruslan-horyn/worktree-helpers/issues/24)) ([c4831d5](https://github.com/ruslan-horyn/worktree-helpers/commit/c4831d527c5ac51b5b6b21b32e320ee41146c5ca))
+* **STORY-037:** show placeholder hints in completions for free-form args ([#23](https://github.com/ruslan-horyn/worktree-helpers/issues/23)) ([a276e16](https://github.com/ruslan-horyn/worktree-helpers/commit/a276e16a09ac42b4f2a3a37f72382d43bb5af08b))
+* **STORY-038:** add placeholders and examples to command help output ([#22](https://github.com/ruslan-horyn/worktree-helpers/issues/22)) ([ac6c431](https://github.com/ruslan-horyn/worktree-helpers/commit/ac6c431eb99f607245c836433e26abb75b4a6820))
+* **STORY-039:** improve wt -c dry-run output readability ([#19](https://github.com/ruslan-horyn/worktree-helpers/issues/19)) ([9c4a4ac](https://github.com/ruslan-horyn/worktree-helpers/commit/9c4a4ac51f232a2916f3edf55d46332adb478b95))
+* **STORY-049:** install wt as executable binary for non-interactive shell support ([#28](https://github.com/ruslan-horyn/worktree-helpers/issues/28)) ([09d1a3c](https://github.com/ruslan-horyn/worktree-helpers/commit/09d1a3cd4b48169b5ba4746244849b3e5c9ab0e9))
+
+
+### Fixed
+
+* **STORY-048:** fix install.sh false-positive already configured check ([#21](https://github.com/ruslan-horyn/worktree-helpers/issues/21)) ([f373d0a](https://github.com/ruslan-horyn/worktree-helpers/commit/f373d0a42a4972aacc7414001f3122eee3dd1b95))
+* **worktree:** propagate fzf ESC exit code in _wt_select and _branch_select ([#27](https://github.com/ruslan-horyn/worktree-helpers/issues/27)) ([777ff06](https://github.com/ruslan-horyn/worktree-helpers/commit/777ff064ac9dafae18f0ca0e97bbc801482e2bd9))
+* **wt:** wt --check routes to update check-only mode ([#25](https://github.com/ruslan-horyn/worktree-helpers/issues/25)) ([831e3e5](https://github.com/ruslan-horyn/worktree-helpers/commit/831e3e5aac9c0006e8735dc4b7663d0d838c7f1a))
+
 ## [1.4.0](https://github.com/ruslan-horyn/worktree-helpers/compare/v1.3.1...v1.4.0) (2026-02-22)
 
 
