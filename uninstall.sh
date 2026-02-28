@@ -58,6 +58,7 @@ echo ""
 # Check if anything is installed
 FOUND_INSTALL=0
 FOUND_RC=0
+FOUND_SYMLINK=0
 RC_FILE=""
 
 # Detect shell rc file
@@ -74,11 +75,12 @@ case "$SHELL_NAME" in
 esac
 
 [ -d "$INSTALL_DIR" ] && FOUND_INSTALL=1
+[ -L "$HOME/.local/bin/wt" ] && FOUND_SYMLINK=1
 if [ -n "$RC_FILE" ] && [ -f "$RC_FILE" ] && grep -qF "$MARKER" "$RC_FILE"; then
   FOUND_RC=1
 fi
 
-if [ "$FOUND_INSTALL" -eq 0 ] && [ "$FOUND_RC" -eq 0 ]; then
+if [ "$FOUND_INSTALL" -eq 0 ] && [ "$FOUND_RC" -eq 0 ] && [ "$FOUND_SYMLINK" -eq 0 ]; then
   info "worktree-helpers is not installed"
   exit 0
 fi
@@ -88,6 +90,9 @@ echo "The following will be removed:"
 echo ""
 if [ "$FOUND_INSTALL" -eq 1 ]; then
   echo "  ${RED}•${RESET} Installation directory: ${DIM}$INSTALL_DIR${RESET}"
+fi
+if [ "$FOUND_SYMLINK" -eq 1 ]; then
+  echo "  ${RED}•${RESET} Binary symlink: ${DIM}$HOME/.local/bin/wt${RESET}"
 fi
 if [ "$FOUND_RC" -eq 1 ]; then
   echo "  ${RED}•${RESET} Source lines from: ${DIM}$RC_FILE${RESET}"
@@ -132,7 +137,13 @@ if [ "$FOUND_RC" -eq 1 ]; then
   info "Removed source lines from $RC_FILE"
 fi
 
-# Step 2: Remove installation directory
+# Step 2: Remove binary symlink
+if [ -L "$HOME/.local/bin/wt" ]; then
+  rm "$HOME/.local/bin/wt"
+  info "Removed binary symlink: $HOME/.local/bin/wt"
+fi
+
+# Step 3: Remove installation directory
 if [ "$FOUND_INSTALL" -eq 1 ]; then
   rm -rf "$INSTALL_DIR"
   info "Removed $INSTALL_DIR"

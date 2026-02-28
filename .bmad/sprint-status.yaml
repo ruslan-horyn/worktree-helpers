@@ -372,7 +372,6 @@ sprints:
         priority: "should_have"
         blocked_by: ["STORY-034", "STORY-035"]
         story_doc: "docs/stories/STORY-021.md"
-        story_doc: "docs/stories/STORY-021.md"
       - story_id: "STORY-038"
         title: "Descriptive usage with placeholders in command output"
         points: 2
@@ -417,7 +416,8 @@ sprints:
       - story_id: "STORY-049"
         title: "Install wt as executable binary for non-interactive shell support"
         points: 3
-        status: "not_started"
+        status: "completed"
+        completion_date: "2026-02-28"
         assigned_to: null
         priority: "should_have"
         story_doc: "docs/stories/STORY-049.md"
@@ -527,32 +527,7 @@ sprints:
         priority: "should_have"
         story_doc: "docs/stories/STORY-046.md"
 
-backlog:
-  - story_id: "STORY-049"
-    title: "Install wt as executable binary for non-interactive shell support"
-    points: 3
-    status: "not_started"
-    assigned_to: null
-    priority: "should_have"
-    story_doc: "docs/stories/STORY-049.md"
-    notes: "Dual-mode wt.sh (sourceable + executable), symlink in ~/.local/bin, fix _cmd_remove/_cmd_clear inside-worktree checks"
-  - story_id: "STORY-050"
-    title: "Fix wt --check showing help instead of update status"
-    points: 1
-    status: "backlog"
-    assigned_to: null
-    priority: "must_have"
-    story_doc: "docs/stories/STORY-050.md"
-    notes: "One-line fix in wt(): set action=update when check_only=1 and action is empty"
-  - story_id: "STORY-051"
-    title: "Fix fzf ESC cancellation silently ignored across all selection commands"
-    points: 3
-    status: "completed"
-    completion_date: "2026-02-27"
-    assigned_to: null
-    priority: "must_have"
-    story_doc: "docs/stories/STORY-051.md"
-    notes: "fzf exit 130 (ESC) swallowed by pipeline in _wt_select and _branch_select; affects wt -s, -r, -L, -U, -o. Fix: break pipeline before cut, check exit code. Add shared _fzf_select helper."
+backlog: []
 
 velocity:
   sprint_1: 14

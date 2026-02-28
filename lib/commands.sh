@@ -33,7 +33,11 @@ _cmd_remove() {
   local input="$1" force="$2"
   _repo_root >/dev/null || return 1
   local wt_path; wt_path=$(_wt_resolve "$input" "remove> ") || return 1
-  if [ "$PWD" = "$wt_path" ]; then cd "$(_repo_root)" || true; fi
+  case "$PWD" in
+    "$wt_path"|"$wt_path"/*)
+      _err "Cannot remove: you are inside this worktree. Please cd out first."
+      return 1 ;;
+  esac
 
   if [ "$force" -ne 1 ]; then
     printf "Remove '%s'? [y/N] " "$(_wt_display_name "$wt_path")" >&2; read -r r
@@ -247,6 +251,17 @@ MERGED
             locked_skipped="${locked_skipped}${worktree}|${branch}
 "
           else
+            # 8. Check if user is inside this worktree
+            case "$PWD" in
+              "$worktree"|"$worktree"/*)
+                if [ "$dry_run" -eq 1 ]; then
+                  _info "[dry-run]   $(_wt_display_name "$worktree"): skipping: inside worktree"
+                else
+                  _err "Cannot clear: you are inside worktree '$branch'. Please cd out first."
+                fi
+                worktree=""
+                continue ;;
+            esac
             to_delete="${to_delete}${worktree}|${branch}|${wt_age:-0}
 "
             to_delete_count=$((to_delete_count + 1))
@@ -403,9 +418,6 @@ EOF
     local wt_path="${item%%|*}"
     local rest="${item#*|}"
     local br="${rest%%|*}"
-
-    # Change directory if we're in the worktree being removed
-    if [ "$PWD" = "$wt_path" ]; then cd "$main_root" || true; fi
 
     _info "  $(_wt_display_name "$wt_path"): deleting..."
     # shellcheck disable=SC2086
@@ -846,6 +858,11 @@ Flags:
   --since <date>            Limit log to commits after date (with --log)
   --author <pattern>        Limit log to commits by author (with --log)
   --check                   Check for updates without installing (alias for --update --check)
+
+Installation:
+  install.sh creates ~/.local/bin/wt — a symlink to wt.sh.
+  This allows 'wt' to be invoked in non-interactive shells (CI scripts,
+  Claude Code, subprocesses) without sourcing ~/.zshrc first.
 HELP
 }
 
