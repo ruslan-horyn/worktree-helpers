@@ -429,3 +429,15 @@ teardown() {
   assert_success
   assert_output "check_only_called"
 }
+
+@test "wt --check alone routes to check-only mode" {
+  load_wt_full
+
+  _update_check_only() { echo "check_only_called"; }
+  _update_notify() { :; }
+  _bg_update_check() { :; }
+
+  run wt --check
+  assert_success
+  assert_output "check_only_called"
+}

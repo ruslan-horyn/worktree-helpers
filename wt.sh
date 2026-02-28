@@ -82,6 +82,9 @@ wt() {
     esac
   done
 
+  # If --check given without explicit action, treat as --update --check
+  if [ "$check_only" -eq 1 ] && [ -z "$action" ]; then action="update"; fi
+
   # Standalone --help with no command: show full help
   if [ "$help" -eq 1 ] && [ -z "$action" ]; then _cmd_help; return 0; fi
 

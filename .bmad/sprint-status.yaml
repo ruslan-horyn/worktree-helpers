@@ -401,7 +401,8 @@ sprints:
       - story_id: "STORY-050"
         title: "Fix wt --check showing help instead of update status"
         points: 1
-        status: "not_started"
+        status: "completed"
+        completion_date: "2026-02-28"
         assigned_to: null
         priority: "must_have"
         story_doc: "docs/stories/STORY-050.md"

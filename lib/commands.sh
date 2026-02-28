@@ -846,7 +846,7 @@ Flags:
   --reflog                  Show reflog (with --log)
   --since <date>            Limit log to commits after date (with --log)
   --author <pattern>        Limit log to commits by author (with --log)
-  --check                   Check for update without installing (with --update)
+  --check                   Check for updates without installing (alias for --update --check)
 HELP
 }
 
